@@ -1,0 +1,685 @@
+/* ICN FIDS v0.2 - mobile-first display overrides
+ * Desktop layout remains in globals.css. This file only tightens the board for phones
+ * and short mobile landscape screens while preserving 15 operations per page.
+ */
+
+@media (max-width: 720px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  .screen-shell {
+    width: 100%;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  @supports (height: 100dvh) {
+    .screen-shell {
+      height: 100dvh;
+    }
+  }
+
+  .fids-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  /* Compact mobile information bar */
+  .identity-rail {
+    min-height: 0;
+    height: 94px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    gap: 4px 9px;
+    padding: 8px 10px;
+  }
+
+  .airport-brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .departure-icon {
+    width: 29px;
+    height: 29px;
+    border-width: 1.5px;
+    border-radius: 5px;
+    font-size: 19px;
+  }
+
+  .departure-title {
+    min-width: 0;
+    gap: 0;
+  }
+
+  .departure-title strong {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .departure-title span {
+    margin-top: 2px;
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .terminal-selector {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    width: fit-content;
+    max-width: 100%;
+    min-height: 31px;
+    margin: 0;
+    padding: 5px 9px;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 7px;
+    background: rgba(0, 0, 0, 0.12);
+    white-space: nowrap;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .terminal-selector span {
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .terminal-selector strong {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .rail-spacer,
+  .rail-brand {
+    display: none;
+  }
+
+  /* Keep page count visible on phones. */
+  .page-number {
+    grid-column: 2;
+    grid-row: 1;
+    display: block;
+    margin: 0;
+    padding: 4px 6px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.13);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .rail-time {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    min-width: 66px;
+    height: 100%;
+    align-self: stretch;
+    justify-content: center;
+    padding: 0 0 0 9px;
+    border-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.34);
+  }
+
+  .rail-time strong {
+    font-size: 21px;
+    line-height: 1;
+  }
+
+  .rail-time span {
+    margin-top: 4px;
+    font-size: 8px;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .information-panel {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Mobile columns: Time / Flight / Destination / Gate / Status.
+   * Check-in counter is hidden only on phone screens.
+   */
+  .row-grid {
+    grid-template-columns:
+      minmax(46px, 0.78fr)
+      minmax(61px, 1fr)
+      minmax(88px, 1.55fr)
+      minmax(40px, 0.62fr)
+      minmax(58px, 0.92fr);
+  }
+
+  .row-grid > div:nth-child(4) {
+    display: none;
+  }
+
+  .table-head {
+    height: 43px;
+    min-height: 43px;
+  }
+
+  .table-head > div {
+    min-width: 0;
+    padding: 0 5px;
+  }
+
+  .table-head b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(9px, 2.8vw, 11px);
+    line-height: 1;
+  }
+
+  .table-head span {
+    display: none;
+  }
+
+  .rows {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .flight-row {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .flight-row > div {
+    min-width: 0;
+    padding: 1px 5px;
+  }
+
+  .time-cell strong {
+    font-size: clamp(14px, 4.1vw, 17px);
+    line-height: 1;
+  }
+
+  .old-time {
+    margin-bottom: 1px;
+    font-size: 8px;
+    line-height: 1;
+  }
+
+  /* Logos and airline names consume too much horizontal space on phones.
+   * Keep the actual flight number, which is the primary FIDS identifier.
+   */
+  .carrier-logo-shell,
+  .carrier-mark,
+  .flight-copy span {
+    display: none;
+  }
+
+  .flight-cell {
+    gap: 0;
+  }
+
+  .flight-copy strong {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: clamp(11px, 3.3vw, 14px);
+    line-height: 1;
+  }
+
+  .destination-cell {
+    min-width: 0;
+    gap: 1px;
+  }
+
+  .destination-cell strong {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(11px, 3.25vw, 14px);
+    line-height: 1;
+  }
+
+  /* Keep IATA code visible as a compact fallback for long destination names. */
+  .destination-cell span {
+    display: block;
+    margin-top: 1px;
+    font-size: 7.5px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+
+  .gate-value strong {
+    font-size: clamp(14px, 4vw, 18px);
+    line-height: 1;
+  }
+
+  .gate-value span {
+    min-width: 0;
+    margin-top: 1px;
+    padding: 1px 3px;
+    font-size: 7px;
+    line-height: 1;
+  }
+
+  .status-cell {
+    min-width: 0;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+
+  .status-chip,
+  .status-chip[lang]:not([lang="ko"]):not([lang="en"]) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 3px 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 3px;
+    font-size: clamp(8px, 2.6vw, 10.5px);
+    line-height: 1.05;
+  }
+
+  .message {
+    padding: 16px;
+    font-size: 12px;
+  }
+
+  .error-box strong {
+    font-size: 16px;
+  }
+
+  .board-footer {
+    height: 27px;
+    min-height: 27px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    padding: 0 8px;
+    font-size: 7.5px;
+  }
+
+  .footer-source {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-dot {
+    width: 5px;
+    height: 5px;
+    margin-right: 5px;
+  }
+
+  .page-progress {
+    display: flex;
+    justify-content: flex-end;
+    gap: 3px;
+  }
+
+  .page-progress span {
+    width: 11px;
+    height: 2px;
+  }
+
+  .updated {
+    display: none;
+  }
+}
+
+/* Extra-tight phones and split-screen windows */
+@media (max-width: 420px) {
+  .identity-rail {
+    height: 88px;
+    padding: 7px 8px;
+    gap: 3px 7px;
+  }
+
+  .departure-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 17px;
+  }
+
+  .departure-title strong {
+    font-size: 18px;
+  }
+
+  .terminal-selector {
+    min-height: 28px;
+    padding: 4px 7px;
+  }
+
+  .terminal-selector span {
+    font-size: 11px;
+  }
+
+  .rail-time {
+    min-width: 61px;
+    padding-left: 7px;
+  }
+
+  .rail-time strong {
+    font-size: 19px;
+  }
+
+  .table-head {
+    height: 39px;
+    min-height: 39px;
+  }
+
+  .flight-row > div,
+  .table-head > div {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+/* Short phones: prioritize fitting the full 15-row page without body scrolling. */
+@media (max-width: 720px) and (max-height: 720px) {
+  .identity-rail {
+    height: 78px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .departure-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+  }
+
+  .departure-title strong {
+    font-size: 17px;
+  }
+
+  .departure-title span,
+  .terminal-selector strong,
+  .rail-time span {
+    display: none;
+  }
+
+  .terminal-selector {
+    min-height: 24px;
+    padding: 3px 6px;
+  }
+
+  .page-number {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  .rail-time {
+    min-width: 54px;
+  }
+
+  .rail-time strong {
+    font-size: 18px;
+  }
+
+  .table-head {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .board-footer {
+    height: 23px;
+    min-height: 23px;
+  }
+
+  .destination-cell span,
+  .gate-value span {
+    display: none;
+  }
+
+  .time-cell strong {
+    font-size: clamp(12px, 3.8vw, 15px);
+  }
+
+  .flight-copy strong,
+  .destination-cell strong {
+    font-size: clamp(10px, 3vw, 12px);
+  }
+
+  .gate-value strong {
+    font-size: clamp(12px, 3.6vw, 15px);
+  }
+
+  .status-chip,
+  .status-chip[lang]:not([lang="ko"]):not([lang="en"]) {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: clamp(7.5px, 2.35vw, 9px);
+  }
+}
+
+/* Mobile landscape: use a compact left rail so the table keeps maximum vertical room. */
+@media (orientation: landscape) and (max-width: 960px) and (max-height: 520px) {
+  html,
+  body,
+  .screen-shell {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  @supports (height: 100dvh) {
+    .screen-shell {
+      height: 100dvh;
+    }
+  }
+
+  .fids-frame {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 118px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .identity-rail {
+    width: 118px;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 10px 8px;
+  }
+
+  .airport-brand {
+    display: flex;
+    gap: 6px;
+  }
+
+  .departure-icon {
+    width: 25px;
+    height: 25px;
+    font-size: 16px;
+  }
+
+  .departure-title strong {
+    font-size: 17px;
+  }
+
+  .departure-title span {
+    margin-top: 1px;
+    font-size: 8px;
+  }
+
+  .terminal-selector {
+    width: 100%;
+    min-height: 0;
+    margin-top: 13px;
+    padding: 6px 5px;
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+
+  .terminal-selector span {
+    font-size: 10px;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .terminal-selector strong {
+    margin-top: 2px;
+    font-size: 7px;
+  }
+
+  .rail-spacer {
+    display: block;
+    flex: 1;
+  }
+
+  .page-number {
+    display: block;
+    margin: 0 0 6px;
+    font-size: 13px;
+  }
+
+  .rail-time {
+    display: flex;
+    min-width: 0;
+    padding: 7px 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.32);
+  }
+
+  .rail-time strong {
+    font-size: 21px;
+  }
+
+  .rail-time span {
+    margin-top: 3px;
+    font-size: 7px;
+  }
+
+  .rail-brand {
+    display: none;
+  }
+
+  .information-panel {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .row-grid {
+    grid-template-columns: 0.8fr 1fr 1.55fr 0.62fr 0.9fr;
+  }
+
+  .row-grid > div:nth-child(4) {
+    display: none;
+  }
+
+  .table-head {
+    height: 32px;
+    min-height: 32px;
+  }
+
+  .table-head > div,
+  .flight-row > div {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .table-head b {
+    font-size: 9px;
+  }
+
+  .table-head span,
+  .carrier-logo-shell,
+  .carrier-mark,
+  .flight-copy span,
+  .destination-cell span,
+  .gate-value span {
+    display: none;
+  }
+
+  .time-cell strong {
+    font-size: 13px;
+  }
+
+  .old-time {
+    font-size: 7px;
+  }
+
+  .flight-cell {
+    gap: 0;
+  }
+
+  .flight-copy strong,
+  .destination-cell strong {
+    font-size: 10px;
+  }
+
+  .gate-value strong {
+    font-size: 13px;
+  }
+
+  .status-chip,
+  .status-chip[lang]:not([lang="ko"]):not([lang="en"]) {
+    width: 100%;
+    min-width: 0;
+    padding: 2px 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 8px;
+  }
+
+  .board-footer {
+    height: 22px;
+    min-height: 22px;
+    grid-template-columns: auto 1fr;
+    padding: 0 7px;
+    font-size: 7px;
+  }
+
+  .page-progress {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .updated {
+    display: none;
+  }
+}
+
