@@ -50,7 +50,20 @@ npm run dev
 
 인천공항은 인천공항 공식 홈페이지 피드를 우선 사용하고 관련 OpenAPI로 보강합니다. 대구공항은 한국공항공사 실시간 항공기 운항정보 GW를 사용하며, 실패 시 공식 홈페이지와 데모 데이터를 단계적으로 사용합니다.
 
+## 개별 FIDS 업데이트 동기화
 
-## 배포 흐름
+통합 저장소의 `Sync airport FIDS sources` 작업이 6시간마다 인천·대구 개별 저장소의 `main`을 확인합니다.
 
-기능 브랜치에서 Vercel Preview를 확인한 뒤 PR을 main에 병합하고 Production을 확인합니다.
+- 인천: `christmas725/icn_fids`
+- 대구: `christmas725/tae_fids`
+- 동기화 대상: 공항별 화면, 스타일, API, 운항정보 타입·번역 데이터
+- 보호 대상: 통합 홈, 공항 분류, 공통 레이아웃, 환경변수, PWA 설정
+
+변경사항이 있으면 통합 경로에 맞게 import와 API 주소를 변환하고 빌드 검증을 거친 뒤 자동으로 PR을 생성합니다. 운영 사이트에는 PR의 Vercel Preview를 확인하고 `main`에 병합한 뒤 반영됩니다. 이미 열린 동기화 PR이 있으면 중복 PR을 만들지 않습니다.
+
+필요할 때는 GitHub Actions에서 수동 실행하거나 로컬에서 다음 명령을 사용할 수 있습니다.
+
+```bash
+npm run sync:airports
+npm run build
+```
