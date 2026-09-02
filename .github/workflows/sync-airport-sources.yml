@@ -1,0 +1,89 @@
+name: Sync airport FIDS sources
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: airport-source-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for an existing sync PR
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json number,headRefName --jq '[.[] | select(.headRefName | startswith("sync/airports-"))][0].number // empty')"
+          if [ -n "$pr_number" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "동기화 PR #$pr_number 검토가 끝날 때까지 새 PR을 만들지 않습니다."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out main
+        if: steps.existing.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js
+        if: steps.existing.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Import airport updates
+        if: steps.existing.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run sync:airports
+
+      - name: Detect changes
+        if: steps.existing.outputs.skip != 'true'
+        id: changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate build
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create validation PR
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          icn_sha="$(node -p "require('./sync/airport-sources.json').sources.find((source) => source.id === 'icn').lastSyncedCommit")"
+          tae_sha="$(node -p "require('./sync/airport-sources.json').sources.find((source) => source.id === 'tae').lastSyncedCommit")"
+          branch="sync/airports-${icn_sha:0:8}-${tae_sha:0:8}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add app components lib sync
+          git commit -m "chore(sync): update airport FIDS sources"
+          git push origin "$branch"
+
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$branch" \
+            --title "인천·대구 FIDS 업데이트 동기화" \
+            --body "인천·대구 개별 FIDS의 최신 변경사항을 통합 FIDS의 공항별 경로에 반영했습니다. 통합 허브와 공통 설정은 변경하지 않았으며, 자동 빌드 검증을 통과한 상태입니다. Vercel Preview 확인 후 병합해 주세요."

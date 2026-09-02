@@ -1,0 +1,93 @@
+/* ICN FIDS v0.2 - row-height driven typography and controls
+ * Each flight row becomes a size container. Modern browsers use cqh units so
+ * row contents keep the same visual proportions whether a page has 14, 16 or 20 rows.
+ * Existing device CSS remains the fallback when container query units are unavailable.
+ */
+
+@supports (font-size: 1cqh) {
+  .flight-row,
+  .table-head {
+    container-type: size;
+  }
+
+  .flight-row > div {
+    padding-top: clamp(0px, 5cqh, 5px);
+    padding-bottom: clamp(0px, 5cqh, 5px);
+  }
+
+  .time-cell strong {
+    font-size: clamp(15px, 43cqh, 30px);
+    line-height: 1;
+  }
+
+  .old-time {
+    margin-bottom: clamp(1px, 4cqh, 3px);
+    font-size: clamp(7px, 14cqh, 11.5px);
+    line-height: 1;
+  }
+
+  .flight-cell {
+    gap: clamp(4px, 14cqh, 12px);
+  }
+
+  .carrier-logo-shell,
+  .carrier-mark {
+    width: clamp(28px, 64cqh, 44px);
+    height: clamp(20px, 52cqh, 38px);
+  }
+
+  .carrier-mark {
+    font-size: clamp(7px, 16cqh, 11px);
+  }
+
+  .flight-copy strong,
+  .destination-cell strong {
+    font-size: clamp(12px, 34cqh, 24px);
+    line-height: 1.03;
+  }
+
+  .flight-copy span,
+  .destination-cell span {
+    margin-top: clamp(1px, 5cqh, 4px);
+    font-size: clamp(7px, 15.5cqh, 11.5px);
+    line-height: 1;
+  }
+
+  .counter-value {
+    font-size: clamp(10px, 27cqh, 19px);
+    line-height: 1;
+  }
+
+  .gate-value strong {
+    font-size: clamp(14px, 38cqh, 27px);
+    line-height: 1;
+  }
+
+  .gate-value span {
+    margin-top: clamp(1px, 5cqh, 4px);
+    min-width: clamp(20px, 48cqh, 30px);
+    padding: clamp(1px, 3cqh, 2px) clamp(3px, 8cqh, 5px);
+    font-size: clamp(6.5px, 12.5cqh, 9.5px);
+    line-height: 1;
+  }
+
+  .status-chip,
+  .status-chip[lang]:not([lang="ko"]):not([lang="en"]) {
+    min-width: clamp(54px, 150cqh, 112px);
+    width: min(100%, clamp(72px, 180cqh, 118px));
+    padding: clamp(2px, 6cqh, 7px) clamp(5px, 16cqh, 10px);
+    font-size: clamp(8.5px, 20cqh, 15px);
+    line-height: 1;
+  }
+
+  .table-head b {
+    font-size: clamp(11px, 30cqh, 22px);
+    line-height: 1;
+  }
+
+  .table-head span {
+    margin-top: clamp(2px, 8cqh, 7px);
+    font-size: clamp(7px, 16cqh, 12px);
+    line-height: 1;
+  }
+}

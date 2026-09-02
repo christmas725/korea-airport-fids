@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync:airports": "node scripts/sync-airport-sources.mjs",
+    "sync:airports:check": "node scripts/sync-airport-sources.mjs --check"
   },
   "dependencies": {
     "next": "15.5.21",
