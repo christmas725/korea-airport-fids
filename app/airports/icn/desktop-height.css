@@ -1,0 +1,203 @@
+/* Desktop viewport-height protection
+ * Windows maximized browser / display scaling environments can have a much
+ * shorter CSS viewport than the physical monitor resolution suggests.
+ * Keep the full 14-row FIDS, footer and rail clock inside the visible viewport.
+ */
+
+@media (min-width: 1101px) {
+  html,
+  body,
+  .screen-shell,
+  .fids-frame {
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
+  }
+
+  .screen-shell,
+  .fids-frame,
+  .information-panel {
+    overflow: hidden;
+  }
+
+  .information-panel,
+  .rows {
+    min-height: 0;
+  }
+
+  /* A non-empty page always contains 14 real/filler flight rows.
+   * Give each row exactly 1/14 of the remaining board height so intrinsic
+   * text/padding can never push the last rows below the browser viewport.
+   */
+  .rows > .flight-row {
+    height: calc(100% / 14);
+    flex: 0 0 calc(100% / 14);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .flight-row > div {
+    min-height: 0;
+  }
+}
+
+/* Compact only when the desktop browser's usable height is limited.
+ * This covers maximized Windows browsers with a taskbar, browser chrome,
+ * display scaling, or non-1080 CSS viewports without changing normal FIDS use.
+ */
+@media (min-width: 1101px) and (max-height: 950px) {
+  .identity-rail {
+    padding-top: clamp(14px, 2.2dvh, 24px);
+    padding-bottom: clamp(10px, 1.6dvh, 18px);
+  }
+
+  .departure-icon {
+    width: clamp(34px, 4.7dvh, 42px);
+    height: clamp(34px, 4.7dvh, 42px);
+    font-size: clamp(23px, 3.4dvh, 29px);
+  }
+
+  .departure-title strong {
+    font-size: clamp(24px, 3.7dvh, 34px);
+  }
+
+  .departure-title span {
+    margin-top: 3px;
+    font-size: clamp(12px, 1.75dvh, 16px);
+  }
+
+  .terminal-selector {
+    margin-top: clamp(20px, 3.7dvh, 34px);
+  }
+
+  .terminal-selector span {
+    font-size: clamp(15px, 2.25dvh, 20px);
+  }
+
+  .terminal-selector strong {
+    font-size: clamp(12px, 1.8dvh, 16px);
+  }
+
+  .page-number {
+    margin-bottom: 6px;
+    font-size: clamp(26px, 4.2dvh, 36px);
+  }
+
+  .rail-time {
+    padding-top: 9px;
+  }
+
+  .rail-time strong {
+    font-size: clamp(31px, 5.5dvh, 48px);
+  }
+
+  .rail-time span {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+
+  .rail-brand {
+    margin-top: 10px;
+    font-size: 9px;
+  }
+
+  .table-head {
+    height: clamp(52px, 7.1dvh, 66px);
+  }
+
+  .table-head > div {
+    padding-left: clamp(10px, 1.15vw, 20px);
+    padding-right: clamp(10px, 1.15vw, 20px);
+  }
+
+  .table-head b {
+    font-size: clamp(14px, 2.2dvh, 19px);
+  }
+
+  .table-head span {
+    margin-top: 4px;
+    font-size: clamp(8px, 1.25dvh, 10px);
+  }
+
+  .flight-row > div {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: clamp(10px, 1.15vw, 20px);
+    padding-right: clamp(10px, 1.15vw, 20px);
+  }
+
+  .time-cell strong {
+    font-size: clamp(19px, 3.05dvh, 27px);
+  }
+
+  .old-time {
+    margin-bottom: 1px;
+    font-size: clamp(8px, 1.2dvh, 10px);
+  }
+
+  .flight-copy strong,
+  .destination-cell strong {
+    font-size: clamp(14px, 2.35dvh, 20px);
+  }
+
+  .flight-copy span,
+  .destination-cell span {
+    margin-top: 2px;
+    font-size: clamp(8px, 1.15dvh, 10px);
+  }
+
+  .counter-value {
+    font-size: clamp(12px, 1.95dvh, 17px);
+  }
+
+  .gate-value strong {
+    font-size: clamp(17px, 2.85dvh, 25px);
+  }
+
+  .gate-value span {
+    margin-top: 2px;
+    padding: 1px 4px;
+    font-size: 8px;
+  }
+
+  .status-chip {
+    min-width: clamp(68px, 5.5vw, 100px);
+    padding: 3px 8px;
+    font-size: clamp(10px, 1.65dvh, 14px);
+  }
+
+  .board-footer {
+    height: clamp(27px, 3.5dvh, 33px);
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 1101px) and (max-height: 760px) {
+  .identity-rail {
+    padding-top: 10px;
+    padding-bottom: 8px;
+  }
+
+  .terminal-selector {
+    margin-top: 14px;
+  }
+
+  .rail-brand,
+  .rail-time span {
+    display: none;
+  }
+
+  .table-head {
+    height: 48px;
+  }
+
+  .board-footer {
+    height: 24px;
+  }
+
+  .flight-row > div {
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+}
+

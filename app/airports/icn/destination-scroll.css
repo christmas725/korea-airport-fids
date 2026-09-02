@@ -1,0 +1,65 @@
+/* ICN FIDS v0.2 - overflow-aware destination scrolling
+ * Only names that actually exceed their cell width receive the is-overflowing class.
+ */
+
+.destination-name-viewport {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@keyframes mobile-destination-slide {
+  0%, 12% {
+    transform: translateX(0);
+  }
+  44%, 58% {
+    transform: translateX(var(--destination-slide-x, 0));
+  }
+  90%, 100% {
+    transform: translateX(0);
+  }
+}
+
+/* Phones / Fold cover display */
+@media (max-width: 720px),
+       (orientation: landscape) and (max-width: 960px) and (max-height: 520px),
+       (min-width: 721px) and (max-width: 1100px) and (hover: none),
+       (min-width: 721px) and (max-width: 1100px) and (pointer: coarse) {
+  .destination-cell {
+    overflow: hidden;
+  }
+
+  .destination-name-viewport {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .destination-name-viewport[data-direction="rtl"] {
+    text-align: right;
+    direction: rtl;
+  }
+
+  .destination-name-text {
+    display: inline-block;
+    width: max-content;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap;
+    will-change: transform;
+  }
+
+  .destination-name-viewport.is-overflowing .destination-name-text {
+    animation-name: mobile-destination-slide;
+    animation-duration: var(--destination-slide-duration, 5.5s);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .destination-name-viewport.is-overflowing .destination-name-text {
+    animation: none;
+  }
+}
+
