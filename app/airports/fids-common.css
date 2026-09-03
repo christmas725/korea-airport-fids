@@ -1,0 +1,138 @@
+/* Shared responsive behavior for every implemented airport FIDS. */
+.screen-shell {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  .screen-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
+  }
+}
+
+.fids-frame,
+.information-panel,
+.rows {
+  min-height: 0;
+}
+
+.sliding-text {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sliding-text-track {
+  display: inline-block;
+  min-width: max-content;
+  will-change: transform;
+}
+
+.sliding-text.is-overflowing .sliding-text-track {
+  animation: destination-pan 5.5s ease-in-out infinite alternate;
+}
+
+@keyframes destination-pan {
+  0%, 18% { transform: translateX(0); }
+  82%, 100% { transform: translateX(var(--destination-shift)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sliding-text.is-overflowing .sliding-text-track {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Existing fixed sizes remain the fallback for browsers without cqh support. */
+@supports (font-size: 1cqh) {
+  .flight-row,
+  .table-head {
+    container-type: size;
+  }
+
+  .flight-row > div {
+    padding-top: clamp(0px, 5cqh, 5px);
+    padding-bottom: clamp(0px, 5cqh, 5px);
+  }
+
+  .time-cell strong,
+  .time-cell .time-changed {
+    font-size: clamp(15px, 43cqh, 30px);
+    line-height: 1;
+  }
+
+  .old-time,
+  .time-cell .time-original {
+    margin-bottom: clamp(1px, 4cqh, 3px);
+    font-size: clamp(7px, 14cqh, 11.5px);
+    line-height: 1;
+  }
+
+  .flight-cell { gap: clamp(4px, 14cqh, 12px); }
+
+  .carrier-logo-shell,
+  .carrier-mark,
+  .flight-cell > img,
+  .logo-fallback {
+    width: clamp(28px, 64cqh, 44px);
+    height: clamp(20px, 52cqh, 38px);
+  }
+
+  .carrier-mark,
+  .logo-fallback { font-size: clamp(7px, 16cqh, 11px); }
+
+  .flight-copy strong,
+  .flight-cell > span:not(.carrier-mark):not(.logo-fallback),
+  .destination-cell strong {
+    font-size: clamp(12px, 34cqh, 24px);
+    line-height: 1.03;
+  }
+
+  .flight-copy span,
+  .destination-cell > span:not(.sliding-text) {
+    margin-top: clamp(1px, 5cqh, 4px);
+    font-size: clamp(7px, 15.5cqh, 11.5px);
+    line-height: 1;
+  }
+
+  .counter-value,
+  .type-cell { font-size: clamp(10px, 27cqh, 19px); }
+
+  .gate-value strong,
+  .facility-cell strong {
+    font-size: clamp(14px, 38cqh, 27px);
+    line-height: 1;
+  }
+
+  .gate-value span,
+  .type-cell span {
+    margin-top: clamp(1px, 5cqh, 4px);
+    padding: clamp(1px, 3cqh, 2px) clamp(3px, 8cqh, 5px);
+    font-size: clamp(6.5px, 12.5cqh, 9.5px);
+    line-height: 1;
+  }
+
+  .status-chip,
+  .status-cell strong {
+    padding: clamp(2px, 6cqh, 7px) clamp(5px, 16cqh, 10px);
+    font-size: clamp(8.5px, 20cqh, 15px);
+    line-height: 1;
+  }
+
+  .table-head b {
+    font-size: clamp(11px, 30cqh, 22px);
+    line-height: 1;
+  }
+
+  .table-head span {
+    margin-top: clamp(2px, 8cqh, 7px);
+    font-size: clamp(7px, 16cqh, 12px);
+    line-height: 1;
+  }
+}

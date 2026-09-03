@@ -8,7 +8,7 @@
 - 인천국제공항(ICN) 출발 FIDS
 - 대구국제공항(TAE) 출발·도착 FIDS
 - 나머지 13개 공항의 구현 준비중 화면
-- 모바일·폴더블·데스크톱 반응형 화면
+- 모바일·폴더블·데스크톱·대형 태블릿 반응형 화면
 - 설치형 PWA
 
 ## 공항 분류
@@ -50,16 +50,26 @@ npm run dev
 
 인천공항은 인천공항 공식 홈페이지 피드를 우선 사용하고 관련 OpenAPI로 보강합니다. 대구공항은 한국공항공사 실시간 항공기 운항정보 GW를 사용하며, 실패 시 공식 홈페이지와 데모 데이터를 단계적으로 사용합니다.
 
+공항별 API 라우트가 데이터 어댑터 역할을 하고, 화면에서는 공통 레이아웃 정책을 사용합니다.
+
+- `app/api/airports/{iata}/flights`: 공항별 데이터 어댑터
+- `lib/fids/layout.ts`: 14·16·20행 및 최대 4페이지 정책
+- `components/fids/useRowsPerPage.ts`: 화면 회전·분할화면 재계산
+- `components/fids/SlidingText.tsx`: overflow 목적지만 이동하는 RTL 대응 표시
+- `app/airports/fids-common.css`: `100dvh`, 행 높이 기반 `cqh` 크기, 동작 감소 설정
+- `lib/fids/destinationOverrides.ts`: 공항 공식 영문 데이터가 없을 때 사용하는 공통 목적지 fallback
+
 ## 개별 FIDS 업데이트 동기화
 
 통합 저장소의 `Sync airport FIDS sources` 작업이 6시간마다 인천·대구 개별 저장소의 `main`을 확인합니다.
 
 - 인천: `christmas725/icn_fids`
 - 대구: `christmas725/tae_fids`
-- 동기화 대상: 공항별 화면, 스타일, API, 운항정보 타입·번역 데이터
+- 자동 동기화 대상: 공항별 스타일과 공통 구조에 영향을 주지 않는 데이터 파일
+- 검토 동기화 대상: 공항별 화면·API·목적지 데이터처럼 공통 모듈과 결합된 파일
 - 보호 대상: 통합 홈, 공항 분류, 공통 레이아웃, 환경변수, PWA 설정
 
-변경사항이 있으면 통합 경로에 맞게 import와 API 주소를 변환하고 빌드 검증을 거친 뒤 자동으로 PR을 생성합니다. 운영 사이트에는 PR의 Vercel Preview를 확인하고 `main`에 병합한 뒤 반영됩니다. 이미 열린 동기화 PR이 있으면 중복 PR을 만들지 않습니다.
+변경사항이 있으면 빌드 검증을 거친 뒤 자동으로 PR을 생성합니다. 공통 모듈과 결합된 원본 파일은 `sync/review/{iata}`에 검토본으로 저장해 통합 코드를 덮어쓰지 않으며, 필요한 차이만 공통 모듈이나 어댑터로 이식합니다. 운영 사이트에는 PR의 Vercel Preview를 확인하고 `main`에 병합한 뒤 반영됩니다. 이미 열린 동기화 PR이 있으면 중복 PR을 만들지 않습니다.
 
 필요할 때는 GitHub Actions에서 수동 실행하거나 로컬에서 다음 명령을 사용할 수 있습니다.
 

@@ -127,7 +127,8 @@ const changedSources = [];
 
 for (const source of config.sources) {
   const commit = await latestCommit(source.repository, source.branch);
-  if (commit !== source.lastSyncedCommit) changedSources.push(source.id.toUpperCase());
+  const sourceChanged = commit !== source.lastSyncedCommit;
+  if (sourceChanged) changedSources.push(source.id.toUpperCase());
 
   const upstreamFiles = await Promise.all(
     source.mappings.map((mapping) =>
@@ -137,12 +138,19 @@ for (const source of config.sources) {
 
   for (const [index, mapping] of source.mappings.entries()) {
     const upstream = upstreamFiles[index];
-    const next = transformSource(upstream, source, mapping);
-    const destination = targetPath(mapping.to);
+    if (mapping.reviewOnly && !sourceChanged) continue;
+
+    const next = mapping.reviewOnly
+      ? (upstream.endsWith("\n") ? upstream : `${upstream}\n`)
+      : transformSource(upstream, source, mapping);
+    const relativeDestination = mapping.reviewOnly
+      ? path.join("sync", "review", source.id, mapping.from)
+      : mapping.to;
+    const destination = targetPath(relativeDestination);
     const current = await existingFile(destination);
 
     if (sameContent(current, next)) continue;
-    changedFiles.push(mapping.to);
+    changedFiles.push(relativeDestination);
 
     if (!checkOnly) {
       await mkdir(path.dirname(destination), { recursive: true });
