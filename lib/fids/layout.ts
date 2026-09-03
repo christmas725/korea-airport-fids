@@ -9,6 +9,7 @@ export type FidsViewport = {
   screenWidth: number;
   screenHeight: number;
   coarsePointer: boolean;
+  noHover?: boolean;
   maxTouchPoints: number;
 };
 
@@ -18,16 +19,28 @@ export type FidsViewport = {
  * foldables while retaining 8-inch-and-larger tablets and split-screen use.
  */
 export function rowsForViewport(viewport: FidsViewport) {
-  const touchCapable = viewport.coarsePointer || viewport.maxTouchPoints > 0;
+  const tabletPointer = viewport.coarsePointer || viewport.noHover === true;
   const shortScreenSide = Math.min(viewport.screenWidth, viewport.screenHeight);
   const longScreenSide = Math.max(viewport.screenWidth, viewport.screenHeight);
-  const largeTouchTablet =
-    touchCapable && shortScreenSide >= 760 && longScreenSide >= 1180;
+  const largeTouchScreen =
+    tabletPointer && shortScreenSide >= 760 && longScreenSide >= 1180;
 
-  if (!largeTouchTablet) return DEFAULT_FIDS_ROWS;
-  return viewport.viewportWidth >= viewport.viewportHeight
-    ? LARGE_TABLET_LANDSCAPE_ROWS
-    : LARGE_TABLET_PORTRAIT_ROWS;
+  if (!largeTouchScreen) return DEFAULT_FIDS_ROWS;
+
+  // Keep the runtime row count aligned with the tablet media queries.
+  // A Windows desktop can report touch points while its primary pointer still
+  // behaves like a mouse; that must remain on the 14-row desktop layout.
+  if (viewport.viewportWidth >= 1101 && viewport.viewportWidth <= 1700) {
+    return LARGE_TABLET_LANDSCAPE_ROWS;
+  }
+
+  const portraitTablet =
+    viewport.viewportWidth >= 800 &&
+    viewport.viewportWidth <= 1100 &&
+    viewport.viewportWidth < viewport.viewportHeight &&
+    viewport.viewportWidth / viewport.viewportHeight <= 3 / 4;
+
+  return portraitTablet ? LARGE_TABLET_PORTRAIT_ROWS : DEFAULT_FIDS_ROWS;
 }
 
 export function paginateFidsRows<T>(items: T[], page: number, rowsPerPage: number) {

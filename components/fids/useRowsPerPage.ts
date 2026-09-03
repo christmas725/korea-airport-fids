@@ -12,6 +12,7 @@ function readRowsPerPage() {
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
     coarsePointer: window.matchMedia("(pointer: coarse)").matches,
+    noHover: window.matchMedia("(hover: none)").matches,
     maxTouchPoints: navigator.maxTouchPoints || 0,
   });
 }
@@ -22,18 +23,21 @@ export function useRowsPerPage() {
   useEffect(() => {
     const update = () => setRowsPerPage(readRowsPerPage());
     const pointerQuery = window.matchMedia("(pointer: coarse)");
+    const hoverQuery = window.matchMedia("(hover: none)");
     const orientationQuery = window.matchMedia("(orientation: portrait)");
 
     update();
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
     pointerQuery.addEventListener?.("change", update);
+    hoverQuery.addEventListener?.("change", update);
     orientationQuery.addEventListener?.("change", update);
 
     return () => {
       window.removeEventListener("resize", update);
       window.removeEventListener("orientationchange", update);
       pointerQuery.removeEventListener?.("change", update);
+      hoverQuery.removeEventListener?.("change", update);
       orientationQuery.removeEventListener?.("change", update);
     };
   }, []);
