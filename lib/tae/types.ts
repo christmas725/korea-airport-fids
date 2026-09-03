@@ -31,16 +31,15 @@ export type FlightsPayload = {
   dataSources: string[];
   query:
     | {
-        airportCode: "TAE";
-        airportName: "대구";
+        airportCode: string;
+        airportName: string;
         searchDate: string;
         searchFrom: string;
         searchTo: string;
       }
     | {
-        airport: "TAE";
+        airport: string;
         date: string;
       };
   warning?: string;
 };
-

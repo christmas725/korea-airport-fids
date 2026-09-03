@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { demoFlights } from "@/lib/tae/demo";
 import type { FidsFlight, FlightMode, FlightsPayload, RawKacFlight } from "@/lib/tae/types";
+import { airportByCode } from "@/lib/airports";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const preferredRegion = "icn1";
 
-const AIRPORT_CODE = "TAE" as const;
 const KAC_GW_BASE = "https://apis.data.go.kr/B551178/flight-status";
 const HOMEPAGE_ENDPOINT = "https://www.airport.co.kr/daegu/ajaxf/frPryInfoSvc/getPryInfoList.do";
 const REFERER = "https://www.airport.co.kr/daegu/cms/frCon/index.do?MENU_ID=100";
@@ -296,12 +296,12 @@ async function fetchGw(path: string, params: Record<string, string>, revalidate:
   return gwPage(json);
 }
 
-async function fetchGwInfoFlights(mode: FlightMode, date: string) {
+async function fetchGwInfoFlights(airportCode: string, mode: FlightMode, date: string) {
   const expectedIo = mode === "departures" ? "O" : "I";
   const { items } = await fetchGw(
     "info",
     {
-      schAirCode: AIRPORT_CODE,
+      schAirCode: airportCode,
       schIOType: expectedIo,
       schStTime: "0000",
       schEdTime: "2359",
@@ -315,14 +315,14 @@ async function fetchGwInfoFlights(mode: FlightMode, date: string) {
     .filter((raw) => {
       const io = first(raw, ["io", "IO"]).toUpperCase();
       const airport = first(raw, ["airport", "AIRPORT"]).toUpperCase();
-      return (!io || io === expectedIo) && (!airport || airport === AIRPORT_CODE);
+      return (!io || io === expectedIo) && (!airport || airport === airportCode);
     })
     .map((raw, index) => normalizeGwInfoFlight(raw, mode, index, date))
     .filter((flight) => flight.flightId !== "-" && flight.scheduleDateTime)
     .sort((a, b) => sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) || a.flightId.localeCompare(b.flightId));
 }
 
-async function fetchGwOperationFlights(mode: FlightMode, date: string) {
+async function fetchGwOperationFlights(airportCode: string, mode: FlightMode, date: string) {
   const path = mode === "departures" ? "depart" : "arrival";
   const { items } = await fetchGw(
     path,
@@ -332,7 +332,7 @@ async function fetchGwOperationFlights(mode: FlightMode, date: string) {
       searchday: date,
       from_time: "0000",
       to_time: "2359",
-      airport_code: AIRPORT_CODE,
+      airport_code: airportCode,
     },
     OPERATION_REVALIDATE_SECONDS
   );
@@ -512,7 +512,7 @@ async function fetchRelevantDetailRows(flights: FidsFlight[]) {
   return detailPages.flatMap((page) => page.items);
 }
 
-async function enrichFacilities(flights: FidsFlight[], date: string, mode: FlightMode) {
+async function enrichFacilities(flights: FidsFlight[], date: string, mode: FlightMode, airportCode: string) {
   const detailRows = await fetchRelevantDetailRows(flights);
   if (!detailRows.length) return { flights, usedDetail: false };
 
@@ -525,7 +525,7 @@ async function enrichFacilities(flights: FidsFlight[], date: string, mode: Fligh
     const io = first(raw, ["IO", "io"]).toUpperCase();
     const flightId = normalizedFlightId(first(raw, ["AIR_FLN", "airFln"]));
     const schedule = first(raw, ["STD", "std"]);
-    if (airport !== AIRPORT_CODE || flightDate !== date || !flightId) return;
+    if (airport !== airportCode || flightDate !== date || !flightId) return;
     if (io && io !== (mode === "departures" ? "O" : "I")) return;
 
     exact.set(detailFlightKey(flightDate, mode, flightId, schedule), raw);
@@ -551,11 +551,11 @@ async function enrichFacilities(flights: FidsFlight[], date: string, mode: Fligh
   return { flights: enriched, usedDetail: true };
 }
 
-async function fetchHomepageFlights(mode: FlightMode, date: string, formDate: string) {
+async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
   const endpoint = process.env.KAC_HOMEPAGE_API_URL?.trim() || HOMEPAGE_ENDPOINT;
   const body = new URLSearchParams({
     pInoutGbn: mode === "departures" ? "O" : "I",
-    pAirport: AIRPORT_CODE,
+    pAirport: airportCode,
     pGbn: "",
     pActDate: formDate,
     pSthourMin: "00:00",
@@ -605,6 +605,7 @@ async function fetchHomepageFlights(mode: FlightMode, date: string, formDate: st
 }
 
 function payload(
+  airportCode: string,
   mode: FlightMode,
   flights: FidsFlight[],
   source: FlightsPayload["source"],
@@ -625,64 +626,82 @@ function payload(
           ? ["kac-daegu-homepage"]
           : ["demo"]),
     query: {
-      airport: AIRPORT_CODE,
+      airport: airportCode,
       date,
     },
     warning,
   };
 }
 
-export async function GET(request: NextRequest) {
+async function handleKacFlights(request: NextRequest, airportCode: string, airportName: string) {
   const modeParam = request.nextUrl.searchParams.get("mode");
   const mode: FlightMode = modeParam === "arrivals" ? "arrivals" : "departures";
   const { date, formDate } = kstParts();
 
   if (process.env.FIDS_DEMO_MODE === "true") {
-    return NextResponse.json(payload(mode, demoFlights(mode), "demo", "FIDS_DEMO_MODE가 활성화되어 데모 운항편을 표시합니다."));
+    const demo = airportCode === "TAE" ? demoFlights(mode) : [];
+    return NextResponse.json(payload(airportCode, mode, demo, "demo", "FIDS_DEMO_MODE가 활성화되어 데모 운항편을 표시합니다."));
   }
 
   const liveErrors: string[] = [];
 
   try {
-    let flights = await fetchGwInfoFlights(mode, date);
+    let flights = await fetchGwInfoFlights(airportCode, mode, date);
     const dataSources = ["kac-flight-status-info-gw"];
 
     try {
-      const operationFlights = await fetchGwOperationFlights(mode, date);
+      const operationFlights = await fetchGwOperationFlights(airportCode, mode, date);
       flights = mergeOperationFlights(flights, operationFlights);
       dataSources.push(mode === "departures" ? "kac-flight-status-depart-gw" : "kac-flight-status-arrival-gw");
     } catch (error) {
-      console.warn("[TAE FIDS] 코드쉐어 보강 조회 실패", error);
+      console.warn(`[${airportCode} FIDS] 코드쉐어 보강 조회 실패`, error);
     }
 
     try {
-      const facilityResult = await enrichFacilities(flights, date, mode);
+      const facilityResult = await enrichFacilities(flights, date, mode, airportCode);
       flights = facilityResult.flights;
       if (facilityResult.usedDetail) dataSources.push("kac-flight-status-detail-gw");
     } catch (error) {
-      console.warn("[TAE FIDS] 시설정보 보강 조회 실패", error);
+      console.warn(`[${airportCode} FIDS] 시설정보 보강 조회 실패`, error);
     }
 
-    return NextResponse.json(payload(mode, flights, "kac_gw", undefined, dataSources), {
+    return NextResponse.json(payload(airportCode, mode, flights, "kac_gw", undefined, dataSources), {
       headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
     });
   } catch (error) {
     liveErrors.push(error instanceof Error ? error.message : "KAC GW Unknown error");
   }
 
-  try {
-    const flights = await fetchHomepageFlights(mode, date, formDate);
-    if (!flights.length) throw new Error("대구공항 홈페이지 운항편이 0건으로 반환되었습니다.");
-    return NextResponse.json(payload(mode, flights, "kac_homepage", liveErrors[0]), {
-      headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
-    });
-  } catch (error) {
-    liveErrors.push(error instanceof Error ? error.message : "Homepage Unknown error");
-    console.error("[TAE FIDS] 대구공항 실시간 목록 조회 실패", liveErrors.join(" / "));
-    return NextResponse.json(
-      payload(mode, demoFlights(mode), "demo", `실시간 연결 실패: ${liveErrors.join(" / ")}`),
-      { status: 200, headers: { "Cache-Control": "no-store" } }
-    );
+  if (airportCode === "TAE") {
+    try {
+      const flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
+      if (!flights.length) throw new Error("대구공항 홈페이지 운항편이 0건으로 반환되었습니다.");
+      return NextResponse.json(payload(airportCode, mode, flights, "kac_homepage", liveErrors[0]), {
+        headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
+      });
+    } catch (error) {
+      liveErrors.push(error instanceof Error ? error.message : "Homepage Unknown error");
+    }
   }
+
+  console.error(`[${airportCode} FIDS] ${airportName}공항 실시간 목록 조회 실패`, liveErrors.join(" / "));
+  return NextResponse.json(
+    payload(
+      airportCode,
+      mode,
+      airportCode === "TAE" ? demoFlights(mode) : [],
+      "demo",
+      `실시간 연결 실패: ${liveErrors.join(" / ")}`
+    ),
+    { status: 200, headers: { "Cache-Control": "no-store" } }
+  );
 }
 
+export async function GET(request: NextRequest) {
+  const requestedCode = request.nextUrl.pathname.split("/")[3] || "TAE";
+  const airport = airportByCode(requestedCode);
+  if (!airport || airport.source !== "kac") {
+    return NextResponse.json({ error: "지원하지 않는 KAC 공항입니다." }, { status: 404 });
+  }
+  return handleKacFlights(request, airport.code, airport.name);
+}
