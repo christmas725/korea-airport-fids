@@ -23,6 +23,7 @@ export const SHARED_DESTINATION_LOCAL: Record<string, string> = {
   SGN: "HỒ CHÍ MINH",
   DAD: "ĐÀ NẴNG",
   CXR: "NHA TRANG",
+  UBN: "ШИНЭ УЛААНБААТАР",
   KTI: "ភ្នំពេញ/តេជោ",
   MDC: "MANADO",
 };
