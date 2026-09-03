@@ -16,6 +16,9 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const INFO_REVALIDATE_SECONDS = 45;
 const OPERATION_REVALIDATE_SECONDS = 300;
 const DETAIL_REVALIDATE_SECONDS = 600;
+const FLIGHT_PAGE_SIZE = 100;
+const FLIGHT_PAGE_CONCURRENCY = 2;
+const MAX_FLIGHT_PAGES = 20;
 const DETAIL_PAGE_SIZE = 100;
 const DETAIL_LOOKBACK_MS = 3 * 60 * 60_000;
 const DETAIL_LOOKAHEAD_MS = 4 * 60 * 60_000;
@@ -296,17 +299,50 @@ async function fetchGw(path: string, params: Record<string, string>, revalidate:
   return gwPage(json);
 }
 
+async function fetchAllGwPages(
+  path: string,
+  params: Record<string, string>,
+  revalidate: number
+): Promise<GwPage> {
+  const fetchPage = (pageNo: number) =>
+    fetchGw(
+      path,
+      {
+        ...params,
+        pageNo: String(pageNo),
+        numOfRows: String(FLIGHT_PAGE_SIZE),
+      },
+      revalidate
+    );
+
+  const firstPage = await fetchPage(1);
+  const totalPages = Math.min(
+    MAX_FLIGHT_PAGES,
+    Math.max(1, Math.ceil(firstPage.totalCount / FLIGHT_PAGE_SIZE))
+  );
+  const items = [...firstPage.items];
+
+  for (let start = 2; start <= totalPages; start += FLIGHT_PAGE_CONCURRENCY) {
+    const pageNumbers = Array.from(
+      { length: Math.min(FLIGHT_PAGE_CONCURRENCY, totalPages - start + 1) },
+      (_, index) => start + index
+    );
+    const pages = await Promise.all(pageNumbers.map(fetchPage));
+    pages.forEach((page) => items.push(...page.items));
+  }
+
+  return { items, totalCount: firstPage.totalCount };
+}
+
 async function fetchGwInfoFlights(airportCode: string, mode: FlightMode, date: string) {
   const expectedIo = mode === "departures" ? "O" : "I";
-  const { items } = await fetchGw(
+  const { items } = await fetchAllGwPages(
     "info",
     {
       schAirCode: airportCode,
       schIOType: expectedIo,
       schStTime: "0000",
       schEdTime: "2359",
-      pageNo: "1",
-      numOfRows: "100",
     },
     INFO_REVALIDATE_SECONDS
   );
@@ -324,11 +360,9 @@ async function fetchGwInfoFlights(airportCode: string, mode: FlightMode, date: s
 
 async function fetchGwOperationFlights(airportCode: string, mode: FlightMode, date: string) {
   const path = mode === "departures" ? "depart" : "arrival";
-  const { items } = await fetchGw(
+  const { items } = await fetchAllGwPages(
     path,
     {
-      pageNo: "1",
-      numOfRows: "100",
       searchday: date,
       from_time: "0000",
       to_time: "2359",
