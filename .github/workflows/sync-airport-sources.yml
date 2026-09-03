@@ -32,13 +32,13 @@ jobs:
 
       - name: Check out main
         if: steps.existing.outputs.skip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
 
       - name: Set up Node.js
         if: steps.existing.outputs.skip != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
