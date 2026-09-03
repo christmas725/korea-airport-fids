@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { demoFlights } from "@/lib/tae/demo";
 import type { FidsFlight, FlightMode, FlightsPayload, RawKacFlight } from "@/lib/tae/types";
 import { airportByCode } from "@/lib/airports";
+import { isWithinCompletedFlightGrace } from "@/lib/fids/visibility";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -648,7 +649,7 @@ function payload(
 ): FlightsPayload {
   const { date } = kstParts();
   return {
-    flights,
+    flights: flights.filter((flight) => isWithinCompletedFlightGrace(flight)),
     mode,
     updatedAt: new Date().toISOString(),
     source,
