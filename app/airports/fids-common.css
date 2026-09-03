@@ -33,6 +33,34 @@
   will-change: transform;
 }
 
+/*
+ * Destination names use SlidingText, which renders nested spans. Airport
+ * styles also use descendant span selectors for the smaller IATA code; keep
+ * those secondary styles from shrinking or muting the visible destination.
+ */
+.destination-cell strong,
+.destination-cell strong .sliding-text,
+.destination-cell strong .sliding-text-track {
+  color: #fff;
+}
+
+.destination-cell strong .sliding-text,
+.destination-cell strong .sliding-text-track {
+  margin-top: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.destination-cell strong .sliding-text {
+  display: block;
+}
+
+.destination-cell strong .sliding-text-track {
+  display: inline-block;
+}
+
 .sliding-text.is-overflowing .sliding-text-track {
   animation: destination-pan 5.5s ease-in-out infinite alternate;
 }
@@ -88,10 +116,14 @@
   .logo-fallback { font-size: clamp(7px, 16cqh, 11px); }
 
   .flight-copy strong,
-  .flight-cell > span:not(.carrier-mark):not(.logo-fallback),
-  .destination-cell strong {
+  .flight-cell > span:not(.carrier-mark):not(.logo-fallback) {
     font-size: clamp(13px, 39cqh, 26px);
     line-height: 1.03;
+  }
+
+  .destination-cell strong {
+    font-size: clamp(15px, 45cqh, 30px);
+    line-height: 1.02;
   }
 
   .flight-copy span,
