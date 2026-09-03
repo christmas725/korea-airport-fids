@@ -4,6 +4,10 @@ import {
   paginateFidsRows,
   rowsForViewport,
 } from "../lib/fids/layout.ts";
+import {
+  isCompletedFlight,
+  isWithinCompletedFlightGrace,
+} from "../lib/fids/visibility.ts";
 
 const scenarios = [
   ["desktop maximized", 1920, 950, 1920, 1080, false, 0, 14],
@@ -38,4 +42,34 @@ for (const rowsPerPage of [14, 16, 20]) {
   assert.equal(last.rows.length + last.emptyRowCount, rowsPerPage);
 }
 
-console.log("7개 화면 정책과 14·16·20행/4페이지 제한 검증을 통과했습니다.");
+const now = Date.UTC(2026, 8, 3, 5, 30);
+const baseFlight = {
+  scheduleDateTime: "202609031400",
+  estimatedDateTime: "202609031425",
+  actualDateTime: "202609031425",
+};
+
+assert.equal(isCompletedFlight({ mode: "departures", remark: "출발" }), true);
+assert.equal(isCompletedFlight({ mode: "arrivals", remark: "도착" }), true);
+assert.equal(isCompletedFlight({ mode: "arrivals", remark: "예정" }), false);
+assert.equal(
+  isWithinCompletedFlightGrace(
+    { ...baseFlight, mode: "arrivals", remark: "도착" },
+    now
+  ),
+  true
+);
+assert.equal(
+  isWithinCompletedFlightGrace(
+    {
+      ...baseFlight,
+      mode: "arrivals",
+      remark: "도착",
+      actualDateTime: "202609031420",
+    },
+    now
+  ),
+  false
+);
+
+console.log("7개 화면 정책, 14·16·20행/4페이지 제한, 출발·도착 완료편 5분 유지 기준 검증을 통과했습니다.");

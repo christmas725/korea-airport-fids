@@ -4,6 +4,10 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
+import {
+  isWithinCompletedFlightGrace,
+  parseKstDateTime,
+} from "@/lib/fids/visibility";
 import type { Airport } from "@/lib/airports";
 import { destinationName } from "@/lib/tae/airportNames";
 import {
@@ -19,24 +23,11 @@ type FlightGroup = { id: string; primary: FidsFlight; variants: FidsFlight[] };
 
 const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
-const DEPARTED_GRACE_MS = 5 * 60_000;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
 
-function parseDateTime(value: string) {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length < 12) return null;
-  return new Date(Date.UTC(
-    Number(digits.slice(0, 4)),
-    Number(digits.slice(4, 6)) - 1,
-    Number(digits.slice(6, 8)),
-    Number(digits.slice(8, 10)) - 9,
-    Number(digits.slice(10, 12))
-  ));
-}
-
 function formatTime(value: string) {
-  const date = parseDateTime(value);
+  const date = parseKstDateTime(value);
   return date
     ? new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
     : "--:--";
@@ -76,10 +67,6 @@ function statusClass(value: string) {
   if (/탑승준비|gate open|ready/.test(status)) return "ready";
   if (/출발|도착|departed|arrived/.test(status)) return "complete";
   return "normal";
-}
-
-function isComplete(flight: FidsFlight) {
-  return flight.mode === "departures" && /^(출발|출발완료|departed)$/i.test(flight.remark.replace(/\s/g, ""));
 }
 
 function operationKey(flight: FidsFlight) {
@@ -204,12 +191,9 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
 
   const flights = useMemo(() => {
     const current = payload?.mode === mode ? payload.flights : [];
-    const cutoff = Date.now() - DEPARTED_GRACE_MS;
-    return current.filter((flight) => {
-      if (!isComplete(flight)) return true;
-      const actual = parseDateTime(flight.actualDateTime || flight.estimatedDateTime)?.getTime() ?? Date.now();
-      return actual >= cutoff;
-    });
+    return current.filter((flight) =>
+      isWithinCompletedFlightGrace(flight, now.getTime())
+    );
   }, [payload, mode, now]);
 
   const groups = useMemo(() => groupFlights(flights), [flights]);
