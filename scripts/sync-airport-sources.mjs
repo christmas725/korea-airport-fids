@@ -85,6 +85,10 @@ function targetPath(relativePath) {
   return resolved;
 }
 
+function sameConfig(current, next) {
+  return JSON.stringify(JSON.parse(current)) === JSON.stringify(next);
+}
+
 if (process.argv.includes("--self-test")) {
   assert.equal(
     transformSource(
@@ -103,6 +107,8 @@ if (process.argv.includes("--self-test")) {
     'import type { FidsFlight } from "@/lib/tae/types";\nfetch(`/api/airports/tae/flights?mode=${mode}`);\n'
   );
   assert.throws(() => targetPath("../outside.txt"), /허용되지 않은 대상 경로/);
+  assert.equal(sameConfig('{"version":1}\n', { version: 1 }), true);
+  assert.equal(sameConfig('{"version":1}\n', { version: 2 }), false);
   console.log("공항 소스 경로 변환 자체 검증을 통과했습니다.");
   process.exit(0);
 }
@@ -163,7 +169,7 @@ for (const source of config.sources) {
 
 const nextConfig = `${JSON.stringify(config, null, 2)}\n`;
 const currentConfig = await readFile(configPath, "utf8");
-if (currentConfig !== nextConfig) {
+if (!sameConfig(currentConfig, config)) {
   changedFiles.push(path.relative(root, configPath));
   if (!checkOnly) await writeFile(configPath, nextConfig, "utf8");
 }
