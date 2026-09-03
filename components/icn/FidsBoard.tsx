@@ -1,6 +1,9 @@
 "use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
+import SlidingText from "@/components/fids/SlidingText";
+import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
+import { paginateFidsRows } from "@/lib/fids/layout";
 import type { DeparturesPayload, DepartureFlight } from "@/lib/icn/types";
 import { destinationName } from "@/lib/icn/airportNames";
 import {
@@ -20,18 +23,9 @@ type FlightGroup = {
   variants: DepartureFlight[];
 };
 
-type DepartedCacheEntry = {
-  flight: DepartureFlight;
-  firstSeenAt: number;
-};
-
-const PAGE_SIZE = 15;
-const MAX_PAGES = 2;
-const MAX_OPERATIONS = PAGE_SIZE * MAX_PAGES;
 const ROTATION_INTERVAL_MS = 3_000;
 const DATA_POLL_INTERVAL_MS = 60_000;
 const DEPARTED_GRACE_MS = 5 * 60_000;
-const DEPARTED_CACHE_KEY = "icn-fids-departed-grace-v1";
 const MIN_STEPS_PER_LANGUAGE = 2;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 
@@ -138,13 +132,12 @@ function normalizeFlightId(value: string) {
   return value.replace(/\s+/g, "").trim().toUpperCase();
 }
 
-function flightRetentionKey(flight: DepartureFlight) {
-  return [
-    normalizeFlightId(flight.flightId),
-    flight.scheduleDateTime,
-    flight.airportCode.trim().toUpperCase(),
-    terminalGroup(flight),
-  ].join("|");
+function isWithinDepartureGrace(flight: DepartureFlight, now: number) {
+  if (!isDepartedStatus(flight.remark)) return true;
+  const departure = parseApiDateTime(
+    flight.estimatedDateTime || flight.scheduleDateTime
+  )?.getTime();
+  return typeof departure === "number" && departure >= now - DEPARTED_GRACE_MS;
 }
 
 function airlineCode(flightId: string) {
@@ -305,7 +298,7 @@ export default function FidsBoard() {
   const [now, setNow] = useState<Date | null>(null);
   const [language, setLanguage] = useState<DisplayLanguage>("KO");
   const [rotationStep, setRotationStep] = useState(0);
-  const [departedCache, setDepartedCache] = useState<Record<string, DepartedCacheEntry>>({});
+  const rowsPerPage = useRowsPerPage();
 
   async function load() {
     try {
@@ -319,42 +312,6 @@ export default function FidsBoard() {
       }
 
       setData(json);
-
-      const flights = Array.isArray(json?.flights) ? (json.flights as DepartureFlight[]) : [];
-      const observedAt = Date.now();
-
-      setDepartedCache((previous) => {
-        const next: Record<string, DepartedCacheEntry> = {};
-
-        // 직전 갱신에서 사라진 출발편도 최초 출발 확인 후 5분까지 유지한다.
-        Object.entries(previous).forEach(([key, entry]) => {
-          if (observedAt - entry.firstSeenAt < DEPARTED_GRACE_MS) {
-            next[key] = entry;
-          }
-        });
-
-        flights.forEach((flight) => {
-          const key = flightRetentionKey(flight);
-
-          if (isDepartedStatus(flight.remark)) {
-            next[key] = {
-              flight,
-              firstSeenAt: next[key]?.firstSeenAt ?? observedAt,
-            };
-          } else {
-            // 운항상태가 다시 수정된 경우 출발 유예 캐시도 즉시 해제한다.
-            delete next[key];
-          }
-        });
-
-        try {
-          window.localStorage.setItem(DEPARTED_CACHE_KEY, JSON.stringify(next));
-        } catch {
-          // 저장소를 사용할 수 없는 환경에서도 메모리 상태만으로 계속 동작한다.
-        }
-
-        return next;
-      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "출발편 정보를 불러오지 못했습니다.");
     } finally {
@@ -363,49 +320,9 @@ export default function FidsBoard() {
   }
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(DEPARTED_CACHE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as Record<string, DepartedCacheEntry>;
-        const current = Date.now();
-        const valid = Object.fromEntries(
-          Object.entries(saved).filter(
-            ([, entry]) => current - Number(entry?.firstSeenAt ?? 0) < DEPARTED_GRACE_MS
-          )
-        );
-        setDepartedCache(valid);
-      }
-    } catch {
-      // 잘못된/차단된 localStorage는 무시한다.
-    }
-
     load();
     const poll = window.setInterval(load, DATA_POLL_INTERVAL_MS);
     return () => window.clearInterval(poll);
-  }, []);
-
-  useEffect(() => {
-    const prune = window.setInterval(() => {
-      const current = Date.now();
-      setDepartedCache((previous) => {
-        const next = Object.fromEntries(
-          Object.entries(previous).filter(
-            ([, entry]) => current - entry.firstSeenAt < DEPARTED_GRACE_MS
-          )
-        );
-
-        if (Object.keys(next).length === Object.keys(previous).length) return previous;
-
-        try {
-          window.localStorage.setItem(DEPARTED_CACHE_KEY, JSON.stringify(next));
-        } catch {
-          // localStorage 미사용 환경은 무시한다.
-        }
-        return next;
-      });
-    }, 15_000);
-
-    return () => window.clearInterval(prune);
   }, []);
 
   useEffect(() => {
@@ -426,43 +343,21 @@ export default function FidsBoard() {
   }, []);
 
   const filteredFlights = useMemo(() => {
-    const liveFlights = data?.flights ?? [];
     const current = now?.getTime() ?? Date.now();
-    const liveKeys = new Set(liveFlights.map(flightRetentionKey));
-
-    // airport.kr에서 이미 행이 사라졌더라도 브라우저가 "출발"을 확인한 시점부터
-    // 5분 동안은 마지막 스냅샷을 보존해 실제 FIDS처럼 출발 상태를 잠시 보여준다.
-    const retainedDepartedFlights = Object.entries(departedCache)
-      .filter(([, entry]) => current - entry.firstSeenAt < DEPARTED_GRACE_MS)
-      .filter(([key]) => !liveKeys.has(key))
-      .map(([, entry]) => entry.flight);
-
-    const list = [...liveFlights, ...retainedDepartedFlights];
-
-    return list.filter((flight) => {
-      if (isDepartedStatus(flight.remark)) {
-        const entry = departedCache[flightRetentionKey(flight)];
-        // 방금 응답에서 처음 관측된 출발편은 캐시 state가 반영되기 전에도 표시한다.
-        if (entry && current - entry.firstSeenAt >= DEPARTED_GRACE_MS) return false;
-      }
-
+    return (data?.flights ?? []).filter((flight) => {
+      if (!isWithinDepartureGrace(flight, current)) return false;
       if (terminal === "T1") return terminalGroup(flight) === "T1";
       if (terminal === "T2") return terminalGroup(flight) === "T2";
       return true;
     });
-  }, [data, terminal, departedCache, now]);
+  }, [data, terminal, now]);
 
-  const groupedFlights = useMemo(
-    () => groupCodeshareFlights(filteredFlights).slice(0, MAX_OPERATIONS),
-    [filteredFlights]
+  const groupedFlights = useMemo(() => groupCodeshareFlights(filteredFlights), [filteredFlights]);
+  const pageWindow = useMemo(
+    () => paginateFidsRows(groupedFlights, page, rowsPerPage),
+    [groupedFlights, page, rowsPerPage]
   );
-
-  // FIDS 한 화면 운용은 최대 2페이지(15편 × 2 = 30개 실제 운항)로 제한한다.
-  // 코드쉐어 행은 groupCodeshareFlights에서 하나의 실제 운항으로 계산된다.
-  const totalPages = Math.max(
-    1,
-    Math.min(MAX_PAGES, Math.ceil(groupedFlights.length / PAGE_SIZE))
-  );
+  const totalPages = pageWindow.totalPages;
 
   useEffect(() => {
     // 데이터가 60초마다 갱신되어도 현재 페이지 순환은 끊지 않는다.
@@ -480,14 +375,8 @@ export default function FidsBoard() {
     }
   }, [page, totalPages]);
 
-  const groupsOnPage = useMemo(() => {
-    const start = page * PAGE_SIZE;
-    return groupedFlights.slice(start, start + PAGE_SIZE);
-  }, [groupedFlights, page]);
-
-  // 마지막 페이지도 실제 FIDS처럼 항상 15행 높이를 유지한다.
-  // 실제 운항편이 부족한 만큼 빈 행을 채워 각 페이지의 행 크기가 동일하도록 한다.
-  const emptyRowCount = Math.max(0, PAGE_SIZE - groupsOnPage.length);
+  const groupsOnPage = pageWindow.rows;
+  const emptyRowCount = pageWindow.emptyRowCount;
 
   const maxVariantsOnPage = useMemo(
     () => Math.max(1, ...groupsOnPage.map((group) => group.variants.length)),
@@ -660,7 +549,9 @@ export default function FidsBoard() {
                     lang={contentLang}
                     dir={contentDirection}
                   >
-                    <strong>{destination}</strong>
+                    <strong>
+                      <SlidingText text={destination} direction={contentDirection} />
+                    </strong>
                     <span>{flight.airportCode}</span>
                   </div>
 
@@ -741,4 +632,3 @@ export default function FidsBoard() {
     </main>
   );
 }
-

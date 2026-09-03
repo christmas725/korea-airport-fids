@@ -1,6 +1,9 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import SlidingText from "@/components/fids/SlidingText";
+import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
+import { paginateFidsRows } from "@/lib/fids/layout";
 import { destinationName } from "@/lib/tae/airportNames";
 import {
   directionForAirport,
@@ -13,8 +16,6 @@ import type { FidsFlight, FlightMode, FlightsPayload } from "@/lib/tae/types";
 
 type FlightGroup = { id: string; primary: FidsFlight; variants: FidsFlight[] };
 
-const PAGE_SIZE = 14;
-const MAX_PAGES = 2;
 const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const DEPARTED_GRACE_MS = 5 * 60_000;
@@ -137,7 +138,12 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
         <span>{shown.flightId}</span>
       </div>
       <div className="destination-cell" lang={languageTagForAirport(flight.airportCode, language)} dir={directionForAirport(flight.airportCode, language)}>
-        <strong>{destinationFor(flight, language)}</strong>
+        <strong>
+          <SlidingText
+            text={destinationFor(flight, language)}
+            direction={directionForAirport(flight.airportCode, language)}
+          />
+        </strong>
         <span>{flight.airportCode || "---"}</span>
       </div>
       <div className="type-cell"><span className={flight.flightType === "국제선" ? "international" : "domestic"}>{flight.flightType}</span></div>
@@ -154,6 +160,7 @@ export default function FidsBoard() {
   const [now, setNow] = useState(() => new Date());
   const [page, setPage] = useState(0);
   const [rotationStep, setRotationStep] = useState(0);
+  const rowsPerPage = useRowsPerPage();
   const language = LANGUAGES[Math.floor(rotationStep / 2) % LANGUAGES.length];
 
   const load = useCallback(async () => {
@@ -204,8 +211,16 @@ export default function FidsBoard() {
     });
   }, [payload, mode, now]);
 
-  const groups = useMemo(() => groupFlights(flights).slice(0, PAGE_SIZE * MAX_PAGES), [flights]);
-  const totalPages = Math.max(1, Math.min(MAX_PAGES, Math.ceil(groups.length / PAGE_SIZE)));
+  const groups = useMemo(() => groupFlights(flights), [flights]);
+  const pageWindow = useMemo(
+    () => paginateFidsRows(groups, page, rowsPerPage),
+    [groups, page, rowsPerPage]
+  );
+  const totalPages = pageWindow.totalPages;
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages - 1));
+  }, [totalPages]);
 
   useEffect(() => {
     if (totalPages <= 1) { setPage(0); return; }
@@ -213,8 +228,8 @@ export default function FidsBoard() {
     return () => window.clearInterval(interval);
   }, [totalPages]);
 
-  const rows = groups.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  const blanks = Array.from({ length: Math.max(0, PAGE_SIZE - rows.length) });
+  const rows = pageWindow.rows;
+  const blanks = Array.from({ length: pageWindow.emptyRowCount });
   const departure = mode === "departures";
   const currentPayload = payload?.mode === mode ? payload : null;
   const connected =
@@ -270,4 +285,3 @@ export default function FidsBoard() {
     </main>
   );
 }
-

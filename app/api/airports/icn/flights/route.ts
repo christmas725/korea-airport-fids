@@ -34,10 +34,10 @@ const PASSENGER_REVALIDATE_SECONDS = 120;
 // 개발계정 500회/일을 고려해 상세 API는 10분 캐시로 호출량을 억제
 const DETAIL_REVALIDATE_SECONDS = 600;
 
-// 최대 2페이지(페이지당 15편) 운용을 목표로 향후 운항편을 보강한다.
-// 화면에는 터미널별 최대 30개 실제 운항까지만 유지한다.
+// 대형 태블릿 최대 4페이지(페이지당 20편)를 위해 향후 운항편을 보강한다.
+// 화면에는 터미널별 최대 80개 실제 운항까지만 유지한다.
 const DISPLAY_HORIZON_MINUTES = 8 * 60;
-const TARGET_OPERATIONS_PER_TERMINAL = 30;
+const TARGET_OPERATIONS_PER_TERMINAL = 80;
 const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 2 * 60;
 
 function kstParts(date = new Date()) {
@@ -82,7 +82,7 @@ function makeWindow(): DetailQuery {
 
 /**
  * 실제 홈페이지 피드는 현재 시점 주변 운항편을 기준으로 사용하고,
- * 최대 2페이지 분량을 안정적으로 확보하기 위한 미래편은 상세 OpenAPI에서 보강한다.
+ * 최대 4페이지 분량을 안정적으로 확보하기 위한 미래편은 상세 OpenAPI에서 보강한다.
  * 8시간 범위가 자정을 넘으면 오늘/내일 2개 요청으로 분리한다.
  */
 function makeDetailHorizonQueries(): DetailQuery[] {
@@ -214,8 +214,12 @@ function isDepartedRemark(value: unknown) {
   );
 }
 
-function removeDepartedFlights(flights: DepartureFlight[]) {
-  return flights.filter((flight) => !isDepartedRemark(flight.remark));
+function retainRecentlyDeparted(flights: DepartureFlight[], now = Date.now()) {
+  return flights.filter((flight) => {
+    if (!isDepartedRemark(flight.remark)) return true;
+    const departure = flightEpoch(flight.estimatedDateTime || flight.scheduleDateTime);
+    return Number.isFinite(departure) && departure >= now - 5 * 60 * 1000;
+  });
 }
 
 function terminalLabel(id: string) {
@@ -503,8 +507,13 @@ function mergeHomepageLanguages(
   korean: DepartureFlight[],
   english: DepartureFlight[]
 ) {
+  const englishDestinationByCode = new Map<string, string>();
   const enBuckets = new Map<string, DepartureFlight[]>();
   for (const flight of english) {
+    const code = flight.airportCode.trim().toUpperCase();
+    if (code && flight.airport && !englishDestinationByCode.has(code)) {
+      englishDestinationByCode.set(code, flight.airport);
+    }
     const key = homepageMatchKey(flight);
     const list = enBuckets.get(key) ?? [];
     list.push(flight);
@@ -520,11 +529,28 @@ function mergeHomepageLanguages(
 
     return {
       ...ko,
-      airportEnglish: en?.airport || undefined,
+      airportEnglish:
+        en?.airport || englishDestinationByCode.get(ko.airportCode.trim().toUpperCase()),
       airlineEnglish: en?.airline || undefined,
       remarkEnglish: en?.remark || undefined,
     };
   });
+}
+
+function propagateHomepageEnglishNames(flights: DepartureFlight[]) {
+  const byCode = new Map<string, string>();
+  flights.forEach((flight) => {
+    const code = flight.airportCode.trim().toUpperCase();
+    if (code && flight.airportEnglish && !byCode.has(code)) {
+      byCode.set(code, flight.airportEnglish);
+    }
+  });
+
+  return flights.map((flight) => ({
+    ...flight,
+    airportEnglish:
+      flight.airportEnglish || byCode.get(flight.airportCode.trim().toUpperCase()),
+  }));
 }
 
 async function fetchPassengerFallback(
@@ -731,11 +757,7 @@ function operationIdentity(flight: DepartureFlight) {
   ].join("|");
 }
 
-/**
- * 각 터미널별 첫 30개 실제 운항 묶음을 남긴다.
- * PAGE_SIZE=15 기준 T1/T2 각각 최대 2페이지 분량이며,
- * 코드쉐어 행은 같은 운항 묶음으로 계산한다.
- */
+/** 각 터미널별 최대 80개 실제 운항 묶음을 남긴다(20행 × 4페이지). */
 function limitOperationsPerTerminal(flights: DepartureFlight[]) {
   const selected = new Set<string>();
   const counts = new Map<"T1" | "T2", number>([
@@ -842,7 +864,7 @@ export async function GET() {
         const metadata = buildDetailMetadata(allDetailFlights);
         flights = enrichWithDetail(flights, metadata);
 
-        // 홈페이지 피드 이후 시간대의 미래 운항편을 상세 API에서 보강하되 최대 2페이지 분량으로 제한한다.
+        // 홈페이지 피드 이후 시간대의 미래 운항편을 상세 API에서 보강한다.
         const futureFlights = horizonFlights
           .filter((flight) => isFutureOrOperational(flight))
           .map((flight) => ({ ...flight }));
@@ -869,7 +891,8 @@ export async function GET() {
       );
     }
 
-    // "출발" 상태도 브라우저에 전달한다. 클라이언트가 최초 관측 후 5분 동안 표시한 뒤 제거한다.
+    flights = propagateHomepageEnglishNames(flights);
+    flights = retainRecentlyDeparted(flights);
 
     flights.sort(
       (a, b) =>
@@ -877,7 +900,7 @@ export async function GET() {
         a.flightId.localeCompare(b.flightId)
     );
 
-    // 코드쉐어를 한 실제 운항으로 계산해 T1/T2 각각 최대 30운항(15편 × 2페이지)만 남긴다.
+    // 코드쉐어를 한 실제 운항으로 계산해 T1/T2 각각 최대 80운항만 남긴다.
     flights = limitOperationsPerTerminal(flights);
 
     const payload: DeparturesPayload = {
@@ -938,7 +961,8 @@ export async function GET() {
         );
       }
 
-      // fallback에서도 "출발" 상태를 전달해 동일한 5분 유예 표시를 적용한다.
+      flights = propagateHomepageEnglishNames(flights);
+      flights = retainRecentlyDeparted(flights);
       flights.sort(
         (a, b) =>
           sortKey(a.scheduleDateTime) - sortKey(b.scheduleDateTime) ||
@@ -971,4 +995,3 @@ export async function GET() {
     }
   }
 }
-

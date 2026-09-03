@@ -5,6 +5,11 @@ export type LocalLocale =
   | "it" | "nl" | "es" | "cs" | "hu" | "pl" | "fi" | "da" | "no"
   | "sv" | "el" | "pt" | "hr" | "ka";
 
+import {
+  SHARED_DESTINATION_LOCALE,
+  sharedDestinationLocal,
+} from "@/lib/fids/destinationOverrides";
+
 export type DisplayLanguage = "KO" | "EN" | "LOCAL";
 
 type StatusKey =
@@ -160,12 +165,13 @@ function canonicalStatus(value: string): StatusKey | null {
 }
 
 export function localeForAirport(airportCode: string): LocalLocale {
-  return CODE_LOCALE[airportCode.trim().toUpperCase()] ?? "en";
+  const code = airportCode.trim().toUpperCase();
+  return (SHARED_DESTINATION_LOCALE[code] as LocalLocale | undefined) ?? CODE_LOCALE[code] ?? "en";
 }
 
 export function localDestinationName(airportCode: string, englishFallback: string) {
   const code = airportCode.trim().toUpperCase();
-  return LOCAL_DESTINATION[code] ?? (englishFallback || code || "-");
+  return sharedDestinationLocal(code) ?? LOCAL_DESTINATION[code] ?? (englishFallback || code || "-");
 }
 
 export function localizedStatus(status: string, language: DisplayLanguage, airportCode: string) {
@@ -189,4 +195,3 @@ export function directionForAirport(airportCode: string, language: DisplayLangua
   const locale = localeForAirport(airportCode);
   return locale === "ar" || locale === "he" ? "rtl" : "ltr";
 }
-
