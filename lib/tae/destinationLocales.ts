@@ -171,6 +171,7 @@ export function localeForAirport(airportCode: string): LocalLocale {
 
 export function localDestinationName(airportCode: string, englishFallback: string) {
   const code = airportCode.trim().toUpperCase();
+  if (localeForAirport(code) === "en") return englishFallback || code || "-";
   return sharedDestinationLocal(code) ?? LOCAL_DESTINATION[code] ?? (englishFallback || code || "-");
 }
 
