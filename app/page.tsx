@@ -22,7 +22,7 @@ export default function Home() {
 
       <section className="live-strip" aria-label="현재 이용 가능한 공항">
         <span>NOW BOARDING</span>
-        <p>인천 ICN · 대구 TAE FIDS 운영 중</p>
+        <p>인천 ICN · KAC 전국 14개 공항 FIDS 운영 중</p>
       </section>
 
       <div className="region-list">

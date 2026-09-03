@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import FidsBoard from "@/components/tae/FidsBoard";
 import { airportByCode } from "@/lib/airports";
 
 export default async function PreparingAirportPage({
@@ -10,8 +11,17 @@ export default async function PreparingAirportPage({
   const { code } = await params;
   const airport = airportByCode(code);
 
-  if (!airport || airport.status === "live") {
+  if (!airport || airport.source !== "kac") {
     notFound();
+  }
+
+  if (airport.status === "live") {
+    return (
+      <>
+        <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
+        <FidsBoard airport={airport} />
+      </>
+    );
   }
 
   return (

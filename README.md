@@ -6,8 +6,7 @@
 
 - 국내공항 선택 허브와 지역별 공항 분류
 - 인천국제공항(ICN) 출발 FIDS
-- 대구국제공항(TAE) 출발·도착 FIDS
-- 나머지 13개 공항의 구현 준비중 화면
+- 한국공항공사(KAC) 소속 14개 공항의 출발·도착 FIDS
 - 모바일·폴더블·데스크톱·대형 태블릿 반응형 화면
 - 설치형 PWA
 
@@ -24,10 +23,9 @@
 
 - `/`: 국내공항 선택
 - `/airports/icn`: 인천공항 출발 FIDS
-- `/airports/tae`: 대구공항 출발·도착 FIDS
-- `/airports/{iata}`: 미구현 공항 준비중 안내
+- `/airports/{iata}`: 해당 공항 FIDS
 - `/api/airports/icn/flights`: 인천공항 운항정보
-- `/api/airports/tae/flights?mode=departures|arrivals`: 대구공항 운항정보
+- `/api/airports/{iata}/flights?mode=departures|arrivals`: KAC 공항 운항정보
 
 ## 환경변수
 
@@ -48,7 +46,7 @@ npm run dev
 
 ## 데이터 구조
 
-인천공항은 인천공항 공식 홈페이지 피드를 우선 사용하고 관련 OpenAPI로 보강합니다. 대구공항은 한국공항공사 실시간 항공기 운항정보 GW를 사용하며, 실패 시 공식 홈페이지와 데모 데이터를 단계적으로 사용합니다.
+인천공항은 인천공항 공식 홈페이지 피드를 우선 사용하고 관련 OpenAPI로 보강합니다. 나머지 14개 공항은 공항 코드를 주입하는 공통 KAC 어댑터로 한국공항공사 실시간 항공기 운항정보 GW를 사용합니다. 대구공항은 기존 안정성을 위해 공식 홈페이지와 데모 데이터 fallback도 유지합니다.
 
 공항별 API 라우트가 데이터 어댑터 역할을 하고, 화면에서는 공통 레이아웃 정책을 사용합니다.
 

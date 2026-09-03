@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
+import type { Airport } from "@/lib/airports";
 import { destinationName } from "@/lib/tae/airportNames";
 import {
   directionForAirport,
@@ -153,7 +154,7 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   );
 }
 
-export default function FidsBoard() {
+export default function FidsBoard({ airport }: { airport: Airport }) {
   const [mode, setMode] = useState<FlightMode>("departures");
   const [payload, setPayload] = useState<FlightsPayload | null>(null);
   const [error, setError] = useState("");
@@ -165,7 +166,7 @@ export default function FidsBoard() {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch(`/api/airports/tae/flights?mode=${mode}`, { cache: "no-store" });
+      const response = await fetch(`/api/airports/${airport.code.toLowerCase()}/flights?mode=${mode}`, { cache: "no-store" });
       const json = (await response.json()) as FlightsPayload & { error?: string };
       if (!response.ok) throw new Error(json.error || "운항정보를 불러오지 못했습니다.");
       setPayload(json);
@@ -173,7 +174,7 @@ export default function FidsBoard() {
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "운항정보를 불러오지 못했습니다.");
     }
-  }, [mode]);
+  }, [airport.code, mode]);
 
   useEffect(() => {
     load();
@@ -236,6 +237,8 @@ export default function FidsBoard() {
     currentPayload?.source === "kac_odcloud" ||
     currentPayload?.source === "kac_homepage" ||
     currentPayload?.source === "kac_gw";
+  const airportName = `${airport.name}${airport.international ? "국제공항" : "공항"}`;
+  const airportEnglishName = `${airport.englishName.toUpperCase()} ${airport.international ? "INTERNATIONAL AIRPORT" : "AIRPORT"}`;
 
   return (
     <main className="screen-shell">
@@ -246,7 +249,7 @@ export default function FidsBoard() {
             <div className="mode-title"><strong>{departure ? "출발" : "도착"}</strong><span>{departure ? "DEPARTURES" : "ARRIVALS"}</span></div>
           </div>
 
-          <div className="airport-copy"><strong>대구국제공항</strong><span>DAEGU INTERNATIONAL AIRPORT</span><b>TAE</b></div>
+          <div className="airport-copy"><strong>{airportName}</strong><span>{airportEnglishName}</span><b>{airport.code}</b></div>
 
           <div className="mode-switch" aria-label="출발 도착 전환">
             <button className={departure ? "active" : ""} onClick={() => setMode("departures")}><span>출발</span><small>1 · D</small></button>
@@ -256,7 +259,7 @@ export default function FidsBoard() {
           <div className="rail-spacer" />
           <div className="page-number">{String(page + 1).padStart(2, "0")} / {String(totalPages).padStart(2, "0")}</div>
           <div className="rail-time"><strong>{formatClock(now)}</strong><span>{formatDate(now)}</span></div>
-          <div className="rail-brand">KAC · TAE FIDS v0.1</div>
+          <div className="rail-brand">KAC · {airport.code} FIDS v0.1</div>
         </aside>
 
         <section className="information-panel">

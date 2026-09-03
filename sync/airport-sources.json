@@ -31,12 +31,12 @@
       "branch": "main",
       "lastSyncedCommit": "4f65bb57c891833e6aa7a791d65889aa27958742",
       "mappings": [
-        { "from": "app/api/flights/route.ts", "to": "app/api/airports/tae/flights/route.ts", "transform": "namespace" },
+        { "from": "app/api/flights/route.ts", "to": "app/api/airports/tae/flights/route.ts", "transform": "namespace", "reviewOnly": true },
         { "from": "components/FidsBoard.tsx", "to": "components/tae/FidsBoard.tsx", "transform": "tae-component", "reviewOnly": true },
         { "from": "lib/airportNames.ts", "to": "lib/tae/airportNames.ts", "transform": "namespace", "reviewOnly": true },
         { "from": "lib/demo.ts", "to": "lib/tae/demo.ts", "transform": "namespace" },
         { "from": "lib/destinationLocales.ts", "to": "lib/tae/destinationLocales.ts", "transform": "namespace", "reviewOnly": true },
-        { "from": "lib/types.ts", "to": "lib/tae/types.ts", "transform": "namespace" },
+        { "from": "lib/types.ts", "to": "lib/tae/types.ts", "transform": "namespace", "reviewOnly": true },
         { "from": "app/globals.css", "to": "app/airports/tae/tae.css", "transform": "copy" },
         { "from": "app/mobile.css", "to": "app/airports/tae/mobile.css", "transform": "copy" },
         { "from": "app/foldable.css", "to": "app/airports/tae/foldable.css", "transform": "copy" }
