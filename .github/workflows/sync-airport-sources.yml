@@ -72,7 +72,9 @@ jobs:
         run: |
           icn_sha="$(node -p "require('./sync/airport-sources.json').sources.find((source) => source.id === 'icn').lastSyncedCommit")"
           tae_sha="$(node -p "require('./sync/airport-sources.json').sources.find((source) => source.id === 'tae').lastSyncedCommit")"
-          branch="sync/airports-${icn_sha:0:8}-${tae_sha:0:8}"
+          # Include the workflow run id so a stale branch from an older run can never
+          # cause a non-fast-forward push failure on a later scheduled sync.
+          branch="sync/airports-${icn_sha:0:8}-${tae_sha:0:8}-${GITHUB_RUN_ID}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
