@@ -17,8 +17,10 @@ export const preferredRegion = ["icn1"];
  *   - 시간 / 목적지 / 편명 / 터미널 / 체크인 / 게이트 / 상태
  * 2순위 보강: 항공기 운항 현황 상세 조회 OpenAPI
  *   - masterFlightId / codeshare 등 코드쉐어 메타데이터 보강
- * 3순위 fallback: 여객편 운항현황(다국어) OpenAPI
- *   - airport.kr 피드를 읽지 못했을 때만 사용
+ * 3순위 보강 fallback: 여객편 운항현황(다국어) OpenAPI
+ *   - 상세 API가 429/일시 오류일 때도 향후 운항편 수를 유지
+ * 4순위 fallback: 여객편 운항현황(다국어) OpenAPI
+ *   - airport.kr 피드를 읽지 못했을 때 사용
  */
 
 const HOMEPAGE_KO_URL = "https://www.airport.kr/afs/ap_ko/mainDepList.do";
@@ -30,15 +32,22 @@ const DETAIL_API_URL =
   "https://apis.data.go.kr/B551177/statusOfAllFltDeOdp/getFltDeparturesDeOdp";
 
 const HOMEPAGE_REVALIDATE_SECONDS = 30;
-const PASSENGER_REVALIDATE_SECONDS = 120;
-// 개발계정 500회/일을 고려해 상세 API는 10분 캐시로 호출량을 억제
-const DETAIL_REVALIDATE_SECONDS = 600;
+// 미래편 보강용 OpenAPI는 실시간 게이트/상태의 기준이 아니므로 30분 캐시한다.
+// 개발계정 500회/일 한도를 보호하고, 1분 폴링이 API 호출량으로 직결되지 않게 한다.
+const PASSENGER_REVALIDATE_SECONDS = 30 * 60;
+const DETAIL_REVALIDATE_SECONDS = 30 * 60;
+const DETAIL_QUERY_BUCKET_MINUTES = 30;
+const DETAIL_RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000;
 
 // 대형 태블릿 최대 4페이지(페이지당 20편)를 위해 향후 운항편을 보강한다.
 // 화면에는 터미널별 최대 80개 실제 운항까지만 유지한다.
 const DISPLAY_HORIZON_MINUTES = 8 * 60;
 const TARGET_OPERATIONS_PER_TERMINAL = 80;
 const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 2 * 60;
+
+// 같은 Vercel 함수 인스턴스에서는 429 이후 상세 API를 즉시 재호출하지 않는다.
+// 인스턴스가 교체되더라도 고정된 30분 query URL + Next fetch cache가 호출량을 억제한다.
+let detailRateLimitUntil = 0;
 
 function kstParts(date = new Date()) {
   const shifted = new Date(date.getTime() + 9 * 60 * 60 * 1000);
@@ -71,11 +80,12 @@ function makeWindow(): DetailQuery {
   const p = kstParts();
   const searchDate = `${p.year}${pad2(p.month)}${pad2(p.day)}`;
   const nowMinutes = p.hour * 60 + p.minute;
-  const bucket = Math.floor(nowMinutes / 30) * 30;
+  const bucket =
+    Math.floor(nowMinutes / DETAIL_QUERY_BUCKET_MINUTES) * DETAIL_QUERY_BUCKET_MINUTES;
 
   return {
     searchDate,
-    searchFrom: minuteToHHMM(bucket - 30),
+    searchFrom: minuteToHHMM(bucket - DETAIL_QUERY_BUCKET_MINUTES),
     searchTo: minuteToHHMM(bucket + 180),
   };
 }
@@ -83,15 +93,21 @@ function makeWindow(): DetailQuery {
 /**
  * 실제 홈페이지 피드는 현재 시점 주변 운항편을 기준으로 사용하고,
  * 최대 4페이지 분량을 안정적으로 확보하기 위한 미래편은 상세 OpenAPI에서 보강한다.
+ *
+ * 중요: searchTo에 현재 '분'을 직접 넣으면 매분 URL이 달라져 Next fetch cache가 무력화된다.
+ * 조회 시작/종료를 30분 bucket에 고정하고 bucket 끝에서 8시간을 확보해,
+ * 페이지는 충분히 채우면서 상세 API 호출은 30분 단위로 재사용한다.
  * 8시간 범위가 자정을 넘으면 오늘/내일 2개 요청으로 분리한다.
  */
 function makeDetailHorizonQueries(): DetailQuery[] {
   const p = kstParts();
   const today = `${p.year}${pad2(p.month)}${pad2(p.day)}`;
   const nowMinutes = p.hour * 60 + p.minute;
-  const bucket = Math.floor(nowMinutes / 30) * 30;
-  const start = Math.max(0, bucket - 30);
-  const absoluteEnd = nowMinutes + DISPLAY_HORIZON_MINUTES;
+  const bucket =
+    Math.floor(nowMinutes / DETAIL_QUERY_BUCKET_MINUTES) * DETAIL_QUERY_BUCKET_MINUTES;
+  const start = Math.max(0, bucket - DETAIL_QUERY_BUCKET_MINUTES);
+  const absoluteEnd =
+    bucket + DETAIL_QUERY_BUCKET_MINUTES + DISPLAY_HORIZON_MINUTES;
 
   const queries: DetailQuery[] = [
     {
@@ -590,6 +606,10 @@ async function fetchDetailFlights(
   serviceKey: string,
   query: DetailQuery
 ) {
+  if (Date.now() < detailRateLimitUntil) {
+    throw new Error("상세 OpenAPI 429 재시도 대기 중");
+  }
+
   const params = new URLSearchParams({
     serviceKey,
     type: "json",
@@ -607,6 +627,10 @@ async function fetchDetailFlights(
     next: { revalidate: DETAIL_REVALIDATE_SECONDS },
   });
   const text = await response.text();
+  if (response.status === 429) {
+    detailRateLimitUntil = Date.now() + DETAIL_RATE_LIMIT_BACKOFF_MS;
+    throw new Error("상세 OpenAPI HTTP 429 (30분 backoff 적용)");
+  }
   if (!response.ok) throw new Error(`상세 OpenAPI HTTP ${response.status}`);
 
   const json = JSON.parse(text);
@@ -859,27 +883,49 @@ export async function GET() {
       const { horizonFlights, rolloverFlights } = detailSupportResult.value;
       const allDetailFlights = [...horizonFlights, ...rolloverFlights];
 
+      // 상세 API가 성공했다면 홈페이지 현재값은 유지한 채 코드쉐어 메타데이터를 보강한다.
       if (allDetailFlights.length > 0) {
-        // 상세 API는 홈페이지 현재값을 덮어쓰지 않고 코드쉐어 메타데이터만 보강한다.
         const metadata = buildDetailMetadata(allDetailFlights);
         flights = enrichWithDetail(flights, metadata);
+      }
 
-        // 홈페이지 피드 이후 시간대의 미래 운항편을 상세 API에서 보강한다.
-        const futureFlights = horizonFlights
-          .filter((flight) => isFutureOrOperational(flight))
-          .map((flight) => ({ ...flight }));
-        flights = mergeHomepageWithDetail(flights, futureFlights);
-        dataSources.push("detail-openapi-horizon");
-
-        // 00:00~02:00에는 전날 예정이었지만 아직 출발하지 않은 지연/미출발편을 유지한다.
-        if (rolloverQuery && rolloverFlights.length > 0) {
-          const protectedFlights = rolloverFlights.filter((flight) =>
-            isProtectedRolloverFlight(flight, today)
-          );
-          if (protectedFlights.length > 0) {
-            flights = mergeHomepageWithDetail(flights, protectedFlights);
-            dataSources.push("detail-openapi-rollover");
+      // 상세 API가 429/일시 오류로 비었을 때는 평소 fallback으로만 쓰던
+      // 여객편 OpenAPI를 2차 미래편 소스로 사용한다. query가 30분 단위로 고정되고
+      // 30분 cache가 적용되어 이 fallback 역시 호출 한도를 소모하지 않게 한다.
+      let horizonSupportFlights = horizonFlights;
+      if (horizonSupportFlights.length === 0) {
+        try {
+          const passengerHorizonFlights = await fetchPassengerFallback(serviceKey, query);
+          if (passengerHorizonFlights.length > 0) {
+            horizonSupportFlights = passengerHorizonFlights;
+            dataSources.push("passenger-openapi-horizon-fallback");
           }
+        } catch (error) {
+          console.warn(
+            "[ICN FIDS] 여객편 OpenAPI 미래편 2차 보강 실패",
+            error instanceof Error ? error.message : error
+          );
+        }
+      }
+
+      const futureFlights = horizonSupportFlights.filter((flight) =>
+        isFutureOrOperational(flight)
+      );
+      if (futureFlights.length > 0) {
+        flights = mergeHomepageWithDetail(flights, futureFlights);
+      }
+      if (horizonFlights.length > 0) {
+        dataSources.push("detail-openapi-horizon");
+      }
+
+      // 00:00~02:00에는 전날 예정이었지만 아직 출발하지 않은 지연/미출발편을 유지한다.
+      if (rolloverQuery && rolloverFlights.length > 0) {
+        const protectedFlights = rolloverFlights.filter((flight) =>
+          isProtectedRolloverFlight(flight, today)
+        );
+        if (protectedFlights.length > 0) {
+          flights = mergeHomepageWithDetail(flights, protectedFlights);
+          dataSources.push("detail-openapi-rollover");
         }
       }
     } else if (detailSupportResult.status === "rejected") {
