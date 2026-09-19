@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import OperationNotice from "@/components/fids/OperationNotice";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
@@ -197,9 +198,14 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, [payload, mode, now]);
 
   const groups = useMemo(() => groupFlights(flights), [flights]);
+  const currentPayload = payload?.mode === mode ? payload : null;
+  const isMuanSuspended = airport.code.toUpperCase() === "MWX";
+  const showNoFlightsNotice = Boolean(currentPayload && !error && groups.length === 0);
+  const operationNoticeActive = isMuanSuspended || showNoFlightsNotice;
+  const displayGroups = isMuanSuspended ? [] : groups;
   const pageWindow = useMemo(
-    () => paginateFidsRows(groups, page, rowsPerPage),
-    [groups, page, rowsPerPage]
+    () => paginateFidsRows(displayGroups, page, rowsPerPage),
+    [displayGroups, page, rowsPerPage]
   );
   const totalPages = pageWindow.totalPages;
 
@@ -216,7 +222,6 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const rows = pageWindow.rows;
   const blanks = Array.from({ length: pageWindow.emptyRowCount });
   const departure = mode === "departures";
-  const currentPayload = payload?.mode === mode ? payload : null;
   const connected =
     currentPayload?.source === "kac_odcloud" ||
     currentPayload?.source === "kac_homepage" ||
@@ -256,15 +261,16 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
             <div><b>현황</b><span>STATUS</span></div>
           </header>
 
-          <div className="rows" key={`${mode}-${page}`}>
+          <div className={`rows${operationNoticeActive ? " notice-active" : ""}`} key={`${mode}-${page}`}>
             {rows.map((group) => <FlightRow key={group.id} group={group} language={language} rotationStep={rotationStep} mode={mode} />)}
             {blanks.map((_, index) => <div className="flight-row blank-row row-grid" key={`blank-${index}`} aria-hidden><div /><div /><div /><div /><div /><div /></div>)}
+            {operationNoticeActive && <OperationNotice suspended={isMuanSuspended} />}
           </div>
 
           <footer className="data-strip">
             <span className={`live-dot ${connected ? "connected" : "demo"}`} />
             <strong>{connected ? "KAC 실시간 연결" : "데모 데이터"}</strong>
-            <span>{currentPayload?.warning || error || "60초마다 자동 갱신"}</span>
+            <span>{isMuanSuspended ? "무안공항 임시 운영중단 안내 표시 중" : currentPayload?.warning || error || "60초마다 자동 갱신"}</span>
             <span className="language-indicator">{language === "KO" ? "한국어" : language === "EN" ? "ENGLISH" : "LOCAL"}</span>
           </footer>
         </section>
