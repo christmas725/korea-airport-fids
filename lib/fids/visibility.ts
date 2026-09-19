@@ -30,16 +30,33 @@ export function isCompletedFlight(flight: Pick<TimedFlight, "mode" | "remark">) 
     : /^(도착|도착완료|arrived)$/i.test(status);
 }
 
+/**
+ * FIDS에서 현재 운항으로 판단할 기준시각.
+ *
+ * 실제 완료시각이 있으면 그것을 우선하고, 없으면 변경/예상시각,
+ * 마지막으로 예정시각을 사용한다. 이렇게 해야 조기 도착이나 지연처럼
+ * 예정시각과 실제 표출시각이 달라진 운항도 현재시각 기준으로 올바르게 정리된다.
+ */
+export function flightDisplayDateTime(flight: TimedFlight) {
+  return parseKstDateTime(
+    flight.actualDateTime || flight.estimatedDateTime || flight.scheduleDateTime
+  );
+}
+
+/**
+ * 현재시각 기준 FIDS 노출 여부.
+ *
+ * 과거 구현은 '출발/도착 완료' 상태인 편만 5분 뒤 제거했기 때문에,
+ * KAC가 과거 운항편에 지연/탑승중/빈 상태를 남기면 아침 편이 오후에도
+ * 계속 첫 페이지에 남는 문제가 있었다. 상태 문구와 무관하게 실제/예상/예정
+ * 시각 중 가장 신뢰할 수 있는 표출시각을 기준으로 현재보다 5분 이상 지난 편은
+ * 제외한다. 5분 유예는 상태 갱신과 화면 폴링 사이의 짧은 지연을 흡수한다.
+ */
 export function isWithinCompletedFlightGrace(
   flight: TimedFlight,
   now = Date.now(),
   graceMs = COMPLETED_FLIGHT_GRACE_MS
 ) {
-  if (!isCompletedFlight(flight)) return true;
-
-  const completedAt = parseKstDateTime(
-    flight.actualDateTime || flight.estimatedDateTime || flight.scheduleDateTime
-  )?.getTime();
-
-  return typeof completedAt === "number" && completedAt >= now - graceMs;
+  const displayAt = flightDisplayDateTime(flight)?.getTime();
+  return typeof displayAt === "number" && displayAt >= now - graceMs;
 }
