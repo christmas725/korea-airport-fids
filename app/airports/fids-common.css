@@ -119,6 +119,32 @@
   color: #e7c7ad;
 }
 
+.operation-notice-period {
+  width: min(780px, 100%);
+  margin-top: clamp(4px, 0.8vh, 10px);
+  padding: clamp(11px, 1.5vh, 17px) clamp(14px, 2vw, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: rgba(255, 155, 84, 0.08);
+  border: 1px solid rgba(255, 179, 115, 0.38);
+  border-radius: 10px;
+}
+
+.operation-notice-period strong {
+  color: #fff4ea;
+  font-size: clamp(16px, 1.5vw, 27px);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.operation-notice-period span {
+  color: #e7c7ad;
+  font-size: clamp(11px, 0.92vw, 17px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .sliding-text {
   display: block;
   min-width: 0;
@@ -195,6 +221,20 @@
   .operation-notice-ja,
   .operation-notice-zh {
     font-size: clamp(14px, 2.45vh, 21px);
+  }
+
+  .operation-notice-period {
+    gap: 3px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .operation-notice-period strong {
+    font-size: clamp(14px, 2.35vh, 20px);
+  }
+
+  .operation-notice-period span {
+    font-size: clamp(10px, 1.75vh, 14px);
   }
 }
 
