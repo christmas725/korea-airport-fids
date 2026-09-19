@@ -16,6 +16,13 @@ const suspendedCopy = {
   zh: "本机场目前暂时停止航班运营。",
 };
 
+const suspensionPeriodCopy = {
+  ko: "운항 중단 일시 : 2024년 12월 29일 ~ 미정",
+  en: "Suspension period: December 29, 2024 ~ Until further notice",
+  ja: "運航休止期間：2024年12月29日 ～ 未定",
+  zh: "停航期间：2024年12月29日 ～ 待定",
+};
+
 export default function OperationNotice({ suspended = false }: OperationNoticeProps) {
   const copy = suspended ? suspendedCopy : endedCopy;
 
@@ -34,6 +41,14 @@ export default function OperationNotice({ suspended = false }: OperationNoticePr
         <span className="operation-notice-en" lang="en">{copy.en}</span>
         <span className="operation-notice-ja" lang="ja">{copy.ja}</span>
         <span className="operation-notice-zh" lang="zh-CN">{copy.zh}</span>
+        {suspended && (
+          <div className="operation-notice-period">
+            <strong lang="ko">{suspensionPeriodCopy.ko}</strong>
+            <span lang="en">{suspensionPeriodCopy.en}</span>
+            <span lang="ja">{suspensionPeriodCopy.ja}</span>
+            <span lang="zh-CN">{suspensionPeriodCopy.zh}</span>
+          </div>
+        )}
       </div>
     </div>
   );
