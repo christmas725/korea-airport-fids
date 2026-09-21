@@ -30,11 +30,14 @@ export default function AirlineLogoSync() {
         const official = officialAirlineLogo(code);
         const desiredUrl = official?.url ?? `${AIRLINE_LOGO_BASE}/${encodeURIComponent(code)}.png`;
         const sourceKey = official ? `official:${code}` : `fallback:${code}`;
+        const frame = image.closest<HTMLElement>(".carrier-logo-shell");
+
+        image.dataset.airlineCode = code;
+        if (frame) frame.dataset.airlineCode = code;
 
         if (image.dataset.logoSource !== sourceKey || image.src !== desiredUrl) {
           image.src = desiredUrl;
           image.dataset.logoSource = sourceKey;
-          image.dataset.airlineCode = code;
           if (official) image.dataset.logoOfficialSource = official.source;
           else delete image.dataset.logoOfficialSource;
         }
