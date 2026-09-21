@@ -145,7 +145,9 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
                       </div>
                       <div className="airport-name">
                         <strong>{airport.name}공항</strong>
-                        <span>{airport.englishName} Airport</span>
+                        <span>
+                          {airport.englishName} {airport.international ? "International Airport" : "Airport"}
+                        </span>
                       </div>
                       <div className="airport-card-bottom">
                         <span>{airport.modes}</span>
