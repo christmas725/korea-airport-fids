@@ -2,7 +2,10 @@ import "server-only";
 
 import { headers } from "next/headers";
 
-export async function fetchInitialJson<T>(path: string): Promise<T | null> {
+export async function fetchInitialJson<T>(
+  path: string,
+  timeoutMs = 8_000
+): Promise<T | null> {
   try {
     const requestHeaders = await headers();
     const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
@@ -15,7 +18,7 @@ export async function fetchInitialJson<T>(path: string): Promise<T | null> {
     const response = await fetch(`${protocol}://${host}${path}`, {
       cache: "no-store",
       headers: cookie ? { cookie } : undefined,
-      signal: AbortSignal.timeout(8_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) return null;
