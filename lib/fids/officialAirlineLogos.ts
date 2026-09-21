@@ -3,17 +3,17 @@ export type OfficialAirlineLogo = {
   source: string;
 };
 
-// Official airline wordmarks / horizontal logos.
-// Keep this registry intentionally curated: only add assets verified from an
-// airline-owned website, newsroom, CI page, or media library.
+// Official/current airline wordmarks / horizontal logos.
+// Prefer airline-owned assets. When an airline blocks direct asset hotlinking,
+// use a stable mirror of the same current CI and keep the provenance here.
 export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   KE: {
     url: "https://kr.img.news.koreanair.com/wp-content/uploads/2025/03/%EC%82%AC%EC%A7%841-%EB%8C%80%ED%95%9C%ED%95%AD%EA%B3%B5-%EC%8B%A0%EA%B7%9CCI-1024x204.png",
     source: "Korean Air Newsroom",
   },
   OZ: {
-    url: "https://flyasiana.com/C/pc/image/sub/newimg_ci_english.png",
-    source: "Asiana Airlines CI",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Asiana_Airlines.svg",
+    source: "Asiana Airlines CI (stable mirror)",
   },
   TW: {
     url: "https://otp.twayair.com/images/trinity.svg",
@@ -34,6 +34,26 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   BX: {
     url: "https://image.airbusan.com/content/assets/images/common/img_logo.png",
     source: "Air Busan",
+  },
+  LJ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jin_Air_logo.svg",
+    source: "Jin Air CI (stable mirror)",
+  },
+  RS: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Air_Seoul.svg",
+    source: "Air Seoul CI (stable mirror)",
+  },
+  XU: {
+    url: "https://static.wixstatic.com/media/77ab67_47bab15322ed4298a44060696eb2c47f~mv2.png",
+    source: "SUM Air official brand page",
+  },
+  RF: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aero_K_logo.svg",
+    source: "Aero K official logo (stable mirror)",
+  },
+  WE: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parata_Airlines_(gray).svg",
+    source: "Parata Air current CI (stable mirror)",
   },
   QR: {
     url: "https://d21buns5ku92am.cloudfront.net/69667/logo/retina-1677790355.png",
