@@ -26,6 +26,9 @@ const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
+const KAC_OPERATION_START_MINUTES = 6 * 60;
+const KAC_PREPARATION_START_MINUTES = KAC_OPERATION_START_MINUTES - 2 * 60;
+const KAC_FLIGHT_DISPLAY_START_MINUTES = KAC_OPERATION_START_MINUTES - 60;
 
 function formatTime(value: string) {
   const date = parseKstDateTime(value);
@@ -40,6 +43,18 @@ function formatClock(value: Date) {
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", weekday: "short" }).format(value);
+}
+
+function kstMinutesOfDay(value: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(value);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
+  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "0");
+  return hour * 60 + minute;
 }
 
 function normalizedId(value: string) {
@@ -200,9 +215,20 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const groups = useMemo(() => groupFlights(flights), [flights]);
   const currentPayload = payload?.mode === mode ? payload : null;
   const isMuanSuspended = airport.code.toUpperCase() === "MWX";
-  const showNoFlightsNotice = Boolean(currentPayload && !error && groups.length === 0);
-  const operationNoticeActive = isMuanSuspended || showNoFlightsNotice;
-  const displayGroups = isMuanSuspended ? [] : groups;
+  const currentKstMinutes = kstMinutesOfDay(now);
+  const isBeforePreparation = currentKstMinutes < KAC_PREPARATION_START_MINUTES;
+  const isPreparing =
+    currentKstMinutes >= KAC_PREPARATION_START_MINUTES &&
+    currentKstMinutes < KAC_FLIGHT_DISPLAY_START_MINUTES;
+  const showPreparationNotice = Boolean(currentPayload && !error && isPreparing);
+  const showEndedNotice = Boolean(
+    currentPayload &&
+    !error &&
+    !isPreparing &&
+    (isBeforePreparation || groups.length === 0)
+  );
+  const operationNoticeActive = isMuanSuspended || showPreparationNotice || showEndedNotice;
+  const displayGroups = operationNoticeActive ? [] : groups;
   const pageWindow = useMemo(
     () => paginateFidsRows(displayGroups, page, rowsPerPage),
     [displayGroups, page, rowsPerPage]
@@ -228,6 +254,13 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
     currentPayload?.source === "kac_gw";
   const airportName = `${airport.name}${airport.international ? "국제공항" : "공항"}`;
   const airportEnglishName = `${airport.englishName.toUpperCase()} ${airport.international ? "INTERNATIONAL AIRPORT" : "AIRPORT"}`;
+  const footerMessage = isMuanSuspended
+    ? "무안공항 임시 운영중단 안내 표시 중"
+    : showPreparationNotice
+      ? "금일 운항 준비중 안내 표시 중"
+      : showEndedNotice
+        ? "운항 종료 안내 표시 중"
+        : currentPayload?.warning || error || "60초마다 자동 갱신";
 
   return (
     <main className="screen-shell">
@@ -264,13 +297,18 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
           <div className={`rows${operationNoticeActive ? " notice-active" : ""}`} key={`${mode}-${page}`}>
             {rows.map((group) => <FlightRow key={group.id} group={group} language={language} rotationStep={rotationStep} mode={mode} />)}
             {blanks.map((_, index) => <div className="flight-row blank-row row-grid" key={`blank-${index}`} aria-hidden><div /><div /><div /><div /><div /><div /></div>)}
-            {operationNoticeActive && <OperationNotice suspended={isMuanSuspended} />}
+            {operationNoticeActive && (
+              <OperationNotice
+                suspended={isMuanSuspended}
+                preparing={!isMuanSuspended && showPreparationNotice}
+              />
+            )}
           </div>
 
           <footer className="data-strip">
             <span className={`live-dot ${connected ? "connected" : "demo"}`} />
             <strong>{connected ? "KAC 실시간 연결" : "데모 데이터"}</strong>
-            <span>{isMuanSuspended ? "무안공항 임시 운영중단 안내 표시 중" : currentPayload?.warning || error || "60초마다 자동 갱신"}</span>
+            <span>{footerMessage}</span>
             <span className="language-indicator">{language === "KO" ? "한국어" : language === "EN" ? "ENGLISH" : "LOCAL"}</span>
           </footer>
         </section>
