@@ -12,6 +12,7 @@ type StatusMap = Record<string, RuntimeAirportStatus>;
 const DAYTIME_STATUS_POLL_MS = 5 * 60_000;
 const EARLY_MORNING_STATUS_POLL_MS = 60_000;
 const MODES: FlightMode[] = ["departures", "arrivals"];
+const ACTIVE_CHECK_ORDER: FlightMode[] = ["arrivals", "departures"];
 const CONNECTED_KAC_SOURCES = new Set(["kac_odcloud", "kac_homepage", "kac_gw"]);
 
 function windowStatusForAirport(airport: Airport, now: Date): RuntimeAirportStatus {
@@ -64,19 +65,23 @@ async function resolveAirportStatus(
   const states = Object.fromEntries(
     MODES.map((mode) => [mode, getKacModeWindowState(mode, airport.code, now)])
   ) as Record<FlightMode, ReturnType<typeof getKacModeWindowState>>;
-  const activeModes = MODES.filter((mode) => states[mode] === "active");
+  const activeModes = ACTIVE_CHECK_ORDER.filter((mode) => states[mode] === "active");
 
   if (!activeModes.length) return fallback;
 
   const nowMs = now.getTime();
-  const visibleResults = await Promise.all(
-    activeModes.map((mode) => fetchModeHasVisibleFlights(airport, mode, nowMs, signal))
-  );
+  let lookupFailed = false;
 
-  if (visibleResults.some((visible) => visible === true)) return "live";
+  // Check arrivals first. As soon as one active board still has visible flights,
+  // the airport is operating and the second request is unnecessary.
+  for (const mode of activeModes) {
+    const visible = await fetchModeHasVisibleFlights(airport, mode, nowMs, signal);
+    if (visible === true) return "live";
+    if (visible === null) lookupFailed = true;
+  }
 
   // Upstream/API failures must not incorrectly close an airport that is inside an active window.
-  if (visibleResults.some((visible) => visible === null)) return fallback;
+  if (lookupFailed) return fallback;
 
   if (MODES.some((mode) => states[mode] === "preparing")) return "preparing";
   return "ended";
