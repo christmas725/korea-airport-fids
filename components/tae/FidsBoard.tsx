@@ -142,6 +142,7 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   const estimated = formatTime(flight.actualDateTime || flight.estimatedDateTime);
   const changed = scheduled !== estimated && estimated !== "--:--";
   const status = displayStatus(flight.remark, mode, language, flight.airportCode);
+  const airlineName = shown.airline || shown.airlineEnglish || "-";
 
   return (
     <div className="flight-row row-grid" role="row">
@@ -151,7 +152,10 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
       </div>
       <div className="flight-cell">
         <AirlineLogo flightId={shown.flightId} />
-        <span>{shown.flightId}</span>
+        <div className="flight-copy">
+          <strong>{shown.flightId}</strong>
+          <span>{airlineName}</span>
+        </div>
       </div>
       <div className="destination-cell" lang={languageTagForAirport(flight.airportCode, language)} dir={directionForAirport(flight.airportCode, language)}>
         <strong>
