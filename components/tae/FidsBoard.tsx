@@ -1,12 +1,14 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import OperationNotice from "@/components/fids/OperationNotice";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
 import { getKacModeWindowState } from "@/lib/fids/operationWindow";
 import {
+  flightDisplayDateTime,
+  isCompletedFlight,
   isWithinCompletedFlightGrace,
   parseKstDateTime,
 } from "@/lib/fids/visibility";
@@ -22,9 +24,15 @@ import {
 import type { FidsFlight, FlightMode, FlightsPayload } from "@/lib/tae/types";
 
 type FlightGroup = { id: string; primary: FidsFlight; variants: FidsFlight[] };
+type DepartureSignalState = {
+  key: string;
+  observedAt: number;
+  flight: FidsFlight;
+};
 
 const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
+const DEPARTURE_SIGNAL_GRACE_MS = 5 * 60_000;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
 
@@ -75,6 +83,24 @@ function operationKey(flight: FidsFlight) {
   const master = normalizedId(flight.masterFlightId);
   if (master) return `master:${master}:${flight.scheduleDateTime}:${flight.airportCode}`;
   return [flight.mode, flight.airportCode, flight.scheduleDateTime, flight.estimatedDateTime, flight.facility].join("|");
+}
+
+function departureSignalKey(flight: FidsFlight) {
+  return [
+    normalizedId(flight.masterFlightId || flight.flightId),
+    flight.scheduleDateTime,
+    flight.airportCode,
+  ].join("|");
+}
+
+function latestDepartureFlight(flights: FidsFlight[]) {
+  return flights.reduce<FidsFlight | null>((latest, flight) => {
+    if (flight.mode !== "departures") return latest;
+    if (!latest) return flight;
+    const latestAt = parseKstDateTime(latest.scheduleDateTime)?.getTime() ?? 0;
+    const currentAt = parseKstDateTime(flight.scheduleDateTime)?.getTime() ?? 0;
+    return currentAt >= latestAt ? flight : latest;
+  }, null);
 }
 
 function groupFlights(flights: FidsFlight[]): FlightGroup[] {
@@ -150,6 +176,8 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const [now, setNow] = useState(() => new Date());
   const [page, setPage] = useState(0);
   const [rotationStep, setRotationStep] = useState(0);
+  const [departureSignal, setDepartureSignal] = useState<DepartureSignalState | null>(null);
+  const previousDepartureStatus = useRef<{ key: string; completed: boolean } | null>(null);
   const rowsPerPage = useRowsPerPage();
   const language = LANGUAGES[Math.floor(rotationStep / 2) % LANGUAGES.length];
 
@@ -191,15 +219,86 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const currentPayload = payload?.mode === mode ? payload : null;
+  const latestDeparture = useMemo(
+    () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
+    [currentPayload, mode]
+  );
+  const latestDepartureKey = latestDeparture ? departureSignalKey(latestDeparture) : "";
+
+  useEffect(() => {
+    if (mode !== "departures" || !latestDeparture) {
+      previousDepartureStatus.current = null;
+      return;
+    }
+
+    const key = departureSignalKey(latestDeparture);
+    const completed = isCompletedFlight(latestDeparture);
+    const previous = previousDepartureStatus.current;
+
+    if (!completed) {
+      previousDepartureStatus.current = { key, completed: false };
+      if (departureSignal?.key === key) setDepartureSignal(null);
+      return;
+    }
+
+    if (departureSignal?.key === key) {
+      previousDepartureStatus.current = { key, completed: true };
+      return;
+    }
+
+    const storageKey = `kac-fids-departure-signal:${airport.code}:${key}`;
+    const storedAt = Number(window.localStorage.getItem(storageKey));
+    const transitionedWhileOpen = previous?.key === key && previous.completed === false;
+    let observedAt = Date.now();
+
+    if (Number.isFinite(storedAt) && storedAt > 0) {
+      observedAt = storedAt;
+    } else if (!transitionedWhileOpen) {
+      const fallbackAt = flightDisplayDateTime(latestDeparture)?.getTime();
+      if (typeof fallbackAt === "number" && Number.isFinite(fallbackAt)) observedAt = fallbackAt;
+    }
+
+    window.localStorage.setItem(storageKey, String(observedAt));
+    setDepartureSignal({ key, observedAt, flight: latestDeparture });
+    previousDepartureStatus.current = { key, completed: true };
+  }, [airport.code, departureSignal?.key, latestDeparture, mode]);
+
+  const departureSignalHoldActive = Boolean(
+    mode === "departures" &&
+    departureSignal &&
+    now.getTime() < departureSignal.observedAt + DEPARTURE_SIGNAL_GRACE_MS
+  );
+
   const flights = useMemo(() => {
-    const current = payload?.mode === mode ? payload.flights : [];
-    return current.filter((flight) =>
-      isWithinCompletedFlightGrace(flight, now.getTime())
-    );
-  }, [payload, mode, now]);
+    const current = currentPayload ? [...currentPayload.flights] : [];
+
+    if (
+      mode === "departures" &&
+      departureSignalHoldActive &&
+      departureSignal &&
+      !current.some((flight) => departureSignalKey(flight) === departureSignal.key)
+    ) {
+      current.push(departureSignal.flight);
+    }
+
+    return current.filter((flight) => {
+      const isLastDeparture =
+        mode === "departures" &&
+        (departureSignalKey(flight) === latestDepartureKey ||
+          Boolean(departureSignal && departureSignalKey(flight) === departureSignal.key));
+
+      if (isLastDeparture) {
+        if (!isCompletedFlight(flight)) return true;
+        if (!departureSignal || departureSignal.key !== departureSignalKey(flight)) return true;
+        return now.getTime() < departureSignal.observedAt + DEPARTURE_SIGNAL_GRACE_MS;
+      }
+
+      return isWithinCompletedFlightGrace(flight, now.getTime());
+    });
+  }, [currentPayload, departureSignal, departureSignalHoldActive, latestDepartureKey, mode, now]);
 
   const groups = useMemo(() => groupFlights(flights), [flights]);
-  const currentPayload = payload?.mode === mode ? payload : null;
   const isMuanSuspended = airport.code.toUpperCase() === "MWX";
   const operationWindowState = getKacModeWindowState(
     mode,
@@ -213,6 +312,7 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
     currentPayload &&
     !error &&
     !isPreparing &&
+    !departureSignalHoldActive &&
     groups.length === 0
   );
   const operationNoticeActive = isMuanSuspended || showPreparationNotice || showEndedNotice;
@@ -248,7 +348,9 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
       ? "금일 운항 준비중 안내 표시 중"
       : showEndedNotice
         ? "운항 종료 안내 표시 중"
-        : currentPayload?.warning || error || "60초마다 자동 갱신";
+        : departureSignalHoldActive
+          ? "마지막 출발편 출발 확인 후 5분간 표시 중"
+          : currentPayload?.warning || error || "60초마다 자동 갱신";
 
   return (
     <main className="screen-shell">
