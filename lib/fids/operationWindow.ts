@@ -7,6 +7,10 @@ type AirportOperationStart = {
   arrivals: number;
 };
 
+type ScheduledFlight = {
+  scheduleDateTime: string;
+};
+
 const hour = (value: number) => value * 60;
 
 const DEFAULT_OPERATION_START: AirportOperationStart = {
@@ -31,6 +35,27 @@ const KAC_OPERATION_STARTS: Record<string, AirportOperationStart> = {
   KUV: { departures: hour(9), arrivals: hour(9) },
 };
 
+function kstDateKey(value: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const read = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${read("year")}${read("month")}${read("day")}`;
+}
+
+function scheduleMinutesForDate(value: string, dateKey: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 12 || digits.slice(0, 8) !== dateKey) return null;
+
+  const hours = Number(digits.slice(8, 10));
+  const minutes = Number(digits.slice(10, 12));
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
 export function kstMinutesOfDay(value: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Seoul",
@@ -48,17 +73,59 @@ export function getKacOperationStartMinutes(mode: FlightMode, airportCode: strin
   return airportStart[mode];
 }
 
+export function getEarliestApiFlightMinutes(
+  flights: ScheduledFlight[] | undefined,
+  now: Date
+) {
+  if (!flights?.length) return null;
+
+  const dateKey = kstDateKey(now);
+  let earliest: number | null = null;
+
+  for (const flight of flights) {
+    const minutes = scheduleMinutesForDate(flight.scheduleDateTime, dateKey);
+    if (minutes === null) continue;
+    if (earliest === null || minutes < earliest) earliest = minutes;
+  }
+
+  return earliest;
+}
+
+export function getKacFlightDisplayStartMinutes(
+  mode: FlightMode,
+  airportCode: string,
+  now: Date,
+  flights?: ScheduledFlight[]
+) {
+  const configuredDisplayStart = Math.max(
+    0,
+    getKacOperationStartMinutes(mode, airportCode) - 60
+  );
+  const earliestApiFlight = getEarliestApiFlightMinutes(flights, now);
+
+  if (earliestApiFlight === null) return configuredDisplayStart;
+
+  const apiDisplayStart = Math.max(0, earliestApiFlight - 60);
+  return Math.min(configuredDisplayStart, apiDisplayStart);
+}
+
 export function getKacModeWindowState(
   mode: FlightMode,
   airportCode: string,
-  now: Date
+  now: Date,
+  flights?: ScheduledFlight[]
 ): OperationWindowState {
   const currentMinutes = kstMinutesOfDay(now);
-  const operationStartMinutes = getKacOperationStartMinutes(mode, airportCode);
-  const preparationStartMinutes = operationStartMinutes - 2 * 60;
-  const flightDisplayStartMinutes = operationStartMinutes - 60;
+  const flightDisplayStartMinutes = getKacFlightDisplayStartMinutes(
+    mode,
+    airportCode,
+    now,
+    flights
+  );
 
-  if (currentMinutes < preparationStartMinutes) return "ended";
+  // Once the calendar date changes, the next operating day is considered to be
+  // in preparation until its FIDS display window opens. Ended is decided later
+  // from the absence of remaining flights after the display window has opened.
   if (currentMinutes < flightDisplayStartMinutes) return "preparing";
   return "active";
 }
