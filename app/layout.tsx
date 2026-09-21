@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import PwaRegister from "@/components/PwaRegister";
+import FidsSecondClock from "@/components/fids/FidsSecondClock";
 import "./globals.css";
+import "./fids-clock.css";
 
 export const metadata: Metadata = {
   title: "대한민국 국내공항 통합 FIDS",
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ko">
       <body>
         <PwaRegister />
+        <FidsSecondClock />
         {children}
       </body>
     </html>
