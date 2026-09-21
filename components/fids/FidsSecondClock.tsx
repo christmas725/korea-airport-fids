@@ -20,9 +20,13 @@ export default function FidsSecondClock() {
       if (applying) return;
       applying = true;
 
-      const clock = formatClock(new Date());
+      const [hour = "00", minute = "00", second = "00"] = formatClock(new Date()).split(":");
+      const main = `${hour}:${minute}`;
+      const seconds = `:${second}`;
+
       document.querySelectorAll<HTMLElement>(".rail-time > strong").forEach((element) => {
-        if (element.textContent !== clock) element.textContent = clock;
+        if (element.textContent !== main) element.textContent = main;
+        if (element.dataset.seconds !== seconds) element.dataset.seconds = seconds;
       });
 
       applying = false;
@@ -30,7 +34,7 @@ export default function FidsSecondClock() {
 
     updateClock();
 
-    // FIDS 자체 시계도 매초 React로 갱신되므로 DOM 갱신 직후 초 단위를 다시 적용한다.
+    // 각 FIDS React 시계가 매초 HH:MM을 다시 렌더링한 직후 초 단위를 재적용한다.
     const observer = new MutationObserver(() => {
       if (!applying) queueMicrotask(updateClock);
     });
