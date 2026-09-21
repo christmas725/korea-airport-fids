@@ -1,0 +1,16 @@
+.rail-time > strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail-time > strong[data-seconds]::after {
+  content: attr(data-seconds);
+  display: inline-block;
+  margin-left: 0.06em;
+  font-size: 0.58em;
+  line-height: 1;
+  font-weight: inherit;
+  letter-spacing: -0.02em;
+  vertical-align: 0.08em;
+  opacity: 0.9;
+}
