@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { airports, regions, type Airport } from "@/lib/airports";
-import { getKacModeWindowState, kstMinutesOfDay } from "@/lib/fids/operationWindow";
+import { getKacModeWindowState } from "@/lib/fids/operationWindow";
 import { isWithinCompletedFlightGrace } from "@/lib/fids/visibility";
 import type { FlightMode, FlightsPayload } from "@/lib/tae/types";
 
@@ -13,9 +13,8 @@ type ModeSnapshot = {
   hasVisibleFlights: boolean;
 };
 
-const DAYTIME_STATUS_POLL_MS = 5 * 60_000;
-const EARLY_MORNING_STATUS_POLL_MS = 60_000;
-const HIGH_FREQUENCY_STATUS_UNTIL_MINUTES = 8 * 60;
+const STATUS_POLL_MS = 30_000;
+const DIRECTORY_COMPLETED_FLIGHT_GRACE_MS = 60_000;
 const MODES: FlightMode[] = ["departures", "arrivals"];
 const ACTIVE_CHECK_ORDER: FlightMode[] = ["arrivals", "departures"];
 const CONNECTED_KAC_SOURCES = new Set(["kac_odcloud", "kac_homepage", "kac_gw"]);
@@ -56,7 +55,11 @@ async function fetchModeSnapshot(
     return {
       flights: payload.flights,
       hasVisibleFlights: payload.flights.some((flight) =>
-        isWithinCompletedFlightGrace(flight, nowMs)
+        isWithinCompletedFlightGrace(
+          flight,
+          nowMs,
+          DIRECTORY_COMPLETED_FLIGHT_GRACE_MS
+        )
       ),
     };
   } catch {
@@ -134,12 +137,7 @@ export default function AirportDirectory() {
     const schedule = async () => {
       await refreshStatuses(controller.signal);
       if (controller.signal.aborted) return;
-
-      const currentMinutes = kstMinutesOfDay(new Date());
-      const delay = currentMinutes < HIGH_FREQUENCY_STATUS_UNTIL_MINUTES
-        ? EARLY_MORNING_STATUS_POLL_MS
-        : DAYTIME_STATUS_POLL_MS;
-      timer = window.setTimeout(schedule, delay);
+      timer = window.setTimeout(schedule, STATUS_POLL_MS);
     };
 
     const handleVisibility = () => {
