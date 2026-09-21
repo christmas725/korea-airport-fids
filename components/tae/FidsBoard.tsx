@@ -201,15 +201,19 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const groups = useMemo(() => groupFlights(flights), [flights]);
   const currentPayload = payload?.mode === mode ? payload : null;
   const isMuanSuspended = airport.code.toUpperCase() === "MWX";
-  const operationWindowState = getKacModeWindowState(mode, airport.code, now);
-  const isBeforePreparation = operationWindowState === "ended";
+  const operationWindowState = getKacModeWindowState(
+    mode,
+    airport.code,
+    now,
+    currentPayload?.flights
+  );
   const isPreparing = operationWindowState === "preparing";
   const showPreparationNotice = Boolean(currentPayload && !error && isPreparing);
   const showEndedNotice = Boolean(
     currentPayload &&
     !error &&
     !isPreparing &&
-    (isBeforePreparation || groups.length === 0)
+    groups.length === 0
   );
   const operationNoticeActive = isMuanSuspended || showPreparationNotice || showEndedNotice;
   const displayGroups = operationNoticeActive ? [] : groups;
