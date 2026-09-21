@@ -11,6 +11,7 @@ type StatusMap = Record<string, RuntimeAirportStatus>;
 
 const DAYTIME_STATUS_POLL_MS = 5 * 60_000;
 const EARLY_MORNING_STATUS_POLL_MS = 60_000;
+const HIGH_FREQUENCY_STATUS_UNTIL_MINUTES = 8 * 60;
 const MODES: FlightMode[] = ["departures", "arrivals"];
 const ACTIVE_CHECK_ORDER: FlightMode[] = ["arrivals", "departures"];
 const CONNECTED_KAC_SOURCES = new Set(["kac_odcloud", "kac_homepage", "kac_gw"]);
@@ -117,7 +118,7 @@ export default function AirportDirectory() {
       if (controller.signal.aborted) return;
 
       const currentMinutes = kstMinutesOfDay(new Date());
-      const delay = currentMinutes < 6 * 60
+      const delay = currentMinutes < HIGH_FREQUENCY_STATUS_UNTIL_MINUTES
         ? EARLY_MORNING_STATUS_POLL_MS
         : DAYTIME_STATUS_POLL_MS;
       timer = window.setTimeout(schedule, delay);
