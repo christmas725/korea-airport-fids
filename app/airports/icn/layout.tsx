@@ -1,3 +1,4 @@
+import AirlineLogoSync from "@/components/fids/AirlineLogoSync";
 import "./icn.css";
 import "./mobile.css";
 import "./foldable.css";
@@ -6,7 +7,13 @@ import "./destination-scroll.css";
 import "./tablet.css";
 import "./adaptive-row.css";
 import "../fids-common.css";
+import "../airline-logo.css";
 
 export default function IcnLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <AirlineLogoSync />
+      {children}
+    </>
+  );
 }
