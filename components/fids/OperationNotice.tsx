@@ -1,5 +1,6 @@
 type OperationNoticeProps = {
   suspended?: boolean;
+  preparing?: boolean;
 };
 
 const endedCopy = {
@@ -7,6 +8,13 @@ const endedCopy = {
   en: "All flights for today have concluded.",
   ja: "本日の運航便はすべて終了しました。",
   zh: "今日航班已全部结束。",
+};
+
+const preparingCopy = {
+  ko: "금일 항공편은 운항 준비중입니다.",
+  en: "Today's flights are being prepared for operation.",
+  ja: "本日の運航便は現在、運航準備中です。",
+  zh: "今日航班正在进行运行准备。",
 };
 
 const suspendedCopy = {
@@ -23,12 +31,17 @@ const suspensionPeriodCopy = {
   zh: "停航期间：2024年12月29日 ～ 待定",
 };
 
-export default function OperationNotice({ suspended = false }: OperationNoticeProps) {
-  const copy = suspended ? suspendedCopy : endedCopy;
+export default function OperationNotice({ suspended = false, preparing = false }: OperationNoticeProps) {
+  const copy = suspended ? suspendedCopy : preparing ? preparingCopy : endedCopy;
+  const noticeClass = suspended
+    ? "operation-notice-suspended"
+    : preparing
+      ? "operation-notice-preparing"
+      : "operation-notice-ended";
 
   return (
     <div
-      className={`operation-notice ${suspended ? "operation-notice-suspended" : "operation-notice-ended"}`}
+      className={`operation-notice ${noticeClass}`}
       role="status"
       aria-live="polite"
     >
