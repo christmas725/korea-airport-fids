@@ -26,9 +26,16 @@ const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
-const KAC_OPERATION_START_MINUTES = 6 * 60;
-const KAC_PREPARATION_START_MINUTES = KAC_OPERATION_START_MINUTES - 2 * 60;
-const KAC_FLIGHT_DISPLAY_START_MINUTES = KAC_OPERATION_START_MINUTES - 60;
+const KAC_DEPARTURE_OPERATION_START_MINUTES = 6 * 60;
+const KAC_ARRIVAL_OPERATION_START_MINUTES = 5 * 60;
+const TAE_ARRIVAL_OPERATION_START_MINUTES = 4 * 60;
+
+function getOperationStartMinutes(mode: FlightMode, airportCode: string) {
+  if (mode === "departures") return KAC_DEPARTURE_OPERATION_START_MINUTES;
+  return airportCode.toUpperCase() === "TAE"
+    ? TAE_ARRIVAL_OPERATION_START_MINUTES
+    : KAC_ARRIVAL_OPERATION_START_MINUTES;
+}
 
 function formatTime(value: string) {
   const date = parseKstDateTime(value);
@@ -216,10 +223,13 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const currentPayload = payload?.mode === mode ? payload : null;
   const isMuanSuspended = airport.code.toUpperCase() === "MWX";
   const currentKstMinutes = kstMinutesOfDay(now);
-  const isBeforePreparation = currentKstMinutes < KAC_PREPARATION_START_MINUTES;
+  const operationStartMinutes = getOperationStartMinutes(mode, airport.code);
+  const preparationStartMinutes = operationStartMinutes - 2 * 60;
+  const flightDisplayStartMinutes = operationStartMinutes - 60;
+  const isBeforePreparation = currentKstMinutes < preparationStartMinutes;
   const isPreparing =
-    currentKstMinutes >= KAC_PREPARATION_START_MINUTES &&
-    currentKstMinutes < KAC_FLIGHT_DISPLAY_START_MINUTES;
+    currentKstMinutes >= preparationStartMinutes &&
+    currentKstMinutes < flightDisplayStartMinutes;
   const showPreparationNotice = Boolean(currentPayload && !error && isPreparing);
   const showEndedNotice = Boolean(
     currentPayload &&
