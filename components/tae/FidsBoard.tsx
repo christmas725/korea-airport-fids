@@ -5,6 +5,7 @@ import OperationNotice from "@/components/fids/OperationNotice";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
+import { getKacModeWindowState } from "@/lib/fids/operationWindow";
 import {
   isWithinCompletedFlightGrace,
   parseKstDateTime,
@@ -26,16 +27,6 @@ const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
-const KAC_DEPARTURE_OPERATION_START_MINUTES = 6 * 60;
-const KAC_ARRIVAL_OPERATION_START_MINUTES = 5 * 60;
-const TAE_ARRIVAL_OPERATION_START_MINUTES = 4 * 60;
-
-function getOperationStartMinutes(mode: FlightMode, airportCode: string) {
-  if (mode === "departures") return KAC_DEPARTURE_OPERATION_START_MINUTES;
-  return airportCode.toUpperCase() === "TAE"
-    ? TAE_ARRIVAL_OPERATION_START_MINUTES
-    : KAC_ARRIVAL_OPERATION_START_MINUTES;
-}
 
 function formatTime(value: string) {
   const date = parseKstDateTime(value);
@@ -50,18 +41,6 @@ function formatClock(value: Date) {
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", weekday: "short" }).format(value);
-}
-
-function kstMinutesOfDay(value: Date) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Seoul",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(value);
-  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
-  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "0");
-  return hour * 60 + minute;
 }
 
 function normalizedId(value: string) {
@@ -222,14 +201,9 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const groups = useMemo(() => groupFlights(flights), [flights]);
   const currentPayload = payload?.mode === mode ? payload : null;
   const isMuanSuspended = airport.code.toUpperCase() === "MWX";
-  const currentKstMinutes = kstMinutesOfDay(now);
-  const operationStartMinutes = getOperationStartMinutes(mode, airport.code);
-  const preparationStartMinutes = operationStartMinutes - 2 * 60;
-  const flightDisplayStartMinutes = operationStartMinutes - 60;
-  const isBeforePreparation = currentKstMinutes < preparationStartMinutes;
-  const isPreparing =
-    currentKstMinutes >= preparationStartMinutes &&
-    currentKstMinutes < flightDisplayStartMinutes;
+  const operationWindowState = getKacModeWindowState(mode, airport.code, now);
+  const isBeforePreparation = operationWindowState === "ended";
+  const isPreparing = operationWindowState === "preparing";
   const showPreparationNotice = Boolean(currentPayload && !error && isPreparing);
   const showEndedNotice = Boolean(
     currentPayload &&
