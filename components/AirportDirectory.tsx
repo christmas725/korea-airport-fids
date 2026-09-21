@@ -3,21 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { airports, regions, type Airport } from "@/lib/airports";
 import { getKacModeWindowState } from "@/lib/fids/operationWindow";
-import { isWithinCompletedFlightGrace } from "@/lib/fids/visibility";
-import type { FlightMode, FlightsPayload } from "@/lib/tae/types";
 
 type RuntimeAirportStatus = "live" | "preparing" | "ended";
 type StatusMap = Record<string, RuntimeAirportStatus>;
-type ModeSnapshot = {
-  flights: FlightsPayload["flights"];
-  hasVisibleFlights: boolean;
+
+type StatusResponse = {
+  statuses?: StatusMap;
+};
+
+type AirportDirectoryProps = {
+  initialStatuses?: StatusMap;
 };
 
 const STATUS_POLL_MS = 30_000;
-const DIRECTORY_COMPLETED_FLIGHT_GRACE_MS = 60_000;
-const MODES: FlightMode[] = ["departures", "arrivals"];
-const ACTIVE_CHECK_ORDER: FlightMode[] = ["arrivals", "departures"];
-const CONNECTED_KAC_SOURCES = new Set(["kac_odcloud", "kac_homepage", "kac_gw"]);
+const MODES = ["departures", "arrivals"] as const;
 
 function windowStatusForAirport(airport: Airport, now: Date): RuntimeAirportStatus {
   if (airport.source === "icn") return "live";
@@ -29,84 +28,11 @@ function windowStatusForAirport(airport: Airport, now: Date): RuntimeAirportStat
   return "ended";
 }
 
-function initialStatuses(): StatusMap {
+function ruleBasedStatuses(): StatusMap {
   const now = new Date();
   return Object.fromEntries(
     airports.map((airport) => [airport.code, windowStatusForAirport(airport, now)])
   );
-}
-
-async function fetchModeSnapshot(
-  airport: Airport,
-  mode: FlightMode,
-  nowMs: number,
-  signal?: AbortSignal
-): Promise<ModeSnapshot | null> {
-  try {
-    const response = await fetch(
-      `/api/airports/${airport.code.toLowerCase()}/flights?mode=${mode}`,
-      { cache: "no-store", signal }
-    );
-    if (!response.ok) return null;
-
-    const payload = (await response.json()) as FlightsPayload;
-    if (payload.mode !== mode || !CONNECTED_KAC_SOURCES.has(payload.source)) return null;
-
-    return {
-      flights: payload.flights,
-      hasVisibleFlights: payload.flights.some((flight) =>
-        isWithinCompletedFlightGrace(
-          flight,
-          nowMs,
-          DIRECTORY_COMPLETED_FLIGHT_GRACE_MS
-        )
-      ),
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function resolveAirportStatus(
-  airport: Airport,
-  now: Date,
-  signal?: AbortSignal
-): Promise<RuntimeAirportStatus> {
-  const fallback = windowStatusForAirport(airport, now);
-  if (airport.source === "icn" || airport.code.toUpperCase() === "MWX") return fallback;
-
-  const states = Object.fromEntries(
-    MODES.map((mode) => [mode, getKacModeWindowState(mode, airport.code, now)])
-  ) as Record<FlightMode, ReturnType<typeof getKacModeWindowState>>;
-
-  const nowMs = now.getTime();
-  let lookupFailed = false;
-
-  // API의 당일 첫 운항편이 규칙보다 빠르면 그 편의 1시간 전으로
-  // 해당 모드의 표시 시작시각을 당긴다. 도착편을 먼저 확인해 운영 중이면
-  // 출발편 요청은 생략해 불필요한 호출을 줄인다.
-  for (const mode of ACTIVE_CHECK_ORDER) {
-    const snapshot = await fetchModeSnapshot(airport, mode, nowMs, signal);
-    if (!snapshot) {
-      lookupFailed = true;
-      continue;
-    }
-
-    states[mode] = getKacModeWindowState(
-      mode,
-      airport.code,
-      now,
-      snapshot.flights
-    );
-
-    if (states[mode] === "active" && snapshot.hasVisibleFlights) return "live";
-  }
-
-  // API 오류 때문에 실제 운영 중인 공항을 종료로 잘못 내리지 않는다.
-  if (lookupFailed) return fallback;
-
-  if (MODES.some((mode) => states[mode] === "preparing")) return "preparing";
-  return "ended";
 }
 
 function statusLabel(status: RuntimeAirportStatus) {
@@ -115,19 +41,25 @@ function statusLabel(status: RuntimeAirportStatus) {
   return "운영 종료";
 }
 
-export default function AirportDirectory() {
-  const [statuses, setStatuses] = useState<StatusMap>(initialStatuses);
+export default function AirportDirectory({ initialStatuses }: AirportDirectoryProps) {
+  const [statuses, setStatuses] = useState<StatusMap>(
+    () => initialStatuses ?? ruleBasedStatuses()
+  );
 
   const refreshStatuses = useCallback(async (signal?: AbortSignal) => {
-    const now = new Date();
-    const resolved = await Promise.all(
-      airports.map(async (airport) => [
-        airport.code,
-        await resolveAirportStatus(airport, now, signal),
-      ] as const)
-    );
+    try {
+      const response = await fetch("/api/airports/status", {
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) return;
 
-    if (!signal?.aborted) setStatuses(Object.fromEntries(resolved));
+      const payload = (await response.json()) as StatusResponse;
+      if (!payload.statuses || signal?.aborted) return;
+      setStatuses((current) => ({ ...current, ...payload.statuses }));
+    } catch {
+      // 초기 서버 상태 또는 기존 상태를 유지한다.
+    }
   }, []);
 
   useEffect(() => {
