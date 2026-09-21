@@ -8,6 +8,10 @@ import type { FlightMode, FlightsPayload } from "@/lib/tae/types";
 
 type RuntimeAirportStatus = "live" | "preparing" | "ended";
 type StatusMap = Record<string, RuntimeAirportStatus>;
+type ModeSnapshot = {
+  flights: FlightsPayload["flights"];
+  hasVisibleFlights: boolean;
+};
 
 const DAYTIME_STATUS_POLL_MS = 5 * 60_000;
 const EARLY_MORNING_STATUS_POLL_MS = 60_000;
@@ -33,12 +37,12 @@ function initialStatuses(): StatusMap {
   );
 }
 
-async function fetchModeHasVisibleFlights(
+async function fetchModeSnapshot(
   airport: Airport,
   mode: FlightMode,
   nowMs: number,
   signal?: AbortSignal
-) {
+): Promise<ModeSnapshot | null> {
   try {
     const response = await fetch(
       `/api/airports/${airport.code.toLowerCase()}/flights?mode=${mode}`,
@@ -49,7 +53,12 @@ async function fetchModeHasVisibleFlights(
     const payload = (await response.json()) as FlightsPayload;
     if (payload.mode !== mode || !CONNECTED_KAC_SOURCES.has(payload.source)) return null;
 
-    return payload.flights.some((flight) => isWithinCompletedFlightGrace(flight, nowMs));
+    return {
+      flights: payload.flights,
+      hasVisibleFlights: payload.flights.some((flight) =>
+        isWithinCompletedFlightGrace(flight, nowMs)
+      ),
+    };
   } catch {
     return null;
   }
@@ -66,22 +75,31 @@ async function resolveAirportStatus(
   const states = Object.fromEntries(
     MODES.map((mode) => [mode, getKacModeWindowState(mode, airport.code, now)])
   ) as Record<FlightMode, ReturnType<typeof getKacModeWindowState>>;
-  const activeModes = ACTIVE_CHECK_ORDER.filter((mode) => states[mode] === "active");
-
-  if (!activeModes.length) return fallback;
 
   const nowMs = now.getTime();
   let lookupFailed = false;
 
-  // Check arrivals first. As soon as one active board still has visible flights,
-  // the airport is operating and the second request is unnecessary.
-  for (const mode of activeModes) {
-    const visible = await fetchModeHasVisibleFlights(airport, mode, nowMs, signal);
-    if (visible === true) return "live";
-    if (visible === null) lookupFailed = true;
+  // API의 당일 첫 운항편이 규칙보다 빠르면 그 편의 1시간 전으로
+  // 해당 모드의 표시 시작시각을 당긴다. 도착편을 먼저 확인해 운영 중이면
+  // 출발편 요청은 생략해 불필요한 호출을 줄인다.
+  for (const mode of ACTIVE_CHECK_ORDER) {
+    const snapshot = await fetchModeSnapshot(airport, mode, nowMs, signal);
+    if (!snapshot) {
+      lookupFailed = true;
+      continue;
+    }
+
+    states[mode] = getKacModeWindowState(
+      mode,
+      airport.code,
+      now,
+      snapshot.flights
+    );
+
+    if (states[mode] === "active" && snapshot.hasVisibleFlights) return "live";
   }
 
-  // Upstream/API failures must not incorrectly close an airport that is inside an active window.
+  // API 오류 때문에 실제 운영 중인 공항을 종료로 잘못 내리지 않는다.
   if (lookupFailed) return fallback;
 
   if (MODES.some((mode) => states[mode] === "preparing")) return "preparing";
