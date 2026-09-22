@@ -12,8 +12,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Korean Air Newsroom",
   },
   OZ: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Asiana_Airlines_(2024).svg",
-    source: "Asiana Airlines 2024 CI (stable mirror of airline CI)",
+    url: "https://upload.wikimedia.org/wikipedia/commons/7/74/Asiana_Airlines.svg",
+    source: "Asiana Airlines horizontal CI (stable mirror sourced from airline CI)",
   },
   TW: {
     url: "https://otp.twayair.com/images/trinity.svg",
@@ -40,8 +40,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Jin Air CI (stable mirror)",
   },
   RS: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Air_Seoul.svg",
-    source: "Air Seoul CI (stable mirror sourced from official CI)",
+    url: "https://upload.wikimedia.org/wikipedia/commons/6/65/Logo_of_Air_Seoul.svg",
+    source: "Air Seoul horizontal CI (stable mirror sourced from official CI)",
   },
   XU: {
     url: "https://static.wixstatic.com/media/77ab67_c016290eff304b4cbce81a66062be125~mv2.png/v1/fill/w_744,h_248,al_c,q_90,enc_auto/20230511_sumair_RGB.png",
