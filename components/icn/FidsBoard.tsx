@@ -81,9 +81,14 @@ function isDepartedStatus(value: string) {
   );
 }
 
+function isGateChangedStatus(korean: string, english = "") {
+  return /탑승구\s*변경|gate\s*change/i.test(`${korean} ${english}`);
+}
+
 function statusClass(status: string) {
   const s = status.toLowerCase();
 
+  if (s.includes("탑승구 변경") || s.includes("gate change")) return "gate-changed";
   if (s.includes("결항") || s.includes("cancel")) return "cancelled";
   if (s.includes("지연") || s.includes("delay")) return "delayed";
   if (s.includes("마감") || s.includes("final") || s.includes("closed")) return "final";
@@ -491,6 +496,12 @@ export default function FidsBoard() {
                   : localizedStatus(status, language, flight.airportCode);
               const contentLang = languageTagForAirport(flight.airportCode, language);
               const contentDirection = directionForAirport(flight.airportCode, language);
+              const previousGate =
+                isGateChangedStatus(flight.remark, flight.remarkEnglish) &&
+                flight.previousGate &&
+                flight.previousGate !== flight.gate
+                  ? flight.previousGate
+                  : "";
 
               return (
                 <article className="flight-row row-grid" key={group.id}>
@@ -532,8 +543,19 @@ export default function FidsBoard() {
 
                   <div className="counter-value">{flight.checkin || "-"}</div>
 
-                  <div className="gate-value">
-                    <strong>{flight.gate || "-"}</strong>
+                  <div className={`gate-value${previousGate ? " gate-value-changed" : ""}`}>
+                    {previousGate ? (
+                      <div
+                        className="gate-change"
+                        aria-label={`탑승구 ${previousGate}에서 ${flight.gate}(으)로 변경`}
+                      >
+                        <del className="gate-previous">{previousGate}</del>
+                        <i className="gate-arrow" aria-hidden>→</i>
+                        <strong className="gate-current">{flight.gate || "-"}</strong>
+                      </div>
+                    ) : (
+                      <strong>{flight.gate || "-"}</strong>
+                    )}
                     {terminal === "ALL" && <span>{groupedTerminal}</span>}
                   </div>
 
