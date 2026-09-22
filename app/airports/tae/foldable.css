@@ -39,6 +39,10 @@
   .destination-cell span { font-size: 7px; }
   .type-cell span { font-size: 9px; }
   .facility-cell strong { font-size: clamp(15px,2vw,19px); }
+  .gate-change { gap: 2px; }
+  .gate-change .gate-previous,
+  .gate-change .gate-arrow { font-size: clamp(10px,1.35vw,13px); }
+  .gate-change .gate-current { font-size: clamp(14px,1.9vw,18px); }
   .status-cell strong { font-size: clamp(10px,1.45vw,13px); }
   .data-strip { height: 25px; min-height: 25px; font-size: 7px; }
 }
