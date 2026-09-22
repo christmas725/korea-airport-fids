@@ -264,8 +264,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Qingdao Airlines official website horizontal header logo",
   },
   SC: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/ShandongAirlines.svg",
-    source: "Shandong Airlines current horizontal logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://www.mushroomtravel.com/assets/images/airlinelogo/shandong-logo.svg?v=2",
+    source: "Shandong Airlines current horizontal SVG (stable travel-industry mirror; visually matched to current SDA branding)",
   },
   ZH: {
     url: "https://static.airchina.com.cn/cms/1833388735043993600.jpg",
@@ -292,8 +292,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Sun PhuQuoc Airways 2025 horizontal logo (Wikimedia Commons; sourced from official airline materials)",
   },
   B7: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/UNI_Air_logo.png",
-    source: "UNI Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/UNI_Air_Logo.svg",
+    source: "UNI Air current horizontal SVG (Wikimedia Commons; used by current Wikipedia infobox)",
   },
   C6: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Centrum_Air_Logo.svg",
