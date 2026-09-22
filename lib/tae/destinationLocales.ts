@@ -25,7 +25,8 @@ type StatusKey =
   | "gateChanged"
   | "arrived"
   | "scheduled"
-  | "timeChanged";
+  | "timeChanged"
+  | "goToGate";
 
 type StatusTable = Partial<Record<StatusKey, string>>;
 
@@ -102,13 +103,13 @@ const EN_STATUS: StatusTable = {
   ready:"Gate Open", boarding:"Boarding", final:"Gate Closing", delayed:"Delayed",
   cancelled:"Cancelled", departed:"Departed", checkin:"Check-in", checkinClosed:"Check-in Closed",
   onTime:"On Time", gateChanged:"Gate Changed", arrived:"Arrived",
-  scheduled:"Scheduled", timeChanged:"Time Changed",
+  scheduled:"Scheduled", timeChanged:"Time Changed", goToGate:"Go to Gate",
 };
 const KO_STATUS: StatusTable = {
   ready:"탑승준비", boarding:"탑승중", final:"탑승마감", delayed:"지연",
   cancelled:"결항", departed:"출발", checkin:"수속중", checkinClosed:"수속마감",
   onTime:"정시", gateChanged:"탑승구 변경", arrived:"도착",
-  scheduled:"예정", timeChanged:"시간 변경",
+  scheduled:"예정", timeChanged:"시간 변경", goToGate:"탑승장 입장",
 };
 
 const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
@@ -156,14 +157,14 @@ const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
 
 
 const EXTRA_STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
-  ko:{arrived:"도착",scheduled:"예정",timeChanged:"시간 변경"},
-  en:{arrived:"Arrived",scheduled:"Scheduled",timeChanged:"Time Changed"},
-  ja:{arrived:"到着",scheduled:"予定",timeChanged:"時刻変更"},
-  "zh-CN":{arrived:"已到达",scheduled:"计划",timeChanged:"时间变更"},
-  "zh-TW":{arrived:"已抵達",scheduled:"預定",timeChanged:"時間變更"},
-  th:{arrived:"ถึงแล้ว",scheduled:"ตามกำหนด",timeChanged:"เปลี่ยนเวลา"},
-  vi:{arrived:"Đã đến",scheduled:"Dự kiến",timeChanged:"Đổi giờ"},
-  fil:{arrived:"Dumating na",scheduled:"Nakatakda",timeChanged:"Binago ang oras"},
+  ko:{arrived:"도착",scheduled:"예정",timeChanged:"시간 변경",goToGate:"탑승장 입장"},
+  en:{arrived:"Arrived",scheduled:"Scheduled",timeChanged:"Time Changed",goToGate:"Go to Gate"},
+  ja:{arrived:"到着",scheduled:"予定",timeChanged:"時刻変更",goToGate:"搭乗口へ"},
+  "zh-CN":{arrived:"已到达",scheduled:"计划",timeChanged:"时间变更",goToGate:"请前往登机口"},
+  "zh-TW":{arrived:"已抵達",scheduled:"預定",timeChanged:"時間變更",goToGate:"請前往登機門"},
+  th:{arrived:"ถึงแล้ว",scheduled:"ตามกำหนด",timeChanged:"เปลี่ยนเวลา",goToGate:"ไปที่ประตูขึ้นเครื่อง"},
+  vi:{arrived:"Đã đến",scheduled:"Dự kiến",timeChanged:"Đổi giờ",goToGate:"Đến cửa ra máy bay"},
+  fil:{arrived:"Dumating na",scheduled:"Nakatakda",timeChanged:"Binago ang oras",goToGate:"Pumunta sa gate"},
   id:{arrived:"Tiba",scheduled:"Terjadwal",timeChanged:"Waktu berubah"},
   ms:{arrived:"Tiba",scheduled:"Dijadualkan",timeChanged:"Masa berubah"},
   lo:{arrived:"ມາຮອດແລ້ວ",scheduled:"ຕາມກຳນົດ",timeChanged:"ປ່ຽນເວລາ"},
@@ -176,7 +177,7 @@ const EXTRA_STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
   uz:{arrived:"Yetib keldi",scheduled:"Rejalashtirilgan",timeChanged:"Vaqt o‘zgardi"},
   kk:{arrived:"Келді",scheduled:"Жоспарланған",timeChanged:"Уақыт өзгерді"},
   ky:{arrived:"Келди",scheduled:"Пландаштырылган",timeChanged:"Убакыт өзгөрдү"},
-  mn:{arrived:"Ирсэн",scheduled:"Хуваарьтай",timeChanged:"Цаг өөрчлөгдсөн"},
+  mn:{arrived:"Ирсэн",scheduled:"Хуваарьтай",timeChanged:"Цаг өөрчлөгдсөн",goToGate:"Гарц руу очно"},
   ar:{arrived:"وصلت",scheduled:"مجدولة",timeChanged:"تم تغيير الوقت"},
   tr:{arrived:"Vardı",scheduled:"Planlandı",timeChanged:"Saat değişti"},
   he:{arrived:"הגיע",scheduled:"מתוכנן",timeChanged:"השעה השתנתה"},
@@ -206,7 +207,8 @@ function canonicalStatus(value: string): StatusKey | null {
   if (/시간\s*변경|time\s*changed?|schedule\s*change/.test(s)) return "timeChanged";
   if (/수속\s*마감|체크인\s*마감|check.?in\s*(closed|close)/.test(s)) return "checkinClosed";
   if (/수속중|체크인|check.?in/.test(s)) return "checkin";
-  if (/마감\s*예정/.test(s)) return "boarding";
+  if (/탑승장\s*입장|go\s*to\s*gate/.test(s)) return "goToGate";
+  if (/마감\s*예정/.test(s)) return "final";
   if (/예정|scheduled/.test(s)) return "scheduled";
   if (/탑승\s*마감|final\s*call|gate\s*(closing|closed)|마감/.test(s)) return "final";
   if (/탑승중|boarding/.test(s)) return "boarding";
