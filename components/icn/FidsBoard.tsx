@@ -472,7 +472,13 @@ export default function FidsBoard() {
               const hasCodeshareVariants = group.variants.length > 1;
               const changed = isChanged(flight);
               const groupedTerminal = terminalGroup(flight);
-              const status = displayStatus(flight.remark);
+              const previousGate =
+                flight.previousGate && flight.previousGate !== flight.gate
+                  ? flight.previousGate
+                  : "";
+              const status = previousGate
+                ? "탑승구 변경"
+                : displayStatus(flight.remark);
               const feedEnglishDestination = flight.airportEnglish?.trim() ?? "";
               const normalizedAirportCode = flight.airportCode.trim().toUpperCase();
               const englishDestination =
@@ -487,15 +493,13 @@ export default function FidsBoard() {
                     ? englishDestination
                     : localDestinationName(flight.airportCode, englishDestination);
               const displayedStatus =
-                language === "EN" && flight.remarkEnglish
-                  ? displayStatus(flight.remarkEnglish)
-                  : localizedStatus(status, language, flight.airportCode);
+                previousGate
+                  ? localizedStatus("탑승구 변경", language, flight.airportCode)
+                  : language === "EN" && flight.remarkEnglish
+                    ? displayStatus(flight.remarkEnglish)
+                    : localizedStatus(status, language, flight.airportCode);
               const contentLang = languageTagForAirport(flight.airportCode, language);
               const contentDirection = directionForAirport(flight.airportCode, language);
-              const previousGate =
-                flight.previousGate && flight.previousGate !== flight.gate
-                  ? flight.previousGate
-                  : "";
 
               return (
                 <article className="flight-row row-grid" key={group.id}>
