@@ -7,8 +7,8 @@ const REGISTRY_PATH = path.join(ROOT, "lib/fids/officialAirlineLogos.ts");
 const OUTPUT_DIR = path.join(ROOT, "public/airlines");
 const CONCURRENCY = 6;
 const TIMEOUT_MS = 15_000;
-const WIKI_DELAY_MS = 150;
-const MAX_SOURCE_ATTEMPTS = 2;
+const WIKI_DELAY_MS = 450;
+const MAX_SOURCE_ATTEMPTS = 3;
 const FALLBACK_BASE = "https://images.kiwi.com/airlines/64";
 
 const registry = await readFile(REGISTRY_PATH, "utf8");
@@ -36,10 +36,6 @@ function normalizeSourceUrl(rawUrl) {
     const filename = decodeURIComponent(url.pathname.slice(prefix.length));
     const hash = createHash("md5").update(filename).digest("hex");
     const encoded = encodeURIComponent(filename).replace(/%2F/g, "/");
-
-    if (/\.svg$/i.test(filename)) {
-      return `https://upload.wikimedia.org/wikipedia/commons/thumb/${hash[0]}/${hash.slice(0, 2)}/${encoded}/512px-${encoded}.png`;
-    }
 
     return `https://upload.wikimedia.org/wikipedia/commons/${hash[0]}/${hash.slice(0, 2)}/${encoded}`;
   } catch {
