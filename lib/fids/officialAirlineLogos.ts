@@ -195,6 +195,62 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oman_Air_logo.png",
     source: "Oman Air horizontal logo (stable mirror)",
   },
+  GA: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Siluet_Garuda_Indonesia.svg",
+    source: "Garuda Indonesia horizontal wordmark (stable mirror)",
+  },
+  AM: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aerom%C3%A9xico_wordmark.svg",
+    source: "Aeromexico 2024 wordmark (stable mirror sourced from aeromexico.com)",
+  },
+  BI: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Royal_Brunei_Airlines_logo.svg",
+    source: "Royal Brunei Airlines current horizontal logo (stable mirror sourced from flyrb.com)",
+  },
+  SK: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scandinavian_Airlines_logo.svg",
+    source: "SAS current horizontal logo (stable mirror sourced from flysas.com)",
+  },
+  VZ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vietjet_Air_Thailand_logo.svg",
+    source: "Thai VietJet Air horizontal logo (stable mirror sourced from VietJet annual report)",
+  },
+  ET: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ethiopian_Airlines_Logo.svg",
+    source: "Ethiopian Airlines horizontal logo (stable mirror sourced from airline CI)",
+  },
+  EY: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Etihad-airways-logo.svg",
+    source: "Etihad Airways official horizontal logo (stable mirror sourced from etihad.com)",
+  },
+  WS: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/WestJetLogo2018.svg",
+    source: "WestJet 2018 current horizontal logo (stable mirror sourced from westjet.com)",
+  },
+  AC: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Canada_2017.svg",
+    source: "Air Canada current horizontal logo (stable mirror sourced from aircanada.com)",
+  },
+  CM: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Copa_airlines_logo.png",
+    source: "Copa Airlines horizontal logo (stable mirror)",
+  },
+  QF: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Qantas_wordmark_2016.svg",
+    source: "Qantas 2016 current wordmark (stable mirror sourced from qantas.com)",
+  },
+  LA: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Latam-logo_-v_(Indigo).svg",
+    source: "LATAM horizontal logo, indigo-on-white variant (stable mirror)",
+  },
+  UO: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/HK_express_logo_2013.svg",
+    source: "HK Express horizontal logo (stable mirror sourced from hkexpress.com)",
+  },
+  UX: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Europa_Logo_(2015).svg",
+    source: "Air Europa horizontal logo (stable mirror)",
+  },
 };
 
 export function officialAirlineLogo(code: string) {
