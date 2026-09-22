@@ -362,6 +362,35 @@ button {
   line-height: 1;
 }
 
+.gate-change {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, .28vw, 6px);
+  white-space: nowrap;
+}
+
+.gate-change .gate-previous {
+  color: #778391;
+  font-size: clamp(14px, 1.02vw, 19px);
+  font-weight: 750;
+  text-decoration-thickness: 1.5px;
+}
+
+.gate-change .gate-arrow {
+  color: #98a3af;
+  font-size: clamp(13px, .95vw, 18px);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.gate-change .gate-current {
+  color: var(--yellow);
+  font-size: clamp(16px, 1.18vw, 22px);
+  font-weight: 900;
+}
+
 .gate-value span {
   margin-top: 4px;
   min-width: 28px;
@@ -387,6 +416,11 @@ button {
   white-space: nowrap;
   background: #222833;
   color: #e8edf3;
+}
+
+.status-chip.gate-changed {
+  background: #5f4b00;
+  color: #ffe36b;
 }
 
 .status-chip.ready {
