@@ -842,11 +842,9 @@ function isProtectedRolloverFlight(
 }
 
 function flightIdentityKey(flight: DepartureFlight) {
-  const scheduleDay = flight.scheduleDateTime.replace(/\D/g, "").slice(0, 8);
   return [
     normalizeFlightId(flight.flightId),
-    scheduleDay,
-    flight.airportCode.trim().toUpperCase(),
+    flight.scheduleDateTime.replace(/\D/g, "").slice(0, 12),
     terminalLabel(flight.terminalId),
   ].join("|");
 }
@@ -856,13 +854,35 @@ function mergeHomepageWithDetail(
   detailFlights: DepartureFlight[]
 ) {
   const result = [...homepageFlights];
-  const seen = new Set(result.map(flightIdentityKey));
+  const indexByKey = new Map(
+    result.map((flight, index) => [flightIdentityKey(flight), index] as const)
+  );
 
   for (const flight of detailFlights) {
     const key = flightIdentityKey(flight);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(flight);
+    const existingIndex = indexByKey.get(key);
+
+    if (existingIndex === undefined) {
+      indexByKey.set(key, result.length);
+      result.push(flight);
+      continue;
+    }
+
+    const existing = result[existingIndex]!;
+    const existingAirportCode = existing.airportCode.trim().toUpperCase();
+    const detailAirportCode = flight.airportCode.trim().toUpperCase();
+
+    // 같은 편명/예정시각/터미널의 홈페이지 행이 목적지 파싱 실패로
+    // 공항코드를 잃은 경우, 별도 행을 추가하지 말고 상세 OpenAPI의
+    // 정상 목적지 정보만 보강한다. 실시간 게이트/체크인/현황은 홈페이지 값을 유지한다.
+    if (!existingAirportCode && detailAirportCode) {
+      result[existingIndex] = {
+        ...existing,
+        airport: flight.airport || existing.airport,
+        airportCode: detailAirportCode,
+        airportEnglish: flight.airportEnglish || flight.airport || existing.airportEnglish,
+      };
+    }
   }
 
   return result;
