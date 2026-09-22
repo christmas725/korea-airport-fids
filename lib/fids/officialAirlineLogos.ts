@@ -115,13 +115,13 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   MU: {
     url: "/airlines/MU.svg",
-    sourceUrl: "https://upload.wikimedia.org/wikinews/en/6/6b/China_Eastern_Airlines_logo.svg",
-    source: "China Eastern Airlines horizontal logo (Wikinews mirror; 209×46 wordmark layout)",
+    sourceUrl: "https://companieslogo.com/img/orig/600115.SS_BIG-581e66c6.svg",
+    source: "China Eastern Airlines horizontal full wordmark (CompaniesLogo stable mirror)",
   },
   CZ: {
     url: "/airlines/CZ.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Southern_Airlines_logo.svg",
-    source: "China Southern Airlines current horizontal CI (stable mirror sourced from csair.com)",
+    sourceUrl: "https://companieslogo.com/img/orig/600029.SS_BIG-2fef4522.svg",
+    source: "China Southern Airlines horizontal full wordmark (CompaniesLogo stable mirror)",
   },
   TG: {
     url: "/airlines/TG.svg",
@@ -401,12 +401,52 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   AS: {
     url: "/airlines/AS.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Alaska_Airlines_logo.svg",
-    source: "Alaska Airlines current horizontal wordmark (Wikimedia Commons; sourced from Alaska Airlines branding)",
+    source: "Alaska Airlines current horizontal wordmark (Wikimedia Commons; sourced from Alaska Airlines media kit)",
   },
   KQ: {
     url: "/airlines/KQ.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kenya_Airways_logo.svg",
-    source: "Kenya Airways current horizontal logo (Wikimedia Commons; sourced from kenya-airways.com)",
+    source: "Kenya Airways horizontal logo (Wikimedia Commons; sourced from kenya-airways.com)",
+  },
+  "5J": {
+    url: "/airlines/5J.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cebu_Pacific_wordmark.svg",
+    source: "Cebu Pacific horizontal wordmark (Wikimedia Commons; sourced from Cebu Pacific)",
+  },
+  AY: {
+    url: "/airlines/AY.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Finnair_Logo.svg",
+    source: "Finnair horizontal wordmark (Wikimedia Commons; sourced from finnair.com)",
+  },
+  JQ: {
+    url: "/airlines/JQ.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jetstar_logo.svg",
+    source: "Jetstar horizontal logo (Wikimedia Commons)",
+  },
+  TR: {
+    url: "/airlines/TR.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scoot_logo.svg",
+    source: "Scoot current official logo (Wikimedia Commons; sourced from flyscoot.com)",
+  },
+  AT: {
+    url: "/airlines/AT.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/fr/c/c7/Logo_Royal_Air_Maroc_2013_%28Horizontal%29.svg",
+    source: "Royal Air Maroc 2013 horizontal logo (Wikipedia mirror)",
+  },
+  BA: {
+    url: "/airlines/BA.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/BRITISH_AIRWAYS_logo.svg",
+    source: "British Airways horizontal wordmark (Wikimedia Commons; sourced from britishairways.com)",
+  },
+  IB: {
+    url: "/airlines/IB.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logotipo_de_Iberia.svg",
+    source: "Iberia current horizontal logo (Wikimedia Commons)",
+  },
+  JU: {
+    url: "/airlines/JU.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Serbia_logo.svg",
+    source: "Air Serbia horizontal wordmark (Wikimedia Commons; sourced from Air Serbia)",
   },
 };
 
