@@ -66,6 +66,7 @@ function statusClass(value: string) {
   if (/지연|delay|시간\s*변경|changed/.test(status)) return "delayed";
   if (/마감|final|closed/.test(status)) return "final";
   if (/탑승중|boarding/.test(status)) return "boarding";
+  if (/탑승장\s*입장|go\s*to\s*gate/.test(status)) return "ready";
   if (/탑승준비|gate open|ready/.test(status)) return "ready";
   if (/출발|도착|departed|arrived/.test(status)) return "complete";
   return "normal";
