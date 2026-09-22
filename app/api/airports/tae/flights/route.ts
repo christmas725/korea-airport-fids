@@ -44,6 +44,15 @@ function normalizedFlightId(value: string) {
   return value.replace(/\s+/g, "").toUpperCase();
 }
 
+const PREVIOUS_GATE_KEYS = [
+  "prevGate", "previousGate", "oldGate", "beforeGate", "orgGate",
+  "PREV_GATE", "PREVIOUS_GATE", "OLD_GATE", "BEFORE_GATE", "ORG_GATE", "GATE_BEFORE",
+];
+
+function previousGate(raw: RawKacFlight) {
+  return first(raw, PREVIOUS_GATE_KEYS);
+}
+
 function kstParts(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -149,6 +158,7 @@ function normalizeGwInfoFlight(raw: RawKacFlight, mode: FlightMode, index: numbe
     estimatedDateTime: fullDateTime(estimatedRaw, date, scheduleRaw) || fullDateTime(scheduleRaw, date),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, date, scheduleRaw) : "",
     facility: departure ? first(raw, ["gate", "GATE"], "-") : first(raw, ["baggageClaim", "BAGGAGE_CLAIM"], "-"),
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["line", "LINE"])),
     remark,
@@ -183,6 +193,7 @@ function normalizeGwOperationFlight(raw: RawKacFlight, mode: FlightMode, index: 
     estimatedDateTime: fullDateTime(estimatedRaw, operationDate, scheduleRaw) || fullDateTime(scheduleRaw, operationDate),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, operationDate, scheduleRaw) : "",
     facility: "-",
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["line"])),
     remark,
@@ -212,6 +223,7 @@ function normalizeHomepageFlight(raw: RawKacFlight, mode: FlightMode, index: num
     estimatedDateTime: fullDateTime(estimatedRaw, operationDate, scheduleRaw) || fullDateTime(scheduleRaw, operationDate),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, operationDate, scheduleRaw) : "",
     facility: departure ? first(raw, ["GATE", "gate"], "-") : "-",
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["LINE", "line"])),
     remark,
@@ -410,6 +422,7 @@ function mergeOperationFlights(baseFlights: FidsFlight[], operationFlights: Fids
       remark: flight.remark || meta.remark,
       actualDateTime: flight.actualDateTime || meta.actualDateTime,
       facility: flight.facility || meta.facility || "-",
+      previousFacility: flight.previousFacility || meta.previousFacility,
     };
   });
 
@@ -445,6 +458,7 @@ function mergeOperationFlights(baseFlights: FidsFlight[], operationFlights: Fids
     flight.airportCode = master.airportCode || flight.airportCode;
     flight.flightType = master.flightType;
     flight.facility = master.facility || flight.facility;
+    flight.previousFacility = master.previousFacility || flight.previousFacility;
     flight.remark = master.remark || flight.remark;
     flight.remarkEnglish = master.remarkEnglish || flight.remarkEnglish;
   });
@@ -580,7 +594,15 @@ async function enrichFacilities(flights: FidsFlight[], date: string, mode: Fligh
       mode === "departures"
         ? first(detail, ["GATE", "gate"], flight.facility)
         : first(detail, ["BAGGAGE_CLAIM", "baggageClaim"], flight.facility);
-    return facility && facility !== flight.facility ? { ...flight, facility } : flight;
+    const previousFacility =
+      mode === "departures"
+        ? previousGate(detail) || flight.previousFacility
+        : flight.previousFacility;
+
+    if (facility !== flight.facility || previousFacility !== flight.previousFacility) {
+      return { ...flight, facility, previousFacility };
+    }
+    return flight;
   });
 
   return { flights: enriched, usedDetail: true };
