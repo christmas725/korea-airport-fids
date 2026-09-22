@@ -1,7 +1,8 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import OperationNotice from "@/components/fids/OperationNotice";
+import AirlineLogo from "@/components/fids/AirlineLogo";
 import SlidingText from "@/components/fids/SlidingText";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
@@ -33,7 +34,6 @@ type DepartureSignalState = {
 const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const DEPARTURE_SIGNAL_GRACE_MS = 5 * 60_000;
-const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
 
 function formatTime(value: string) {
@@ -53,10 +53,6 @@ function formatDate(value: Date) {
 
 function normalizedId(value: string) {
   return value.replace(/\s+/g, "").toUpperCase();
-}
-
-function airlineCode(value: string) {
-  return normalizedId(value).match(/^([A-Z0-9]{2})/)?.[1] ?? "--";
 }
 
 function displayStatus(value: string, mode: FlightMode, language: DisplayLanguage, airportCode: string) {
@@ -117,17 +113,6 @@ function groupFlights(flights: FidsFlight[]): FlightGroup[] {
     variants,
   }));
 }
-
-const AirlineLogo = memo(function AirlineLogo({ flightId }: { flightId: string }) {
-  const code = airlineCode(flightId);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [code]);
-  return failed ? (
-    <span className="logo-fallback">{code}</span>
-  ) : (
-    <img src={`${AIRLINE_LOGO_BASE}/${code}.png`} alt="" onError={() => setFailed(true)} />
-  );
-});
 
 function destinationFor(flight: FidsFlight, language: DisplayLanguage) {
   if (language === "KO") return flight.airport || flight.airportCode || "-";
