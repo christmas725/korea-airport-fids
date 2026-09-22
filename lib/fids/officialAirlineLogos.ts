@@ -251,6 +251,26 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Europa_Logo_(2015).svg",
     source: "Air Europa horizontal logo (stable mirror)",
   },
+  QV: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LaoAirlineslogo.png",
+    source: "Lao Airlines horizontal logo (stable mirror)",
+  },
+  GS: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tianjin_Airlines_logo.png",
+    source: "Tianjin Airlines horizontal logo (stable mirror)",
+  },
+  QW: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Qingdao_Airlines.png",
+    source: "Qingdao Airlines horizontal logo (stable mirror)",
+  },
+  SC: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shandong_Airlines-Logo.png",
+    source: "Shandong Airlines horizontal logo (stable mirror)",
+  },
+  ZH: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shenzhen_Airlines_Logo.png",
+    source: "Shenzhen Airlines horizontal logo (stable mirror)",
+  },
 };
 
 export function officialAirlineLogo(code: string) {
