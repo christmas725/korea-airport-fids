@@ -131,6 +131,70 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/United_Airlines_wordmark.svg",
     source: "United Airlines current horizontal wordmark (stable mirror sourced from official corporate materials)",
   },
+  MF: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Xiamen_Air_Logo.svg",
+    source: "XiamenAir horizontal logo (stable mirror; extracted from airline homepage)",
+  },
+  VJ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/VietJet_Air_logo.svg",
+    source: "VietJet Air horizontal logo (stable mirror sourced from vietjetair.com)",
+  },
+  LO: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LOT_Polish_Airlines_wordmark.svg",
+    source: "LOT Polish Airlines wordmark (stable mirror sourced from lot.com)",
+  },
+  AI: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_India_2023.svg",
+    source: "Air India 2023 current horizontal logo (stable mirror sourced from airindia.com)",
+  },
+  NZ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_New_Zealand_logo.svg",
+    source: "Air New Zealand current horizontal wordmark (stable mirror sourced from airline materials)",
+  },
+  IT: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tigerair_Taiwan_logo.svg",
+    source: "Tigerair Taiwan horizontal logo (stable mirror sourced from tigerairtw.com)",
+  },
+  JX: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Starlux_wordmark.svg",
+    source: "STARLUX Airlines wordmark (stable mirror sourced from starlux-airlines.com)",
+  },
+  PR: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Philippine_Airlines_logo.svg",
+    source: "Philippine Airlines horizontal logo (stable mirror sourced from philippineairlines.com)",
+  },
+  VS: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Virgin_Atlantic_logo_2018.svg",
+    source: "Virgin Atlantic current logo (stable mirror sourced from virginatlantic.com)",
+  },
+  ZG: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/ZIPAIR_Tokyo_full_logo.svg",
+    source: "ZIPAIR Tokyo full horizontal logo (stable mirror sourced from zipair.net)",
+  },
+  LH: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Lufthansa_Logo_2018.svg",
+    source: "Lufthansa 2018 current horizontal logo (stable mirror sourced from Lufthansa Styleguide)",
+  },
+  MH: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Malaysia-airlines-logo-alt.png",
+    source: "Malaysia Airlines horizontal logo (stable mirror sourced from malaysiaairlines.com)",
+  },
+  KC: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Astana_Logo.jpg",
+    source: "Air Astana horizontal logo (stable mirror)",
+  },
+  "9C": {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Spring_Airlines.jpg",
+    source: "Spring Airlines horizontal logo (stable mirror sourced from Spring Airlines)",
+  },
+  OM: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/MIAT_Eng_Logo_JPG_(1).jpg",
+    source: "MIAT Mongolian Airlines English horizontal logo (stable mirror)",
+  },
+  WY: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oman_Air_logo.png",
+    source: "Oman Air horizontal logo (stable mirror)",
+  },
 };
 
 export function officialAirlineLogo(code: string) {
