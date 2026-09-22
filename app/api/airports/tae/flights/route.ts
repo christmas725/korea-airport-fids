@@ -23,6 +23,8 @@ const MAX_FLIGHT_PAGES = 20;
 const DETAIL_PAGE_SIZE = 100;
 const DETAIL_LOOKBACK_MS = 3 * 60 * 60_000;
 const DETAIL_LOOKAHEAD_MS = 4 * 60 * 60_000;
+const GATE_HISTORY_ENDPOINT = "https://kfcnzzcjjndmexzrmcrd.supabase.co/functions/v1/kac-gate-history";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_SIAqFa0yNUBg5YcFUidg_hmo6-TaI";
 
 type GwPage = {
   items: RawKacFlight[];
@@ -608,6 +610,87 @@ async function enrichFacilities(flights: FidsFlight[], date: string, mode: Fligh
   return { flights: enriched, usedDetail: true };
 }
 
+
+type GateHistoryRow = {
+  flight_key?: string;
+  previous_gate?: string | null;
+  current_gate?: string | null;
+};
+
+function isoOperationDate(date: string) {
+  const digits = date.replace(/\D/g, "").slice(0, 8);
+  return digits.length === 8
+    ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`
+    : "";
+}
+
+function validGate(value: string | null | undefined) {
+  const gate = (value ?? "").trim();
+  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+}
+
+async function enrichGateHistory(
+  flights: FidsFlight[],
+  date: string,
+  mode: FlightMode,
+  airportCode: string
+) {
+  if (mode !== "departures" || !flights.length) {
+    return { flights, usedHistory: false };
+  }
+
+  const operationDate = isoOperationDate(date);
+  if (!operationDate) return { flights, usedHistory: false };
+
+  const endpoint = new URL(GATE_HISTORY_ENDPOINT);
+  endpoint.searchParams.set("airport", airportCode);
+  endpoint.searchParams.set("date", operationDate);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: "application/json",
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+    },
+    next: { revalidate: 15 },
+    signal: AbortSignal.timeout(3_000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`게이트 이력 조회 실패 ${response.status}`);
+  }
+
+  const json = await response.json();
+  const rows = Array.isArray(json?.gates) ? (json.gates as GateHistoryRow[]) : [];
+  if (!rows.length) return { flights, usedHistory: true };
+
+  const history = new Map(
+    rows
+      .map((row) => [normalizedFlightId(row.flight_key ?? ""), row] as const)
+      .filter(([key]) => Boolean(key))
+  );
+
+  return {
+    usedHistory: true,
+    flights: flights.map((flight) => {
+      if (validGate(flight.previousFacility)) return flight;
+
+      const key = normalizedFlightId(flight.masterFlightId || flight.flightId);
+      const row = history.get(key);
+      if (!row) return flight;
+
+      const current = validGate(row.current_gate);
+      const previous = validGate(row.previous_gate);
+      const displayedCurrent = validGate(flight.facility);
+
+      if (!previous || !current || previous === current || current !== displayedCurrent) {
+        return flight;
+      }
+
+      return { ...flight, previousFacility: previous };
+    }),
+  };
+}
+
 async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
   const endpoint = process.env.KAC_HOMEPAGE_API_URL?.trim() || HOMEPAGE_ENDPOINT;
   const body = new URLSearchParams({
@@ -720,6 +803,14 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
       if (facilityResult.usedDetail) dataSources.push("kac-flight-status-detail-gw");
     } catch (error) {
       console.warn(`[${airportCode} FIDS] 시설정보 보강 조회 실패`, error);
+    }
+
+    try {
+      const gateHistoryResult = await enrichGateHistory(flights, date, mode, airportCode);
+      flights = gateHistoryResult.flights;
+      if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+    } catch (error) {
+      console.warn(`[${airportCode} FIDS] 게이트 이력 보강 조회 실패`, error);
     }
 
     return NextResponse.json(payload(airportCode, mode, flights, "kac_gw", undefined, dataSources), {
