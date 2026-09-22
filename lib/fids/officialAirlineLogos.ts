@@ -296,12 +296,12 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "UNI Air current horizontal SVG (Wikimedia Commons; used by current Wikipedia infobox)",
   },
   C6: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Centrum_Air_Logo.svg",
-    source: "Centrum Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://centrum-air.com/logo.svg",
+    source: "Centrum Air official website horizontal logo",
   },
   TN: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Tahiti_Nui_logo.svg",
-    source: "Air Tahiti Nui current logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://www.airtahitinui.com/themes/custom/atn/logo.svg",
+    source: "Air Tahiti Nui official website horizontal logo",
   },
   "3U": {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sichuan_Airlines_logo.svg",
