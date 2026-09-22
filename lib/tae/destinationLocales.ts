@@ -25,7 +25,8 @@ type StatusKey =
   | "gateChanged"
   | "arrived"
   | "scheduled"
-  | "timeChanged";
+  | "timeChanged"
+  | "goToGate";
 
 type StatusTable = Partial<Record<StatusKey, string>>;
 
@@ -35,8 +36,8 @@ function assign(locale: LocalLocale, codes: string[]) {
   codes.forEach((code) => { CODE_LOCALE[code] = locale; });
 }
 
-assign("ko", ["CJU", "PUS"]);
-assign("ja", ["NRT","HND","KIX","ITM","FUK","CTS","NGO","OKA","SDJ","KMQ","FSZ","HIJ","TAK","MYJ","KMJ","KOJ","NGS","OIT","KCZ","AOJ","HKD","KIJ","TOY","YGJ","TKS","UBJ"]);
+assign("ko", ["ICN","GMP","CJU","PUS","CJJ","YNY","WJU","TAE","USN","HIN","KPO","KWJ","RSU","MWX","KUV"]);
+assign("ja", ["NRT","HND","KIX","ITM","FUK","CTS","NGO","OKA","SDJ","KMQ","FSZ","HIJ","TAK","MYJ","KMJ","KOJ","NGS","OIT","KCZ","AOJ","HKD","KIJ","TOY","YGJ","TKS","UBJ","IBR"]);
 assign("zh-CN", ["HET","PEK","PKX","PVG","SHA","CAN","SZX","TAO","TSN","DLC","SHE","HGH","NKG","WUH","XIY","CKG","TFU","CTU","KMG","CSX","XMN","FOC","WUX","CGO","HRB","YNT","WEH","TNA","CGQ","HAK","SYX","NGB","URC","KWE","HFE","SJW","YNJ","WNZ","JJN","LJG","DYG"]);
 assign("zh-TW", ["HKG","MFM","TPE","TSA","KHH","RMQ"]);
 assign("th", ["BKK","DMK","CNX","HKT"]);
@@ -79,8 +80,10 @@ assign("de", ["VIE"]); // 오스트리아 독일어
 
 /** 공항 FIDS에서 쓰기 좋은 현지어 목적지 표기. 없는 곳은 영문 표기로 안전하게 fallback. */
 const LOCAL_DESTINATION: Record<string, string> = {
-  CJU:"제주", PUS:"부산/김해",
-  NRT:"東京/成田", HND:"東京/羽田", KIX:"大阪/関西", ITM:"大阪/伊丹", FUK:"福岡", CTS:"札幌/新千歳", NGO:"名古屋/中部", OKA:"沖縄/那覇", SDJ:"仙台", KMQ:"小松", FSZ:"静岡", HIJ:"広島", TAK:"高松", MYJ:"松山", KMJ:"熊本", KOJ:"鹿児島", NGS:"長崎", OIT:"大分", KCZ:"高知", AOJ:"青森", HKD:"函館", KIJ:"新潟", TOY:"富山", YGJ:"米子", TKS:"徳島", UBJ:"山口宇部",
+  ICN:"서울/인천", GMP:"서울/김포", CJU:"제주", PUS:"부산/김해",
+  CJJ:"청주", YNY:"양양", WJU:"원주", TAE:"대구", USN:"울산", HIN:"사천",
+  KPO:"포항/경주", KWJ:"광주", RSU:"여수", MWX:"무안", KUV:"군산",
+  NRT:"東京/成田", HND:"東京/羽田", KIX:"大阪/関西", ITM:"大阪/伊丹", FUK:"福岡", CTS:"札幌/新千歳", NGO:"名古屋/中部", OKA:"沖縄/那覇", SDJ:"仙台", KMQ:"小松", FSZ:"静岡", HIJ:"広島", TAK:"高松", MYJ:"松山", KMJ:"熊本", KOJ:"鹿児島", NGS:"長崎", OIT:"大分", KCZ:"高知", AOJ:"青森", HKD:"函館", KIJ:"新潟", TOY:"富山", YGJ:"米子", TKS:"徳島", UBJ:"山口宇部", IBR:"茨城",
   HET:"呼和浩特", PEK:"北京/首都", PKX:"北京/大兴", PVG:"上海/浦东", SHA:"上海/虹桥", CAN:"广州", SZX:"深圳", TAO:"青岛", TSN:"天津", DLC:"大连", SHE:"沈阳", HGH:"杭州", NKG:"南京", WUH:"武汉", XIY:"西安", CKG:"重庆", TFU:"成都/天府", CTU:"成都/双流", KMG:"昆明", CSX:"长沙", XMN:"厦门", FOC:"福州", WUX:"无锡", CGO:"郑州", HRB:"哈尔滨", YNT:"烟台", WEH:"威海", TNA:"济南", CGQ:"长春", HAK:"海口", SYX:"三亚", NGB:"宁波", URC:"乌鲁木齐", KWE:"贵阳", HFE:"合肥", SJW:"石家庄", YNJ:"延吉", WNZ:"温州", JJN:"泉州/晋江", LJG:"丽江", DYG:"张家界",
   HKG:"香港", MFM:"澳門", TPE:"臺北/桃園", TSA:"臺北/松山", KHH:"高雄", RMQ:"臺中",
   BKK:"กรุงเทพฯ/สุวรรณภูมิ", DMK:"กรุงเทพฯ/ดอนเมือง", CNX:"เชียงใหม่", HKT:"ภูเก็ต",
@@ -100,13 +103,13 @@ const EN_STATUS: StatusTable = {
   ready:"Gate Open", boarding:"Boarding", final:"Gate Closing", delayed:"Delayed",
   cancelled:"Cancelled", departed:"Departed", checkin:"Check-in", checkinClosed:"Check-in Closed",
   onTime:"On Time", gateChanged:"Gate Changed", arrived:"Arrived",
-  scheduled:"Scheduled", timeChanged:"Time Changed",
+  scheduled:"Scheduled", timeChanged:"Time Changed", goToGate:"Go to Gate",
 };
 const KO_STATUS: StatusTable = {
   ready:"탑승준비", boarding:"탑승중", final:"탑승마감", delayed:"지연",
   cancelled:"결항", departed:"출발", checkin:"수속중", checkinClosed:"수속마감",
   onTime:"정시", gateChanged:"탑승구 변경", arrived:"도착",
-  scheduled:"예정", timeChanged:"시간 변경",
+  scheduled:"예정", timeChanged:"시간 변경", goToGate:"탑승장 입장",
 };
 
 const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
@@ -154,14 +157,14 @@ const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
 
 
 const EXTRA_STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
-  ko:{arrived:"도착",scheduled:"예정",timeChanged:"시간 변경"},
-  en:{arrived:"Arrived",scheduled:"Scheduled",timeChanged:"Time Changed"},
-  ja:{arrived:"到着",scheduled:"予定",timeChanged:"時刻変更"},
-  "zh-CN":{arrived:"已到达",scheduled:"计划",timeChanged:"时间变更"},
-  "zh-TW":{arrived:"已抵達",scheduled:"預定",timeChanged:"時間變更"},
-  th:{arrived:"ถึงแล้ว",scheduled:"ตามกำหนด",timeChanged:"เปลี่ยนเวลา"},
-  vi:{arrived:"Đã đến",scheduled:"Dự kiến",timeChanged:"Đổi giờ"},
-  fil:{arrived:"Dumating na",scheduled:"Nakatakda",timeChanged:"Binago ang oras"},
+  ko:{arrived:"도착",scheduled:"예정",timeChanged:"시간 변경",goToGate:"탑승장 입장"},
+  en:{arrived:"Arrived",scheduled:"Scheduled",timeChanged:"Time Changed",goToGate:"Go to Gate"},
+  ja:{arrived:"到着",scheduled:"予定",timeChanged:"時刻変更",goToGate:"搭乗口へ"},
+  "zh-CN":{arrived:"已到达",scheduled:"计划",timeChanged:"时间变更",goToGate:"请前往登机口"},
+  "zh-TW":{arrived:"已抵達",scheduled:"預定",timeChanged:"時間變更",goToGate:"請前往登機門"},
+  th:{arrived:"ถึงแล้ว",scheduled:"ตามกำหนด",timeChanged:"เปลี่ยนเวลา",goToGate:"ไปที่ประตูขึ้นเครื่อง"},
+  vi:{arrived:"Đã đến",scheduled:"Dự kiến",timeChanged:"Đổi giờ",goToGate:"Đến cửa ra máy bay"},
+  fil:{arrived:"Dumating na",scheduled:"Nakatakda",timeChanged:"Binago ang oras",goToGate:"Pumunta sa gate"},
   id:{arrived:"Tiba",scheduled:"Terjadwal",timeChanged:"Waktu berubah"},
   ms:{arrived:"Tiba",scheduled:"Dijadualkan",timeChanged:"Masa berubah"},
   lo:{arrived:"ມາຮອດແລ້ວ",scheduled:"ຕາມກຳນົດ",timeChanged:"ປ່ຽນເວລາ"},
@@ -174,7 +177,7 @@ const EXTRA_STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
   uz:{arrived:"Yetib keldi",scheduled:"Rejalashtirilgan",timeChanged:"Vaqt o‘zgardi"},
   kk:{arrived:"Келді",scheduled:"Жоспарланған",timeChanged:"Уақыт өзгерді"},
   ky:{arrived:"Келди",scheduled:"Пландаштырылган",timeChanged:"Убакыт өзгөрдү"},
-  mn:{arrived:"Ирсэн",scheduled:"Хуваарьтай",timeChanged:"Цаг өөрчлөгдсөн"},
+  mn:{arrived:"Ирсэн",scheduled:"Хуваарьтай",timeChanged:"Цаг өөрчлөгдсөн",goToGate:"Гарц руу очно"},
   ar:{arrived:"وصلت",scheduled:"مجدولة",timeChanged:"تم تغيير الوقت"},
   tr:{arrived:"Vardı",scheduled:"Planlandı",timeChanged:"Saat değişti"},
   he:{arrived:"הגיע",scheduled:"מתוכנן",timeChanged:"השעה השתנתה"},
@@ -204,7 +207,8 @@ function canonicalStatus(value: string): StatusKey | null {
   if (/시간\s*변경|time\s*changed?|schedule\s*change/.test(s)) return "timeChanged";
   if (/수속\s*마감|체크인\s*마감|check.?in\s*(closed|close)/.test(s)) return "checkinClosed";
   if (/수속중|체크인|check.?in/.test(s)) return "checkin";
-  if (/마감\s*예정/.test(s)) return "boarding";
+  if (/탑승장\s*입장|go\s*to\s*gate/.test(s)) return "goToGate";
+  if (/마감\s*예정/.test(s)) return "final";
   if (/예정|scheduled/.test(s)) return "scheduled";
   if (/탑승\s*마감|final\s*call|gate\s*(closing|closed)|마감/.test(s)) return "final";
   if (/탑승중|boarding/.test(s)) return "boarding";

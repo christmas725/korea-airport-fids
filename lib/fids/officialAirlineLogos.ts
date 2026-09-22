@@ -345,8 +345,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   HO: {
     url: "/airlines/HO.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Juneyao_Air_logo.svg",
-    source: "Juneyao Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://staticglobal.juneyaoair.com/global1784793249251/logo.C_4nhiLp.png",
+    source: "Juneyao Air official current horizontal website logo",
   },
   VA: {
     url: "/airlines/VA.svg",
@@ -380,18 +380,18 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   "3U": {
     url: "/airlines/3U.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sichuan_Airlines_logo.svg",
-    source: "Sichuan Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://i.logos-download.com/5817/1292-38b9797b520ae04f69f00fa42330e319.svg/Sichuan_Airlines_Logo.svg?dl",
+    source: "Sichuan Airlines horizontal vector mirror (artwork sourced from Sichuan Airlines official branding)",
   },
   DR: {
     url: "/airlines/DR.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ruili_Airlines_logo.png",
-    source: "Ruili Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://en.wikipedia.org/wiki/Special:Redirect/file/Ruili_Airlines_logo.png",
+    source: "Ruili Airlines logo-with-name image used by the current English Wikipedia infobox",
   },
   PN: {
     url: "/airlines/PN.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/West_Air_(China)_Logo.png",
-    source: "West Air China current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://en.wikipedia.org/wiki/Special:Redirect/file/West_Air_(China)_Logo.png",
+    source: "West Air China logo used by the current English Wikipedia infobox",
   },
   GJ: {
     url: "/airlines/GJ.svg",

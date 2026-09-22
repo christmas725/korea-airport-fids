@@ -1,13 +1,13 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { createHash } from "node:crypto";
 
 const ROOT = process.cwd();
 const REGISTRY_PATH = path.join(ROOT, "lib/fids/officialAirlineLogos.ts");
 const OUTPUT_DIR = path.join(ROOT, "public/airlines");
 const CONCURRENCY = 6;
 const TIMEOUT_MS = 15_000;
-const WIKI_DELAY_MS = 1500;
+const WIKI_DELAY_MS = 900;
+const WIKIMEDIA_THUMB_WIDTH = 500;
 const MAX_SOURCE_ATTEMPTS = 2;
 const FALLBACK_BASE = "https://images.kiwi.com/airlines/64";
 
@@ -26,18 +26,33 @@ await mkdir(OUTPUT_DIR, { recursive: true });
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let wikiQueue = Promise.resolve();
 
+function wikimediaThumbnailUrl(filename) {
+  const query = new URLSearchParams({
+    title: `Special:Redirect/file/${filename}`,
+    width: String(WIKIMEDIA_THUMB_WIDTH),
+  });
+  return `https://commons.wikimedia.org/w/index.php?${query.toString()}`;
+}
+
 function normalizeSourceUrl(rawUrl) {
   try {
     const url = new URL(rawUrl);
-    if (url.hostname !== "commons.wikimedia.org") return rawUrl;
-    const prefix = "/wiki/Special:Redirect/file/";
-    if (!url.pathname.startsWith(prefix)) return rawUrl;
+    const redirectPrefix = "/wiki/Special:Redirect/file/";
 
-    const filename = decodeURIComponent(url.pathname.slice(prefix.length));
-    const hash = createHash("md5").update(filename).digest("hex");
-    const encoded = encodeURIComponent(filename).replace(/%2F/g, "/");
+    if (url.hostname === "commons.wikimedia.org" && url.pathname.startsWith(redirectPrefix)) {
+      const filename = decodeURIComponent(url.pathname.slice(redirectPrefix.length));
+      return wikimediaThumbnailUrl(filename);
+    }
 
-    return `https://upload.wikimedia.org/wikipedia/commons/${hash[0]}/${hash.slice(0, 2)}/${encoded}`;
+    if (
+      url.hostname === "upload.wikimedia.org" &&
+      url.pathname.startsWith("/wikipedia/commons/")
+    ) {
+      const filename = decodeURIComponent(url.pathname.split("/").pop() || "");
+      if (filename) return wikimediaThumbnailUrl(filename);
+    }
+
+    return rawUrl;
   } catch {
     return rawUrl;
   }

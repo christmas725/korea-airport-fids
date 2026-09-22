@@ -2,12 +2,25 @@ export type DestinationLanguage = "KO" | "EN";
 
 import { sharedDestinationEnglish } from "@/lib/fids/destinationOverrides";
 
-// 인천공항 출발편에서 자주 보이는 목적지의 FIDS용 영문 표기.
-// API가 한국어 공항명을 내려주는 경우에도 airportCode를 기준으로 영문명을 안정적으로 표시한다.
+// 통합 FIDS에서 자주 보이는 목적지의 영문 표기.
+// API가 한국어 공항명이나 코드만 내려주는 경우에도 airportCode를 기준으로 영문명을 안정적으로 표시한다.
 const DESTINATION_EN: Record<string, string> = {
   // Korea / Japan
+  ICN: "SEOUL/INCHEON",
+  GMP: "SEOUL/GIMPO",
   CJU: "JEJU",
   PUS: "BUSAN/GIMHAE",
+  CJJ: "CHEONGJU",
+  YNY: "YANGYANG",
+  WJU: "WONJU",
+  TAE: "DAEGU",
+  USN: "ULSAN",
+  HIN: "SACHEON",
+  KPO: "POHANG/GYEONGJU",
+  KWJ: "GWANGJU",
+  RSU: "YEOSU",
+  MWX: "MUAN",
+  KUV: "GUNSAN",
   NRT: "TOKYO/NARITA",
   HND: "TOKYO/HANEDA",
   KIX: "OSAKA/KANSAI",
@@ -34,6 +47,7 @@ const DESTINATION_EN: Record<string, string> = {
   YGJ: "YONAGO",
   TKS: "TOKUSHIMA",
   UBJ: "YAMAGUCHI/UBE",
+  IBR: "IBARAKI",
 
   // China / Hong Kong / Macau / Taiwan
   PEK: "BEIJING/CAPITAL",
