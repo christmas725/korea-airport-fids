@@ -12,7 +12,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Korean Air Newsroom",
   },
   OZ: {
-    url: "https://upload.wikimedia.org/wikipedia/commons/7/74/Asiana_Airlines.svg",
+    url: "https://upload.wikimedia.org/wikipedia/commons/4/47/Asiana_Airlines_%282024%29.svg",
     source: "Asiana Airlines horizontal CI (stable mirror sourced from airline CI)",
   },
   TW: {
@@ -36,8 +36,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Busan",
   },
   LJ: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jin_Air_logo.svg",
-    source: "Jin Air CI (stable mirror)",
+    url: "https://companieslogo.com/img/orig/272450.KS_BIG-9ba87455.svg",
+    source: "Jin Air current CI (stable mirror; official site blocks hotlinking)",
   },
   RS: {
     url: "https://upload.wikimedia.org/wikipedia/commons/6/65/Logo_of_Air_Seoul.svg",
