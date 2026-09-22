@@ -472,9 +472,13 @@ export default function FidsBoard() {
               const changed = isChanged(flight);
               const groupedTerminal = terminalGroup(flight);
               const status = displayStatus(flight.remark);
+              const feedEnglishDestination = flight.airportEnglish?.trim() ?? "";
+              const normalizedAirportCode = flight.airportCode.trim().toUpperCase();
               const englishDestination =
-                flight.airportEnglish ||
-                destinationName(flight.airportCode, flight.airport, "EN");
+                feedEnglishDestination &&
+                feedEnglishDestination.toUpperCase() !== normalizedAirportCode
+                  ? feedEnglishDestination
+                  : destinationName(flight.airportCode, flight.airport, "EN");
               const destination =
                 language === "KO"
                   ? destinationName(flight.airportCode, flight.airport, "KO")
