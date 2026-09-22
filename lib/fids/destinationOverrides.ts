@@ -11,6 +11,17 @@ export const SHARED_DESTINATION_EN: Record<string, string> = {
   DAD: "DANANG",
   CXR: "NHA TRANG",
   SEA: "SEATTLE/TACOMA",
+  MSP: "MINNEAPOLIS/ST. PAUL",
+  SLC: "SALT LAKE CITY",
+  DEN: "DENVER",
+  IAH: "HOUSTON/INTERCONTINENTAL",
+  PHX: "PHOENIX",
+  MIA: "MIAMI",
+  MCO: "ORLANDO",
+  PDX: "PORTLAND",
+  SAN: "SAN DIEGO",
+  YYC: "CALGARY",
+  TAG: "BOHOL/PANGLAO",
   DTW: "DETROIT",
   KTI: "PHNOM PENH/TECHO",
   MDC: "MANADO",
@@ -26,6 +37,7 @@ export const SHARED_DESTINATION_LOCAL: Record<string, string> = {
   UBN: "ШИНЭ УЛААНБААТАР",
   KTI: "ភ្នំពេញ/តេជោ",
   MDC: "MANADO",
+  TAG: "BOHOL/PANGLAO",
 };
 
 export const SHARED_DESTINATION_LOCALE: Record<string, string> = {
@@ -37,6 +49,8 @@ export const SHARED_DESTINATION_LOCALE: Record<string, string> = {
   CXR: "vi",
   KTI: "km",
   MDC: "id",
+  YYC: "en",
+  TAG: "fil",
 };
 
 export function sharedDestinationEnglish(code: string) {

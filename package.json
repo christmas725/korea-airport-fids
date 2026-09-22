@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/cache-airline-logos.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "test:responsive": "node scripts/check-responsive-layout.mjs",
