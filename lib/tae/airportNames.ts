@@ -47,6 +47,7 @@ const DESTINATION_EN: Record<string, string> = {
   YGJ: "YONAGO",
   TKS: "TOKUSHIMA",
   UBJ: "YAMAGUCHI/UBE",
+  IBR: "IBARAKI",
 
   // China / Hong Kong / Macau / Taiwan
   PEK: "BEIJING/CAPITAL",
