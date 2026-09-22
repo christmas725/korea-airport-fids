@@ -36,7 +36,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Busan",
   },
   LJ: {
-    url: "https://companieslogo.com/img/orig/272450.KS_BIG-9ba87455.svg",
+    url: "https://companieslogo.com/img/orig/272450.KS_BIG-53b0d919.png",
     source: "Jin Air current CI (stable mirror; official site blocks hotlinking)",
   },
   RS: {
