@@ -176,8 +176,8 @@
   .row-grid {
     grid-template-columns:
       minmax(46px, 0.78fr)
-      minmax(61px, 1fr)
-      minmax(88px, 1.55fr)
+      minmax(92px, 1.3fr)
+      minmax(72px, 1.25fr)
       minmax(40px, 0.62fr)
       minmax(58px, 0.92fr);
   }
@@ -361,6 +361,17 @@
 
 /* Extra-tight phones and split-screen windows */
 @media (max-width: 420px) {
+  /* Foldable cover displays need more room for the logo + full flight number.
+   * Borrow a little more width from destination, which already ellipsizes safely. */
+  .row-grid {
+    grid-template-columns:
+      minmax(44px, 0.76fr)
+      minmax(96px, 1.38fr)
+      minmax(66px, 1.12fr)
+      minmax(38px, 0.6fr)
+      minmax(56px, 0.9fr);
+  }
+
   .identity-rail {
     height: 88px;
     padding: 7px 8px;
