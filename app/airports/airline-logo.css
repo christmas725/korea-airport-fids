@@ -2,20 +2,20 @@
 .logo-fallback,
 .carrier-logo-shell,
 .carrier-mark {
-  width: clamp(48px, 3.6vw, 68px) !important;
-  height: clamp(34px, 2.65vw, 48px) !important;
+  width: clamp(56px, 4.4vw, 82px) !important;
+  height: clamp(36px, 2.7vw, 50px) !important;
   flex: 0 0 auto;
   border-radius: 4px !important;
   background: #f4f5f7 !important;
 }
 
-/* KAC renders the airline image itself as the frame. Keep generous safe space
-   so wide/tall artwork always stays fully visible and centered. */
+/* KAC renders the airline image itself as the frame. Keep enough safe space
+   for wide/tall artwork while using more of the white frame for readability. */
 .flight-cell > img {
   display: block !important;
   object-fit: contain !important;
   object-position: 50% 50% !important;
-  padding: 5px 9px !important;
+  padding: 3px 5px !important;
   overflow: hidden;
 }
 
@@ -23,7 +23,7 @@
 .carrier-logo-shell {
   display: grid !important;
   place-items: center !important;
-  padding: 5px 9px !important;
+  padding: 3px 5px !important;
   overflow: hidden !important;
 }
 
@@ -41,8 +41,8 @@
   background: transparent !important;
 }
 
-/* Korean Air's current horizontal CI is especially wide. Give it more of the
-   frame so the wordmark does not look noticeably smaller than other carriers. */
+/* Korean Air's current horizontal CI is especially wide. Give it almost the
+   full frame so the wordmark remains visually balanced with other carriers. */
 .flight-cell > img[data-airline-code="KE"],
 .carrier-logo-shell[data-airline-code="KE"] {
   padding: 2px 3px !important;
@@ -60,13 +60,13 @@
   .logo-fallback,
   .carrier-logo-shell,
   .carrier-mark {
-    width: 40px !important;
-    height: 30px !important;
+    width: 46px !important;
+    height: 32px !important;
   }
 
   .flight-cell > img,
   .carrier-logo-shell {
-    padding: 3px 5px !important;
+    padding: 2px 3px !important;
   }
 
   .flight-cell > img[data-airline-code="KE"],
@@ -80,13 +80,13 @@
   .logo-fallback,
   .carrier-logo-shell,
   .carrier-mark {
-    width: 40px !important;
-    height: 30px !important;
+    width: 46px !important;
+    height: 32px !important;
   }
 
   .flight-cell > img,
   .carrier-logo-shell {
-    padding: 3px 5px !important;
+    padding: 2px 3px !important;
   }
 
   .flight-cell > img[data-airline-code="KE"],
@@ -101,13 +101,13 @@
   .logo-fallback,
   .carrier-logo-shell,
   .carrier-mark {
-    width: 44px !important;
-    height: 32px !important;
+    width: 50px !important;
+    height: 34px !important;
   }
 
   .flight-cell > img,
   .carrier-logo-shell {
-    padding: 3px 5px !important;
+    padding: 2px 4px !important;
   }
 
   .flight-cell > img[data-airline-code="KE"],
