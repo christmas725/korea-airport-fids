@@ -271,6 +271,54 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shenzhen_Airlines_Logo.png",
     source: "Shenzhen Airlines horizontal logo (stable mirror)",
   },
+  SV: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Saudia.svg",
+    source: "Saudia current logo (Wikimedia Commons; file used by current Wikipedia infobox)",
+  },
+  HO: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Juneyao_Air_logo.svg",
+    source: "Juneyao Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  VA: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Virgin_Australia_Logo_2022.svg",
+    source: "Virgin Australia 2022 current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  FM: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shanghai_Airlines.svg",
+    source: "Shanghai Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  "9G": {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sun_PhuQuoc_Airways_logo.svg",
+    source: "Sun PhuQuoc Airways 2025 horizontal logo (Wikimedia Commons; sourced from official airline materials)",
+  },
+  B7: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/UNI_Air_logo.png",
+    source: "UNI Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  C6: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Centrum_Air_Logo.svg",
+    source: "Centrum Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  TN: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Tahiti_Nui_logo.svg",
+    source: "Air Tahiti Nui current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  "3U": {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sichuan_Airlines_logo.svg",
+    source: "Sichuan Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  DR: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ruili_Airlines_logo.png",
+    source: "Ruili Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  PN: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/West_Air_(China)_Logo.png",
+    source: "West Air China current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
+  GJ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LoongAir_logo.png",
+    source: "Loong Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+  },
 };
 
 export function officialAirlineLogo(code: string) {
