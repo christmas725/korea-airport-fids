@@ -7,8 +7,8 @@ const REGISTRY_PATH = path.join(ROOT, "lib/fids/officialAirlineLogos.ts");
 const OUTPUT_DIR = path.join(ROOT, "public/airlines");
 const CONCURRENCY = 6;
 const TIMEOUT_MS = 15_000;
-const WIKI_DELAY_MS = 450;
-const MAX_SOURCE_ATTEMPTS = 3;
+const WIKI_DELAY_MS = 1500;
+const MAX_SOURCE_ATTEMPTS = 2;
 const FALLBACK_BASE = "https://images.kiwi.com/airlines/64";
 
 const registry = await readFile(REGISTRY_PATH, "utf8");
