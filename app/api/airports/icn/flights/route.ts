@@ -38,6 +38,8 @@ const PASSENGER_REVALIDATE_SECONDS = 30 * 60;
 const DETAIL_REVALIDATE_SECONDS = 30 * 60;
 const DETAIL_QUERY_BUCKET_MINUTES = 30;
 const DETAIL_RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000;
+const GATE_HISTORY_ENDPOINT = "https://kfcnzzcjjndmexzrmcrd.supabase.co/functions/v1/kac-gate-history";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_SIAqFa0yNUBg5YcFUidg_hmo6-TaI";
 
 // 대형 태블릿 최대 4페이지(페이지당 20편)를 위해 향후 운항편을 보강한다.
 // 화면에는 터미널별 최대 80개 실제 운항까지만 유지한다.
@@ -339,6 +341,13 @@ function normalizeOpenApiFlight(
       "-"
     ),
     gate: clean(raw.gateNumber ?? raw.gatenumber, "-"),
+    previousGate: clean(
+      raw.previousGateNumber ??
+        raw.previousgatenumber ??
+        raw.previousGate ??
+        raw.prevGate ??
+        raw.oldGate
+    ),
     terminalId,
     terminalLabel: terminalLabel(terminalId),
     remark: cleanOperationalRemark(raw.remark ?? raw.tmp1),
@@ -481,6 +490,7 @@ function parseHomepageFlights(
       estimatedDateTime: estimated,
       checkin: clean(match[5], "-"),
       gate: clean(match[6], "-"),
+      previousGate: "",
       terminalId,
       terminalLabel: terminalLabel(terminalId),
       remark: cleanOperationalRemark(match[7]),
@@ -675,6 +685,83 @@ function enrichWithDetail(
       airline: flight.airline === "-" ? meta.airline || "-" : flight.airline,
     };
   });
+}
+
+
+type GateHistoryRow = {
+  flight_key?: string;
+  previous_gate?: string | null;
+  current_gate?: string | null;
+};
+
+function validGate(value: string | null | undefined) {
+  const gate = (value ?? "").trim();
+  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+}
+
+function isoOperationDate(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  return digits.length === 8
+    ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`
+    : "";
+}
+
+async function enrichGateHistory(
+  flights: DepartureFlight[],
+  searchDate: string
+) {
+  if (!flights.length) return { flights, usedHistory: false };
+
+  const operationDate = isoOperationDate(searchDate);
+  if (!operationDate) return { flights, usedHistory: false };
+
+  const endpoint = new URL(GATE_HISTORY_ENDPOINT);
+  endpoint.searchParams.set("airport", "ICN");
+  endpoint.searchParams.set("date", operationDate);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: "application/json",
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+    },
+    next: { revalidate: 15 },
+    signal: AbortSignal.timeout(3_000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`인천 게이트 이력 조회 실패 ${response.status}`);
+  }
+
+  const json = await response.json();
+  const rows = Array.isArray(json?.gates) ? (json.gates as GateHistoryRow[]) : [];
+  if (!rows.length) return { flights, usedHistory: true };
+
+  const history = new Map(
+    rows
+      .map((row) => [normalizeFlightId(row.flight_key ?? ""), row] as const)
+      .filter(([key]) => Boolean(key))
+  );
+
+  return {
+    usedHistory: true,
+    flights: flights.map((flight) => {
+      if (validGate(flight.previousGate)) return flight;
+
+      const key = normalizeFlightId(flight.masterFlightId || flight.flightId);
+      const row = history.get(key);
+      if (!row) return flight;
+
+      const current = validGate(row.current_gate);
+      const previous = validGate(row.previous_gate);
+      const displayedCurrent = validGate(flight.gate);
+
+      if (!previous || !current || previous === current || current !== displayedCurrent) {
+        return flight;
+      }
+
+      return { ...flight, previousGate: previous };
+    }),
+  };
 }
 
 function flightEpoch(value: string) {
@@ -949,6 +1036,17 @@ export async function GET() {
     // 코드쉐어를 한 실제 운항으로 계산해 T1/T2 각각 최대 80운항만 남긴다.
     flights = limitOperationsPerTerminal(flights);
 
+    try {
+      const gateHistoryResult = await enrichGateHistory(flights, query.searchDate);
+      flights = gateHistoryResult.flights;
+      if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+    } catch (error) {
+      console.warn(
+        "[ICN FIDS] 게이트 이력 보강 조회 실패",
+        error instanceof Error ? error.message : error
+      );
+    }
+
     const payload: DeparturesPayload = {
       flights,
       updatedAt: new Date().toISOString(),
@@ -1015,6 +1113,17 @@ export async function GET() {
           a.flightId.localeCompare(b.flightId)
       );
       flights = limitOperationsPerTerminal(flights);
+
+      try {
+        const gateHistoryResult = await enrichGateHistory(flights, query.searchDate);
+        flights = gateHistoryResult.flights;
+        if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+      } catch (error) {
+        console.warn(
+          "[ICN FIDS] fallback 게이트 이력 보강 조회 실패",
+          error instanceof Error ? error.message : error
+        );
+      }
 
       const payload: DeparturesPayload = {
         flights,
