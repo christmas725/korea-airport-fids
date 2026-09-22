@@ -12,8 +12,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Korean Air Newsroom",
   },
   OZ: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Asiana_Airlines.svg",
-    source: "Asiana Airlines CI (stable mirror)",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Asiana_Airlines_(2024).svg",
+    source: "Asiana Airlines 2024 CI (stable mirror of airline CI)",
   },
   TW: {
     url: "https://otp.twayair.com/images/trinity.svg",
@@ -41,15 +41,15 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   RS: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Air_Seoul.svg",
-    source: "Air Seoul CI (stable mirror)",
+    source: "Air Seoul CI (stable mirror sourced from official CI)",
   },
   XU: {
-    url: "https://static.wixstatic.com/media/77ab67_47bab15322ed4298a44060696eb2c47f~mv2.png",
+    url: "https://static.wixstatic.com/media/77ab67_c016290eff304b4cbce81a66062be125~mv2.png/v1/fill/w_744,h_248,al_c,q_90,enc_auto/20230511_sumair_RGB.png",
     source: "SUM Air official brand page",
   },
   RF: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aero_K_logo.svg",
-    source: "Aero K official logo (stable mirror)",
+    source: "Aero K current CI (stable mirror)",
   },
   WE: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parata_Airlines_(gray).svg",
