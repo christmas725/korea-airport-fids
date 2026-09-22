@@ -30,8 +30,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   ZE: {
     url: "/airlines/ZE.svg",
-    sourceUrl: "https://i.namu.wiki/i/xqvPXkUzTz2zKg_JHpeBVNboalOiGmUJRN4T0m9aIFtHrrSORWn9aqc2TCDefq2XFTZCae36onQGzysOUlcoygxZALrLyxrkpkZ2RGq5bIrFgxTFM1jgCDYO0tHAiAQmskfMmwn44tVpyF4U-v88GQ.svg",
-    source: "Eastar Jet current CI (user-provided mirror)",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Eastar_Jet_Logo.svg",
+    source: "Eastar Jet current horizontal logo (Wikimedia Commons)",
   },
   "7C": {
     url: "/airlines/7C.svg",
@@ -220,8 +220,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   MH: {
     url: "/airlines/MH.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Malaysia-airlines-logo-alt.png",
-    source: "Malaysia Airlines horizontal logo (stable mirror sourced from malaysiaairlines.com)",
+    sourceUrl: "https://logotyp.us/file/malaysia-airlines.svg",
+    source: "Malaysia Airlines current horizontal vector (Logotyp.us; checked against current airline branding)",
   },
   KC: {
     url: "/airlines/KC.svg",
