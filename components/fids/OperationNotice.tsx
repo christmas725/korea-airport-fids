@@ -25,7 +25,7 @@ const suspendedCopy = {
 };
 
 const suspensionPeriodCopy = {
-  ko: "운항 중단 일시 : 2024년 12월 29일 ~ 2027년 하반기까지",
+  ko: "운항 중단 일시 : 2024년 12월 29일 ~ 2027년 하반기",
   en: "Suspension period: December 29, 2024 ~ Until the second half of 2027",
   ja: "運航休止期間：2024年12月29日 ～ 2027年下半期まで",
   zh: "停航期间：2024年12月29日 ～ 2027年下半年为止",
