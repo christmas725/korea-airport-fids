@@ -9,7 +9,7 @@ export type OfficialAirlineLogo = {
 // use a stable mirror of the same current CI and keep the provenance here.
 export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   KE: {
-    url: "/airlines/KE.png",
+    url: "/airlines/KE.svg",
     sourceUrl: "https://kr.img.news.koreanair.com/wp-content/uploads/2025/03/%EC%82%AC%EC%A7%841-%EB%8C%80%ED%95%9C%ED%95%AD%EA%B3%B5-%EC%8B%A0%EA%B7%9CCI-1024x204.png",
     source: "Korean Air Newsroom",
   },
@@ -24,7 +24,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Trinity Airways",
   },
   YP: {
-    url: "/airlines/YP.png",
+    url: "/airlines/YP.svg",
     sourceUrl: "https://com.airpremiacdn.net/resources/onepoint/images/logo/airpremia_brand_logo_transparent.png",
     source: "Air Premia",
   },
@@ -34,17 +34,17 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Eastar Jet current CI (user-provided mirror)",
   },
   "7C": {
-    url: "/airlines/7C.png",
+    url: "/airlines/7C.svg",
     sourceUrl: "https://static.jejuair.net/cms/images/banner_image/20250123100048468.png",
     source: "Jeju Air",
   },
   BX: {
-    url: "/airlines/BX.png",
+    url: "/airlines/BX.svg",
     sourceUrl: "https://image.airbusan.com/content/assets/images/common/img_logo.png",
     source: "Air Busan",
   },
   LJ: {
-    url: "/airlines/LJ.png",
+    url: "/airlines/LJ.svg",
     sourceUrl: "https://companieslogo.com/img/orig/272450.KS_BIG-53b0d919.png",
     source: "Jin Air current CI (stable mirror; official site blocks hotlinking)",
   },
@@ -54,7 +54,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Seoul horizontal CI (stable mirror sourced from official CI)",
   },
   XU: {
-    url: "/airlines/XU.png",
+    url: "/airlines/XU.svg",
     sourceUrl: "https://static.wixstatic.com/media/77ab67_c016290eff304b4cbce81a66062be125~mv2.png/v1/fill/w_744,h_248,al_c,q_90,enc_auto/20230511_sumair_RGB.png",
     source: "SUM Air official brand page",
   },
@@ -69,12 +69,12 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Parata Air current CI (stable mirror)",
   },
   QR: {
-    url: "/airlines/QR.png",
+    url: "/airlines/QR.svg",
     sourceUrl: "https://d21buns5ku92am.cloudfront.net/69667/logo/retina-1677790355.png",
     source: "Qatar Airways Newsroom",
   },
   KL: {
-    url: "/airlines/KL.png",
+    url: "/airlines/KL.svg",
     sourceUrl: "https://content.presspage.com/uploads/162/1920_logoklm-427773.png",
     source: "KLM Newsroom",
   },
@@ -219,27 +219,27 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Lufthansa 2018 current horizontal logo (stable mirror sourced from Lufthansa Styleguide)",
   },
   MH: {
-    url: "/airlines/MH.png",
+    url: "/airlines/MH.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Malaysia-airlines-logo-alt.png",
     source: "Malaysia Airlines horizontal logo (stable mirror sourced from malaysiaairlines.com)",
   },
   KC: {
-    url: "/airlines/KC.jpg",
+    url: "/airlines/KC.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Astana_Logo.jpg",
     source: "Air Astana horizontal logo (stable mirror)",
   },
   "9C": {
-    url: "/airlines/9C.jpg",
+    url: "/airlines/9C.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Spring_Airlines.jpg",
     source: "Spring Airlines horizontal logo (stable mirror sourced from Spring Airlines)",
   },
   OM: {
-    url: "/airlines/OM.jpg",
+    url: "/airlines/OM.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/MIAT_Eng_Logo_JPG_(1).jpg",
     source: "MIAT Mongolian Airlines English horizontal logo (stable mirror)",
   },
   WY: {
-    url: "/airlines/WY.png",
+    url: "/airlines/WY.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oman_Air_logo.png",
     source: "Oman Air horizontal logo (stable mirror)",
   },
@@ -289,7 +289,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Canada current horizontal logo (stable mirror sourced from aircanada.com)",
   },
   CM: {
-    url: "/airlines/CM.png",
+    url: "/airlines/CM.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Copa_airlines_logo.png",
     source: "Copa Airlines horizontal logo (stable mirror)",
   },
@@ -314,7 +314,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Europa horizontal logo (stable mirror)",
   },
   QV: {
-    url: "/airlines/QV.png",
+    url: "/airlines/QV.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LaoAirlineslogo.png",
     source: "Lao Airlines horizontal logo (stable mirror)",
   },
@@ -324,7 +324,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Tianjin Airlines current horizontal logo (Logotyp.us vector; checked against current airline branding)",
   },
   QW: {
-    url: "/airlines/QW.png",
+    url: "/airlines/QW.svg",
     sourceUrl: "https://b2t.qdairlines.com/qw-header-logo-title.png",
     source: "Qingdao Airlines official website horizontal header logo",
   },
@@ -334,7 +334,7 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Shandong Airlines current horizontal SVG (stable travel-industry mirror; visually matched to current SDA branding)",
   },
   ZH: {
-    url: "/airlines/ZH.jpg",
+    url: "/airlines/ZH.svg",
     sourceUrl: "https://static.airchina.com.cn/cms/1833388735043993600.jpg",
     source: "Shenzhen Airlines horizontal logo from Air China PhoenixMiles partner page",
   },
@@ -384,17 +384,17 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Sichuan Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   DR: {
-    url: "/airlines/DR.png",
+    url: "/airlines/DR.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ruili_Airlines_logo.png",
     source: "Ruili Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   PN: {
-    url: "/airlines/PN.png",
+    url: "/airlines/PN.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/West_Air_(China)_Logo.png",
     source: "West Air China current logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   GJ: {
-    url: "/airlines/GJ.png",
+    url: "/airlines/GJ.svg",
     sourceUrl: "https://www.loongair.cn/static/img/logonew2.8b5ce22.png",
     source: "Loong Air official website horizontal logo",
   },
