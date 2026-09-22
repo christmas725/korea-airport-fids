@@ -188,12 +188,24 @@
 }
 
 .sliding-text.is-overflowing .sliding-text-track {
-  animation: destination-pan 5.5s ease-in-out infinite alternate;
+  animation: destination-pan 7s ease-in-out infinite;
 }
 
+/*
+ * Overflow destinations follow a one-way cycle:
+ * original position -> pan once to reveal the hidden end -> hold -> snap back
+ * to the original position and wait. There is intentionally no reverse pan.
+ */
 @keyframes destination-pan {
-  0%, 18% { transform: translateX(0); }
-  82%, 100% { transform: translateX(var(--destination-shift)); }
+  0%, 22% {
+    transform: translateX(0);
+  }
+  62%, 78% {
+    transform: translateX(var(--destination-shift));
+  }
+  78.01%, 100% {
+    transform: translateX(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
