@@ -22,6 +22,11 @@ export type RawDepartureFlight = {
   counter?: string;
   gateNumber?: string;
   gatenumber?: string;
+  previousGateNumber?: string;
+  previousgatenumber?: string;
+  previousGate?: string;
+  prevGate?: string;
+  oldGate?: string;
   terminalId?: string;
   remark?: string;
   exitnumber?: string;
@@ -51,6 +56,7 @@ export type DepartureFlight = {
   estimatedDateTime: string;
   checkin: string;
   gate: string;
+  previousGate?: string;
   terminalId: string;
   terminalLabel: string;
   remark: string;
