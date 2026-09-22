@@ -81,10 +81,6 @@ function isDepartedStatus(value: string) {
   );
 }
 
-function isGateChangedStatus(korean: string, english = "") {
-  return /탑승구\s*변경|gate\s*change/i.test(`${korean} ${english}`);
-}
-
 function statusClass(status: string) {
   const s = status.toLowerCase();
 
@@ -497,9 +493,7 @@ export default function FidsBoard() {
               const contentLang = languageTagForAirport(flight.airportCode, language);
               const contentDirection = directionForAirport(flight.airportCode, language);
               const previousGate =
-                isGateChangedStatus(flight.remark, flight.remarkEnglish) &&
-                flight.previousGate &&
-                flight.previousGate !== flight.gate
+                flight.previousGate && flight.previousGate !== flight.gate
                   ? flight.previousGate
                   : "";
 
