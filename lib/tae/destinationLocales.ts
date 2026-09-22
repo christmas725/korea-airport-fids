@@ -22,7 +22,10 @@ type StatusKey =
   | "checkin"
   | "checkinClosed"
   | "onTime"
-  | "gateChanged";
+  | "gateChanged"
+  | "arrived"
+  | "scheduled"
+  | "timeChanged";
 
 type StatusTable = Partial<Record<StatusKey, string>>;
 
@@ -96,12 +99,14 @@ const LOCAL_DESTINATION: Record<string, string> = {
 const EN_STATUS: StatusTable = {
   ready:"Gate Open", boarding:"Boarding", final:"Gate Closing", delayed:"Delayed",
   cancelled:"Cancelled", departed:"Departed", checkin:"Check-in", checkinClosed:"Check-in Closed",
-  onTime:"On Time", gateChanged:"Gate Changed",
+  onTime:"On Time", gateChanged:"Gate Changed", arrived:"Arrived",
+  scheduled:"Scheduled", timeChanged:"Time Changed",
 };
 const KO_STATUS: StatusTable = {
   ready:"탑승준비", boarding:"탑승중", final:"탑승마감", delayed:"지연",
   cancelled:"결항", departed:"출발", checkin:"수속중", checkinClosed:"수속마감",
-  onTime:"정시", gateChanged:"탑승구 변경",
+  onTime:"정시", gateChanged:"탑승구 변경", arrived:"도착",
+  scheduled:"예정", timeChanged:"시간 변경",
 };
 
 const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
@@ -147,10 +152,57 @@ const STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
   ka:{ready:"ჩასხდომისთვის მზადება",boarding:"ჩასხდომა",final:"გასასვლელი იკეტება",delayed:"დაგვიანებულია",cancelled:"გაუქმებულია",departed:"გაფრინდა"},
 };
 
+
+const EXTRA_STATUS_BY_LOCALE: Partial<Record<LocalLocale, StatusTable>> = {
+  ko:{arrived:"도착",scheduled:"예정",timeChanged:"시간 변경"},
+  en:{arrived:"Arrived",scheduled:"Scheduled",timeChanged:"Time Changed"},
+  ja:{arrived:"到着",scheduled:"予定",timeChanged:"時刻変更"},
+  "zh-CN":{arrived:"已到达",scheduled:"计划",timeChanged:"时间变更"},
+  "zh-TW":{arrived:"已抵達",scheduled:"預定",timeChanged:"時間變更"},
+  th:{arrived:"ถึงแล้ว",scheduled:"ตามกำหนด",timeChanged:"เปลี่ยนเวลา"},
+  vi:{arrived:"Đã đến",scheduled:"Dự kiến",timeChanged:"Đổi giờ"},
+  fil:{arrived:"Dumating na",scheduled:"Nakatakda",timeChanged:"Binago ang oras"},
+  id:{arrived:"Tiba",scheduled:"Terjadwal",timeChanged:"Waktu berubah"},
+  ms:{arrived:"Tiba",scheduled:"Dijadualkan",timeChanged:"Masa berubah"},
+  lo:{arrived:"ມາຮອດແລ້ວ",scheduled:"ຕາມກຳນົດ",timeChanged:"ປ່ຽນເວລາ"},
+  km:{arrived:"បានមកដល់",scheduled:"បានកំណត់",timeChanged:"ប្ដូរម៉ោង"},
+  my:{arrived:"ရောက်ရှိပြီး",scheduled:"စီစဉ်ထား",timeChanged:"အချိန်ပြောင်း"},
+  hi:{arrived:"पहुंच गया",scheduled:"निर्धारित",timeChanged:"समय बदला"},
+  ne:{arrived:"आइपुगेको",scheduled:"निर्धारित",timeChanged:"समय परिवर्तन"},
+  si:{arrived:"පැමිණ ඇත",scheduled:"නියමිත",timeChanged:"වේලාව වෙනස්"},
+  bn:{arrived:"পৌঁছেছে",scheduled:"নির্ধারিত",timeChanged:"সময় পরিবর্তন"},
+  uz:{arrived:"Yetib keldi",scheduled:"Rejalashtirilgan",timeChanged:"Vaqt o‘zgardi"},
+  kk:{arrived:"Келді",scheduled:"Жоспарланған",timeChanged:"Уақыт өзгерді"},
+  ky:{arrived:"Келди",scheduled:"Пландаштырылган",timeChanged:"Убакыт өзгөрдү"},
+  mn:{arrived:"Ирсэн",scheduled:"Хуваарьтай",timeChanged:"Цаг өөрчлөгдсөн"},
+  ar:{arrived:"وصلت",scheduled:"مجدولة",timeChanged:"تم تغيير الوقت"},
+  tr:{arrived:"Vardı",scheduled:"Planlandı",timeChanged:"Saat değişti"},
+  he:{arrived:"הגיע",scheduled:"מתוכנן",timeChanged:"השעה השתנתה"},
+  fr:{arrived:"Arrivé",scheduled:"Prévu",timeChanged:"Horaire modifié"},
+  de:{arrived:"Angekommen",scheduled:"Geplant",timeChanged:"Zeit geändert"},
+  it:{arrived:"Arrivato",scheduled:"Previsto",timeChanged:"Orario modificato"},
+  nl:{arrived:"Aangekomen",scheduled:"Gepland",timeChanged:"Tijd gewijzigd"},
+  es:{arrived:"Llegó",scheduled:"Programado",timeChanged:"Hora modificada"},
+  cs:{arrived:"Přiletěl",scheduled:"Plánováno",timeChanged:"Čas změněn"},
+  hu:{arrived:"Megérkezett",scheduled:"Ütemezett",timeChanged:"Idő módosult"},
+  pl:{arrived:"Przyleciał",scheduled:"Planowo",timeChanged:"Zmiana czasu"},
+  fi:{arrived:"Saapunut",scheduled:"Aikataulussa",timeChanged:"Aika muuttunut"},
+  da:{arrived:"Ankommet",scheduled:"Planlagt",timeChanged:"Tid ændret"},
+  no:{arrived:"Ankommet",scheduled:"Planlagt",timeChanged:"Tid endret"},
+  sv:{arrived:"Anlänt",scheduled:"Planerad",timeChanged:"Tid ändrad"},
+  el:{arrived:"Έφτασε",scheduled:"Προγραμματισμένη",timeChanged:"Αλλαγή ώρας"},
+  pt:{arrived:"Chegou",scheduled:"Programado",timeChanged:"Horário alterado"},
+  hr:{arrived:"Stigao",scheduled:"Planirano",timeChanged:"Vrijeme promijenjeno"},
+  ka:{arrived:"ჩამოვიდა",scheduled:"დაგეგმილი",timeChanged:"დრო შეიცვალა"},
+};
+
 function canonicalStatus(value: string): StatusKey | null {
   const s = value.trim().toLowerCase();
   if (!s) return null;
   if (/탑승구\s*변경|gate\s*changed?/.test(s)) return "gateChanged";
+  if (/도착(?:\s*완료)?|arrived/.test(s)) return "arrived";
+  if (/시간\s*변경|time\s*changed?|schedule\s*change/.test(s)) return "timeChanged";
+  if (/예정|scheduled/.test(s)) return "scheduled";
   if (/수속\s*마감|체크인\s*마감|check.?in\s*(closed|close)/.test(s)) return "checkinClosed";
   if (/수속중|체크인|check.?in/.test(s)) return "checkin";
   if (/마감\s*예정/.test(s)) return "boarding";
@@ -182,7 +234,7 @@ export function localizedStatus(status: string, language: DisplayLanguage, airpo
   if (language === "EN") return EN_STATUS[key] ?? status;
 
   const locale = localeForAirport(airportCode);
-  return STATUS_BY_LOCALE[locale]?.[key] ?? EN_STATUS[key] ?? status;
+  return STATUS_BY_LOCALE[locale]?.[key] ?? EXTRA_STATUS_BY_LOCALE[locale]?.[key] ?? EN_STATUS[key] ?? status;
 }
 
 export function languageTagForAirport(airportCode: string, language: DisplayLanguage) {
