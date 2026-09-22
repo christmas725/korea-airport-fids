@@ -75,9 +75,21 @@ await Promise.all(
   Array.from({ length: Math.min(CONCURRENCY, entries.length) }, () => worker())
 );
 
-console.log(`[airline-logo] cached ${completed}/${entries.length}`);
+const report = {
+  total: entries.length,
+  cached: completed,
+  failed: failures.length,
+  failures,
+  generatedAt: new Date().toISOString(),
+};
 
+await writeFile(
+  path.join(OUTPUT_DIR, "cache-report.json"),
+  JSON.stringify(report, null, 2) + "\n",
+  "utf8"
+);
+
+console.log(`[airline-logo] cached ${completed}/${entries.length}`);
 if (failures.length) {
-  const detail = failures.map((item) => `${item.code}: ${item.error} (${item.url})`).join("\n");
-  throw new Error(`Failed to cache ${failures.length} airline logo(s):\n${detail}`);
+  console.warn(`[airline-logo] ${failures.length} source(s) failed; see /airlines/cache-report.json`);
 }
