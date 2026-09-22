@@ -92,8 +92,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air China current horizontal wordmark (stable mirror sourced from airchina.com.cn)",
   },
   MU: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Eastern_Airlines_logo.svg",
-    source: "China Eastern Airlines current horizontal CI (stable mirror sourced from ceair.com)",
+    url: "https://upload.wikimedia.org/wikinews/en/6/6b/China_Eastern_Airlines_logo.svg",
+    source: "China Eastern Airlines horizontal logo (Wikinews mirror; 209×46 wordmark layout)",
   },
   CZ: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Southern_Airlines_logo.svg",
