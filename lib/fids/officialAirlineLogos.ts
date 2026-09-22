@@ -256,20 +256,20 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Lao Airlines horizontal logo (stable mirror)",
   },
   GS: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tianjin_Airlines_logo.png",
-    source: "Tianjin Airlines horizontal logo (stable mirror)",
+    url: "https://logotyp.us/file/tianjin-airlines.svg",
+    source: "Tianjin Airlines current horizontal logo (Logotyp.us vector; checked against current airline branding)",
   },
   QW: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Qingdao_Airlines.png",
-    source: "Qingdao Airlines horizontal logo (stable mirror)",
+    url: "https://b2t.qdairlines.com/qw-header-logo-title.png",
+    source: "Qingdao Airlines official website horizontal header logo",
   },
   SC: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shandong_Airlines-Logo.png",
-    source: "Shandong Airlines horizontal logo (stable mirror)",
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/ShandongAirlines.svg",
+    source: "Shandong Airlines current horizontal logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   ZH: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shenzhen_Airlines_Logo.png",
-    source: "Shenzhen Airlines horizontal logo (stable mirror)",
+    url: "https://static.airchina.com.cn/cms/1833388735043993600.jpg",
+    source: "Shenzhen Airlines horizontal logo from Air China PhoenixMiles partner page",
   },
   SV: {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Saudia.svg",
@@ -284,8 +284,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Virgin Australia 2022 current logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   FM: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shanghai_Airlines.svg",
-    source: "Shanghai Airlines current logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://logotyp.us/file/shanghai-airlines.svg",
+    source: "Shanghai Airlines current horizontal wordmark (Logotyp.us mirror; checked against current Shanghai Airlines branding)",
   },
   "9G": {
     url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sun_PhuQuoc_Airways_logo.svg",
@@ -316,8 +316,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "West Air China current logo (Wikimedia Commons; current Wikipedia infobox)",
   },
   GJ: {
-    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LoongAir_logo.png",
-    source: "Loong Air current logo (Wikimedia Commons; current Wikipedia infobox)",
+    url: "https://www.loongair.cn/static/img/logonew2.8b5ce22.png",
+    source: "Loong Air official website horizontal logo",
   },
 };
 
