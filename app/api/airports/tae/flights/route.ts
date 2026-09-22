@@ -822,11 +822,22 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
 
   if (airportCode === "TAE") {
     try {
-      const flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
+      let flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
       if (!flights.length) throw new Error("대구공항 홈페이지 운항편이 0건으로 반환되었습니다.");
-      return NextResponse.json(payload(airportCode, mode, flights, "kac_homepage", liveErrors[0]), {
-        headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
-      });
+
+      const dataSources = ["kac-daegu-homepage"];
+      try {
+        const gateHistoryResult = await enrichGateHistory(flights, date, mode, airportCode);
+        flights = gateHistoryResult.flights;
+        if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+      } catch (error) {
+        console.warn(`[${airportCode} FIDS] 홈페이지 fallback 게이트 이력 보강 조회 실패`, error);
+      }
+
+      return NextResponse.json(
+        payload(airportCode, mode, flights, "kac_homepage", liveErrors[0], dataSources),
+        { headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` } },
+      );
     } catch (error) {
       liveErrors.push(error instanceof Error ? error.message : "Homepage Unknown error");
     }
