@@ -142,8 +142,44 @@ function isWithinDepartureGrace(flight: DepartureFlight, now: number) {
 }
 
 function groupCodeshareFlights(flights: DepartureFlight[]): FlightGroup[] {
+  const duplicateKey = (flight: DepartureFlight) =>
+    [
+      normalizeFlightId(flight.flightId),
+      flight.scheduleDateTime,
+      flight.estimatedDateTime,
+      terminalGroup(flight),
+      flight.gate.trim(),
+    ].join("|");
+
+  const rowQuality = (flight: DepartureFlight) => {
+    const airportCode = flight.airportCode.trim().toUpperCase();
+    const airportEnglish = flight.airportEnglish?.trim() ?? "";
+    let score = 0;
+
+    if (airportCode) score += 10;
+    if (flight.airport.trim()) score += 2;
+    if (airportEnglish && airportEnglish.toUpperCase() !== airportCode) score += 2;
+    if (flight.checkin.trim()) score += 1;
+    if (flight.masterFlightId.trim()) score += 1;
+
+    return score;
+  };
+
+  const deduplicatedFlights = Array.from(
+    flights.reduce((map, flight) => {
+      const key = duplicateKey(flight);
+      const existing = map.get(key);
+
+      if (!existing || rowQuality(flight) > rowQuality(existing)) {
+        map.set(key, flight);
+      }
+
+      return map;
+    }, new Map<string, DepartureFlight>()).values()
+  );
+
   const referencedMasters = new Set(
-    flights
+    deduplicatedFlights
       .map((flight) => normalizeFlightId(flight.masterFlightId || ""))
       .filter(Boolean)
   );
@@ -162,7 +198,7 @@ function groupCodeshareFlights(flights: DepartureFlight[]): FlightGroup[] {
     ].join("|");
 
   const operationCounts = new Map<string, number>();
-  flights.forEach((flight) => {
+  deduplicatedFlights.forEach((flight) => {
     const key = operationKey(flight);
     operationCounts.set(key, (operationCounts.get(key) ?? 0) + 1);
   });
@@ -172,7 +208,7 @@ function groupCodeshareFlights(flights: DepartureFlight[]): FlightGroup[] {
     { masterId: string; items: DepartureFlight[]; order: number }
   >();
 
-  flights.forEach((flight, index) => {
+  deduplicatedFlights.forEach((flight, index) => {
     const flightId = normalizeFlightId(flight.flightId);
     const suppliedMaster = normalizeFlightId(flight.masterFlightId || "");
     const masterId = suppliedMaster || (referencedMasters.has(flightId) ? flightId : "");
