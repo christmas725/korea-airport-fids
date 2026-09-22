@@ -9,8 +9,22 @@ export const runtime = "nodejs";
 export const preferredRegion = "icn1";
 
 const KAC_GW_BASE = "https://apis.data.go.kr/B551178/flight-status";
-const HOMEPAGE_ENDPOINT = "https://www.airport.co.kr/daegu/ajaxf/frPryInfoSvc/getPryInfoList.do";
-const REFERER = "https://www.airport.co.kr/daegu/cms/frCon/index.do?MENU_ID=100";
+const KAC_SITE_SLUGS: Record<string, string> = {
+  GMP: "gimpo",
+  PUS: "gimhae",
+  CJU: "jeju",
+  TAE: "daegu",
+  CJJ: "cheongju",
+  MWX: "muan",
+  KWJ: "gwangju",
+  RSU: "yeosu",
+  USN: "ulsan",
+  KPO: "pohang",
+  HIN: "sacheon",
+  KUV: "gunsan",
+  WJU: "wonju",
+  YNY: "yangyang",
+};
 
 const CACHE_SECONDS = 45;
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -473,6 +487,37 @@ function mergeOperationFlights(baseFlights: FidsFlight[], operationFlights: Fids
   );
 }
 
+
+function homepageSupplementKey(flight: FidsFlight) {
+  return [
+    flight.mode,
+    normalizedFlightId(flight.flightId),
+    flight.scheduleDateTime.replace(/\D/g, "").slice(0, 12),
+  ].join("|");
+}
+
+/**
+ * KAC GW가 일부 편을 누락하더라도 공식 공항 홈페이지에 남아 있는 당일 운항편은
+ * 보조 소스로 추가한다. 동일 편은 GW 값을 우선하며, 홈페이지는 누락 편만 보충한다.
+ */
+function mergeHomepageSupplement(baseFlights: FidsFlight[], homepageFlights: FidsFlight[]) {
+  const result = [...baseFlights];
+  const seen = new Set(result.map(homepageSupplementKey));
+
+  for (const flight of homepageFlights) {
+    const key = homepageSupplementKey(flight);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(flight);
+  }
+
+  return result.sort(
+    (a, b) =>
+      sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
+      a.flightId.localeCompare(b.flightId)
+  );
+}
+
 async function fetchGwDetailPage(pageNo: number): Promise<GwPage> {
   return fetchGw(
     "detail",
@@ -692,7 +737,13 @@ async function enrichGateHistory(
 }
 
 async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
-  const endpoint = process.env.KAC_HOMEPAGE_API_URL?.trim() || HOMEPAGE_ENDPOINT;
+  const slug = KAC_SITE_SLUGS[airportCode.toUpperCase()];
+  if (!slug) throw new Error(`KAC 홈페이지 경로를 알 수 없는 공항입니다: ${airportCode}`);
+
+  const endpoint =
+    process.env.KAC_HOMEPAGE_API_URL?.trim() ||
+    `https://www.airport.co.kr/${slug}/ajaxf/frPryInfoSvc/getPryInfoList.do`;
+  const referer = `https://www.airport.co.kr/${slug}/cms/frCon/index.do?MENU_ID=100`;
   const body = new URLSearchParams({
     pInoutGbn: mode === "departures" ? "O" : "I",
     pAirport: airportCode,
@@ -713,12 +764,12 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
       "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       Origin: "https://www.airport.co.kr",
-      Referer: REFERER,
+      Referer: referer,
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
       "X-Requested-With": "XMLHttpRequest",
     },
     body,
-    cache: "no-store",
+    next: { revalidate: CACHE_SECONDS },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
@@ -798,6 +849,25 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
     }
 
     try {
+      const homepageFlights = await fetchHomepageFlights(airportCode, mode, date, formDate);
+      if (homepageFlights.length > 0) {
+        const before = flights.length;
+        flights = mergeHomepageSupplement(flights, homepageFlights);
+        dataSources.push("kac-homepage-supplement");
+        if (flights.length > before) {
+          console.warn(
+            `[${airportCode} FIDS] GW 누락 운항편 ${flights.length - before}건을 홈페이지에서 보강했습니다.`
+          );
+        }
+      }
+    } catch (error) {
+      console.warn(
+        `[${airportCode} FIDS] 홈페이지 보조 운항편 조회 실패`,
+        error instanceof Error ? error.message : error
+      );
+    }
+
+    try {
       const facilityResult = await enrichFacilities(flights, date, mode, airportCode);
       flights = facilityResult.flights;
       if (facilityResult.usedDetail) dataSources.push("kac-flight-status-detail-gw");
@@ -820,12 +890,12 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
     liveErrors.push(error instanceof Error ? error.message : "KAC GW Unknown error");
   }
 
-  if (airportCode === "TAE") {
+  if (KAC_SITE_SLUGS[airportCode]) {
     try {
       let flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
-      if (!flights.length) throw new Error("대구공항 홈페이지 운항편이 0건으로 반환되었습니다.");
+      if (!flights.length) throw new Error(`${airportName}공항 홈페이지 운항편이 0건으로 반환되었습니다.`);
 
-      const dataSources = ["kac-daegu-homepage"];
+      const dataSources = ["kac-airport-homepage"];
       try {
         const gateHistoryResult = await enrichGateHistory(flights, date, mode, airportCode);
         flights = gateHistoryResult.flights;
