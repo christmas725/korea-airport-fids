@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useMemo, useState } from "react";
 import SlidingText from "@/components/fids/SlidingText";
+import AirlineLogo from "@/components/fids/AirlineLogo";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
 import type { DeparturesPayload, DepartureFlight } from "@/lib/icn/types";
@@ -27,7 +28,6 @@ const ROTATION_INTERVAL_MS = 3_000;
 const DATA_POLL_INTERVAL_MS = 60_000;
 const DEPARTED_GRACE_MS = 5 * 60_000;
 const MIN_STEPS_PER_LANGUAGE = 2;
-const AIRLINE_LOGO_BASE = "https://images.kiwi.com/airlines/64";
 
 function parseApiDateTime(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -140,12 +140,6 @@ function isWithinDepartureGrace(flight: DepartureFlight, now: number) {
   return typeof departure === "number" && departure >= now - DEPARTED_GRACE_MS;
 }
 
-function airlineCode(flightId: string) {
-  const normalized = normalizeFlightId(flightId);
-  const match = normalized.match(/^([A-Z0-9]{2})/);
-  return match?.[1] ?? "--";
-}
-
 function groupCodeshareFlights(flights: DepartureFlight[]): FlightGroup[] {
   const referencedMasters = new Set(
     flights
@@ -226,29 +220,6 @@ function groupCodeshareFlights(flights: DepartureFlight[]): FlightGroup[] {
     .sort((a, b) => a.order - b.order)
     .map(({ order: _order, ...group }) => group);
 }
-
-const AirlineLogo = memo(function AirlineLogo({ flightId }: { flightId: string }) {
-  const code = airlineCode(flightId);
-  const [failed, setFailed] = useState(false);
-
-  if (failed || code === "--") {
-    return <span className="carrier-mark" aria-hidden="true">{code}</span>;
-  }
-
-  return (
-    <span className="carrier-logo-shell" aria-hidden="true">
-      <img
-        className="carrier-logo-img"
-        src={`${AIRLINE_LOGO_BASE}/${encodeURIComponent(code)}.png`}
-        alt=""
-        loading="eager"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-      />
-    </span>
-  );
-});
 
 const StaticFlightIdentity = memo(function StaticFlightIdentity({
   flight,

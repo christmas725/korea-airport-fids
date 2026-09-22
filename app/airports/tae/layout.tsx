@@ -3,6 +3,8 @@ import "./mobile.css";
 import "./foldable.css";
 import "../fids-common.css";
 import "./clock.css";
+import "./airline-copy.css";
+import "../airline-logo.css";
 
 export default function TaeLayout({ children }: { children: React.ReactNode }) {
   return children;
