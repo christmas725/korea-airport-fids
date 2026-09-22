@@ -867,13 +867,14 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
   const endpoint =
     process.env.KAC_HOMEPAGE_API_URL?.trim() ||
     `https://www.airport.co.kr/${slug}/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2`;
+  const io = mode === "departures" ? "O" : "I";
   const body = new URLSearchParams({
-    pInoutGbn: mode === "departures" ? "O" : "I",
+    pInoutGbn: io,
     pAirport: airportCode,
-    pGbn: "",
+    pGbn: io,
     pActDate: formDate,
-    pSthourMin: "00:00",
-    pEnhourMin: "23:59",
+    pSthourMin: "0000",
+    pEnhourMin: "2359",
     pCity: "",
     pAirline: "",
     pAirlinenum: "",
