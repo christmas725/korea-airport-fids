@@ -94,8 +94,12 @@ function latestDepartureFlight(flights: FidsFlight[]) {
   return flights.reduce<FidsFlight | null>((latest, flight) => {
     if (flight.mode !== "departures") return latest;
     if (!latest) return flight;
-    const latestAt = parseKstDateTime(latest.scheduleDateTime)?.getTime() ?? 0;
-    const currentAt = parseKstDateTime(flight.scheduleDateTime)?.getTime() ?? 0;
+
+    // KAC API에서 지연/변경된 출발시각이 있으면 원래 예정시각보다 우선한다.
+    // 따라서 시간표상 마지막 편이 아니라 실제로 가장 늦게 운항되는 편을
+    // 당일 마지막 출발편으로 보고, 그 편의 출발 완료를 기준으로 운항종료를 판단한다.
+    const latestAt = flightDisplayDateTime(latest)?.getTime() ?? 0;
+    const currentAt = flightDisplayDateTime(flight)?.getTime() ?? 0;
     return currentAt >= latestAt ? flight : latest;
   }, null);
 }
