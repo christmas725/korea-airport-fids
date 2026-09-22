@@ -712,35 +712,54 @@ async function enrichGateHistory(
 ) {
   if (!flights.length) return { flights, usedHistory: false };
 
-  const operationDate = isoOperationDate(searchDate);
-  if (!operationDate) return { flights, usedHistory: false };
+  const operationDates = [
+    ...new Set(
+      flights
+        .map((flight) => isoOperationDate(flight.scheduleDateTime))
+        .filter(Boolean)
+    ),
+  ];
 
-  const endpoint = new URL(GATE_HISTORY_ENDPOINT);
-  endpoint.searchParams.set("airport", "ICN");
-  endpoint.searchParams.set("date", operationDate);
-
-  const response = await fetch(endpoint, {
-    headers: {
-      Accept: "application/json",
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-    },
-    next: { revalidate: 15 },
-    signal: AbortSignal.timeout(3_000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`인천 게이트 이력 조회 실패 ${response.status}`);
+  if (!operationDates.length) {
+    const fallbackDate = isoOperationDate(searchDate);
+    if (fallbackDate) operationDates.push(fallbackDate);
   }
+  if (!operationDates.length) return { flights, usedHistory: false };
 
-  const json = await response.json();
-  const rows = Array.isArray(json?.gates) ? (json.gates as GateHistoryRow[]) : [];
-  if (!rows.length) return { flights, usedHistory: true };
+  const responses = await Promise.all(
+    operationDates.map(async (operationDate) => {
+      const endpoint = new URL(GATE_HISTORY_ENDPOINT);
+      endpoint.searchParams.set("airport", "ICN");
+      endpoint.searchParams.set("date", operationDate);
 
-  const history = new Map(
-    rows
-      .map((row) => [normalizeFlightId(row.flight_key ?? ""), row] as const)
-      .filter(([key]) => Boolean(key))
+      const response = await fetch(endpoint, {
+        headers: {
+          Accept: "application/json",
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+        },
+        next: { revalidate: 15 },
+        signal: AbortSignal.timeout(3_000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`인천 게이트 이력 조회 실패 ${response.status}`);
+      }
+
+      const json = await response.json();
+      return {
+        date: operationDate,
+        rows: Array.isArray(json?.gates) ? (json.gates as GateHistoryRow[]) : [],
+      };
+    })
   );
+
+  const history = new Map<string, GateHistoryRow>();
+  responses.forEach(({ date, rows }) => {
+    rows.forEach((row) => {
+      const key = normalizeFlightId(row.flight_key ?? "");
+      if (key) history.set(`${date}|${key}`, row);
+    });
+  });
 
   return {
     usedHistory: true,
@@ -748,7 +767,8 @@ async function enrichGateHistory(
       if (validGate(flight.previousGate)) return flight;
 
       const key = normalizeFlightId(flight.masterFlightId || flight.flightId);
-      const row = history.get(key);
+      const date = isoOperationDate(flight.scheduleDateTime);
+      const row = history.get(`${date}|${key}`);
       if (!row) return flight;
 
       const current = validGate(row.current_gate);
