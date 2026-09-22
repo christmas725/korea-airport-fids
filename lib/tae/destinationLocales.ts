@@ -202,10 +202,10 @@ function canonicalStatus(value: string): StatusKey | null {
   if (/탑승구\s*변경|gate\s*changed?/.test(s)) return "gateChanged";
   if (/도착(?:\s*완료)?|arrived/.test(s)) return "arrived";
   if (/시간\s*변경|time\s*changed?|schedule\s*change/.test(s)) return "timeChanged";
-  if (/예정|scheduled/.test(s)) return "scheduled";
   if (/수속\s*마감|체크인\s*마감|check.?in\s*(closed|close)/.test(s)) return "checkinClosed";
   if (/수속중|체크인|check.?in/.test(s)) return "checkin";
   if (/마감\s*예정/.test(s)) return "boarding";
+  if (/예정|scheduled/.test(s)) return "scheduled";
   if (/탑승\s*마감|final\s*call|gate\s*(closing|closed)|마감/.test(s)) return "final";
   if (/탑승중|boarding/.test(s)) return "boarding";
   if (/탑승\s*준비|gate\s*open|ready/.test(s)) return "ready";
