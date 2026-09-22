@@ -95,7 +95,7 @@ button { font: inherit; }
 .gate-change { width: 100%; display: flex; align-items: center; justify-content: center; gap: clamp(3px, .28vw, 6px); white-space: nowrap; }
 .gate-change .gate-previous { color: #778391; font-size: clamp(13px, 1.15vw, 20px); font-weight: 750; text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .gate-change .gate-arrow { color: #98a3af; font-size: clamp(12px, 1.05vw, 18px); font-weight: 800; }
-.gate-change .gate-current { color: var(--yellow); font-size: clamp(19px, 1.9vw, 34px); font-weight: 900; }
+.gate-change .gate-current { color: var(--yellow); font-size: clamp(15px, 1.32vw, 23px); font-weight: 900; }
 .status-cell strong { font-size: clamp(12px, 1.25vw, 22px); line-height: 1.12; word-break: keep-all; }
 .status-cell.delayed strong { color: var(--yellow); }
 .status-cell.cancelled strong { color: var(--red); }
