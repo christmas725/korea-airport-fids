@@ -24,8 +24,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     source: "Air Premia",
   },
   ZE: {
-    url: "https://zeimg.eastarjet.com/daon/logo2.svg",
-    source: "Eastar Jet",
+    url: "https://i.namu.wiki/i/xqvPXkUzTz2zKg_JHpeBVNboalOiGmUJRN4T0m9aIFtHrrSORWn9aqc2TCDefq2XFTZCae36onQGzysOUlcoygxZALrLyxrkpkZ2RGq5bIrFgxTFM1jgCDYO0tHAiAQmskfMmwn44tVpyF4U-v88GQ.svg",
+    source: "Eastar Jet current CI (user-provided mirror)",
   },
   "7C": {
     url: "https://static.jejuair.net/cms/images/banner_image/20250123100048468.png",
@@ -66,6 +66,70 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   MM: {
     url: "https://www.flypeach.com/information/brand/en/assets/img/common/logo.svg",
     source: "Peach Aviation Brand",
+  },
+  SQ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Singapore_Airlines_Logo.svg",
+    source: "Singapore Airlines current horizontal CI (stable mirror sourced from singaporeair.com)",
+  },
+  EK: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Emirates_Logo.svg",
+    source: "Emirates current CI (stable mirror sourced from emirates.com)",
+  },
+  CX: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cathay_Pacific_Ltd._logo.svg",
+    source: "Cathay Pacific current horizontal CI (stable mirror sourced from cathaypacific.com)",
+  },
+  VN: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vietnam_Airlines_2015_wordmark.svg",
+    source: "Vietnam Airlines 2015 current horizontal CI (stable mirror sourced from vietnamairlines.com)",
+  },
+  AF: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_France_Logo.svg",
+    source: "Air France current horizontal CI (stable mirror sourced from Air France corporate materials)",
+  },
+  CA: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_China_wordmark.svg",
+    source: "Air China current horizontal wordmark (stable mirror sourced from airchina.com.cn)",
+  },
+  MU: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Eastern_Airlines_logo.svg",
+    source: "China Eastern Airlines current horizontal CI (stable mirror sourced from ceair.com)",
+  },
+  CZ: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Southern_Airlines_logo.svg",
+    source: "China Southern Airlines current horizontal CI (stable mirror sourced from csair.com)",
+  },
+  TG: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Thai_Airways_logo.svg",
+    source: "Thai Airways current horizontal CI (stable mirror sourced from thaiairways.com)",
+  },
+  TK: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Turkish_Airlines_logo_2019.svg",
+    source: "Turkish Airlines 2019 current horizontal CI (stable mirror sourced from official logo archive)",
+  },
+  JL: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Japan_Airlines_Wordmark_(2011).svg",
+    source: "Japan Airlines current horizontal wordmark (stable mirror sourced from jal.co.jp)",
+  },
+  NH: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/All_Nippon_Airways_Logo.svg",
+    source: "ANA current horizontal CI (stable mirror sourced from ana.co.jp)",
+  },
+  CI: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Airlines_wordmark.svg",
+    source: "China Airlines current horizontal wordmark (stable mirror sourced from official CI)",
+  },
+  BR: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_EVA_Air.svg",
+    source: "EVA Air current horizontal CI (stable mirror sourced from evaair.com)",
+  },
+  DL: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Delta_logo.svg",
+    source: "Delta Air Lines current horizontal CI (stable mirror sourced from delta.com)",
+  },
+  UA: {
+    url: "https://commons.wikimedia.org/wiki/Special:Redirect/file/United_Airlines_wordmark.svg",
+    source: "United Airlines current horizontal wordmark (stable mirror sourced from official corporate materials)",
   },
 };
 
