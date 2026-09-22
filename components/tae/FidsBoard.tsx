@@ -60,6 +60,10 @@ function displayStatus(value: string, mode: FlightMode, language: DisplayLanguag
   return localizedStatus(status, language, airportCode);
 }
 
+function isGateChangedStatus(value: string) {
+  return /탑승구\s*변경|gate\s*change/i.test(value);
+}
+
 function statusClass(value: string) {
   const status = value.toLowerCase();
   if (/결항|cancel/.test(status)) return "cancelled";
@@ -132,6 +136,11 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   const changed = scheduled !== estimated && estimated !== "--:--";
   const status = displayStatus(flight.remark, mode, language, flight.airportCode);
   const airlineName = shown.airline || shown.airlineEnglish || "-";
+  const previousGate =
+    mode === "departures" && isGateChangedStatus(flight.remark)
+      ? (flight.previousFacility ?? "").trim()
+      : "";
+  const currentGate = (flight.facility || "-").trim();
 
   return (
     <div className="flight-row row-grid" role="row">
@@ -156,7 +165,17 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
         <span>{flight.airportCode || "---"}</span>
       </div>
       <div className="type-cell"><span className={flight.flightType === "국제선" ? "international" : "domestic"}>{flight.flightType}</span></div>
-      <div className="facility-cell"><strong>{flight.facility || "-"}</strong></div>
+      <div className={`facility-cell${previousGate && previousGate !== currentGate ? " facility-changed" : ""}`}>
+        {previousGate && previousGate !== currentGate ? (
+          <div className="gate-change" aria-label={`탑승구 ${previousGate}에서 ${currentGate}(으)로 변경`}>
+            <span className="gate-previous">{previousGate}</span>
+            <span className="gate-arrow" aria-hidden>→</span>
+            <strong className="gate-current">{currentGate}</strong>
+          </div>
+        ) : (
+          <strong>{currentGate}</strong>
+        )}
+      </div>
       <div className={`status-cell ${statusClass(status)}`}><strong>{status}</strong></div>
     </div>
   );

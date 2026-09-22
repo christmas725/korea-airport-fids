@@ -104,8 +104,8 @@
       minmax(104px,1.22fr)
       minmax(62px,1.05fr)
       minmax(34px,.55fr)
-      minmax(33px,.54fr)
-      minmax(48px,.82fr);
+      minmax(45px,.68fr)
+      minmax(46px,.76fr);
   }
   .table-head { height: 42px; min-height: 42px; }
   .table-head > div, .flight-row > div { padding-left: 4px; padding-right: 4px; }
@@ -149,6 +149,10 @@
     font-size: clamp(7px,2.15vw,9px);
   }
   .facility-cell strong { font-size: clamp(13px,3.8vw,17px); }
+  .gate-change { gap: 1px; }
+  .gate-change .gate-previous,
+  .gate-change .gate-arrow,
+  .gate-change .gate-current { font-size: clamp(8px,2.45vw,11px); }
   .status-cell { padding-left: 2px !important; padding-right: 2px !important; }
   .status-cell strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(8px,2.45vw,10px); }
   .data-strip { height: 25px; min-height: 25px; padding: 0 7px; font-size: 7px; }
@@ -163,8 +167,8 @@
       minmax(110px,1.3fr)
       minmax(56px,.92fr)
       minmax(32px,.52fr)
-      minmax(31px,.5fr)
-      minmax(46px,.78fr);
+      minmax(43px,.64fr)
+      minmax(44px,.72fr);
   }
   .carrier-logo-shell,
   .logo-fallback,

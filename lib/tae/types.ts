@@ -16,6 +16,7 @@ export type FidsFlight = {
   estimatedDateTime: string;
   actualDateTime?: string;
   facility: string;
+  previousFacility?: string;
   facilityLabel: "탑승구" | "수하물";
   flightType: "국내선" | "국제선";
   remark: string;

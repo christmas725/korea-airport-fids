@@ -23,6 +23,8 @@ const MAX_FLIGHT_PAGES = 20;
 const DETAIL_PAGE_SIZE = 100;
 const DETAIL_LOOKBACK_MS = 3 * 60 * 60_000;
 const DETAIL_LOOKAHEAD_MS = 4 * 60 * 60_000;
+const GATE_HISTORY_ENDPOINT = "https://kfcnzzcjjndmexzrmcrd.supabase.co/functions/v1/kac-gate-history";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_SIAqFa0yNUBg5YcFUidg_hmo6-TaI";
 
 type GwPage = {
   items: RawKacFlight[];
@@ -42,6 +44,15 @@ function first(raw: RawKacFlight, keys: string[], fallback = "") {
 
 function normalizedFlightId(value: string) {
   return value.replace(/\s+/g, "").toUpperCase();
+}
+
+const PREVIOUS_GATE_KEYS = [
+  "prevGate", "previousGate", "oldGate", "beforeGate", "orgGate",
+  "PREV_GATE", "PREVIOUS_GATE", "OLD_GATE", "BEFORE_GATE", "ORG_GATE", "GATE_BEFORE",
+];
+
+function previousGate(raw: RawKacFlight) {
+  return first(raw, PREVIOUS_GATE_KEYS);
 }
 
 function kstParts(now = new Date()) {
@@ -149,6 +160,7 @@ function normalizeGwInfoFlight(raw: RawKacFlight, mode: FlightMode, index: numbe
     estimatedDateTime: fullDateTime(estimatedRaw, date, scheduleRaw) || fullDateTime(scheduleRaw, date),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, date, scheduleRaw) : "",
     facility: departure ? first(raw, ["gate", "GATE"], "-") : first(raw, ["baggageClaim", "BAGGAGE_CLAIM"], "-"),
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["line", "LINE"])),
     remark,
@@ -183,6 +195,7 @@ function normalizeGwOperationFlight(raw: RawKacFlight, mode: FlightMode, index: 
     estimatedDateTime: fullDateTime(estimatedRaw, operationDate, scheduleRaw) || fullDateTime(scheduleRaw, operationDate),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, operationDate, scheduleRaw) : "",
     facility: "-",
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["line"])),
     remark,
@@ -212,6 +225,7 @@ function normalizeHomepageFlight(raw: RawKacFlight, mode: FlightMode, index: num
     estimatedDateTime: fullDateTime(estimatedRaw, operationDate, scheduleRaw) || fullDateTime(scheduleRaw, operationDate),
     actualDateTime: isCompleteStatus(remark) ? fullDateTime(estimatedRaw, operationDate, scheduleRaw) : "",
     facility: departure ? first(raw, ["GATE", "gate"], "-") : "-",
+    previousFacility: departure ? previousGate(raw) : "",
     facilityLabel: departure ? "탑승구" : "수하물",
     flightType: normalizeType(first(raw, ["LINE", "line"])),
     remark,
@@ -410,6 +424,7 @@ function mergeOperationFlights(baseFlights: FidsFlight[], operationFlights: Fids
       remark: flight.remark || meta.remark,
       actualDateTime: flight.actualDateTime || meta.actualDateTime,
       facility: flight.facility || meta.facility || "-",
+      previousFacility: flight.previousFacility || meta.previousFacility,
     };
   });
 
@@ -445,6 +460,7 @@ function mergeOperationFlights(baseFlights: FidsFlight[], operationFlights: Fids
     flight.airportCode = master.airportCode || flight.airportCode;
     flight.flightType = master.flightType;
     flight.facility = master.facility || flight.facility;
+    flight.previousFacility = master.previousFacility || flight.previousFacility;
     flight.remark = master.remark || flight.remark;
     flight.remarkEnglish = master.remarkEnglish || flight.remarkEnglish;
   });
@@ -580,10 +596,99 @@ async function enrichFacilities(flights: FidsFlight[], date: string, mode: Fligh
       mode === "departures"
         ? first(detail, ["GATE", "gate"], flight.facility)
         : first(detail, ["BAGGAGE_CLAIM", "baggageClaim"], flight.facility);
-    return facility && facility !== flight.facility ? { ...flight, facility } : flight;
+    const previousFacility =
+      mode === "departures"
+        ? previousGate(detail) || flight.previousFacility
+        : flight.previousFacility;
+
+    if (facility !== flight.facility || previousFacility !== flight.previousFacility) {
+      return { ...flight, facility, previousFacility };
+    }
+    return flight;
   });
 
   return { flights: enriched, usedDetail: true };
+}
+
+
+type GateHistoryRow = {
+  flight_key?: string;
+  previous_gate?: string | null;
+  current_gate?: string | null;
+};
+
+function isoOperationDate(date: string) {
+  const digits = date.replace(/\D/g, "").slice(0, 8);
+  return digits.length === 8
+    ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`
+    : "";
+}
+
+function validGate(value: string | null | undefined) {
+  const gate = (value ?? "").trim();
+  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+}
+
+async function enrichGateHistory(
+  flights: FidsFlight[],
+  date: string,
+  mode: FlightMode,
+  airportCode: string
+) {
+  if (mode !== "departures" || !flights.length) {
+    return { flights, usedHistory: false };
+  }
+
+  const operationDate = isoOperationDate(date);
+  if (!operationDate) return { flights, usedHistory: false };
+
+  const endpoint = new URL(GATE_HISTORY_ENDPOINT);
+  endpoint.searchParams.set("airport", airportCode);
+  endpoint.searchParams.set("date", operationDate);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Accept: "application/json",
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+    },
+    next: { revalidate: 15 },
+    signal: AbortSignal.timeout(3_000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`게이트 이력 조회 실패 ${response.status}`);
+  }
+
+  const json = await response.json();
+  const rows = Array.isArray(json?.gates) ? (json.gates as GateHistoryRow[]) : [];
+  if (!rows.length) return { flights, usedHistory: true };
+
+  const history = new Map(
+    rows
+      .map((row) => [normalizedFlightId(row.flight_key ?? ""), row] as const)
+      .filter(([key]) => Boolean(key))
+  );
+
+  return {
+    usedHistory: true,
+    flights: flights.map((flight) => {
+      if (validGate(flight.previousFacility)) return flight;
+
+      const key = normalizedFlightId(flight.masterFlightId || flight.flightId);
+      const row = history.get(key);
+      if (!row) return flight;
+
+      const current = validGate(row.current_gate);
+      const previous = validGate(row.previous_gate);
+      const displayedCurrent = validGate(flight.facility);
+
+      if (!previous || !current || previous === current || current !== displayedCurrent) {
+        return flight;
+      }
+
+      return { ...flight, previousFacility: previous };
+    }),
+  };
 }
 
 async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
@@ -700,6 +805,14 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
       console.warn(`[${airportCode} FIDS] 시설정보 보강 조회 실패`, error);
     }
 
+    try {
+      const gateHistoryResult = await enrichGateHistory(flights, date, mode, airportCode);
+      flights = gateHistoryResult.flights;
+      if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+    } catch (error) {
+      console.warn(`[${airportCode} FIDS] 게이트 이력 보강 조회 실패`, error);
+    }
+
     return NextResponse.json(payload(airportCode, mode, flights, "kac_gw", undefined, dataSources), {
       headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
     });
@@ -709,11 +822,22 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
 
   if (airportCode === "TAE") {
     try {
-      const flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
+      let flights = await fetchHomepageFlights(airportCode, mode, date, formDate);
       if (!flights.length) throw new Error("대구공항 홈페이지 운항편이 0건으로 반환되었습니다.");
-      return NextResponse.json(payload(airportCode, mode, flights, "kac_homepage", liveErrors[0]), {
-        headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
-      });
+
+      const dataSources = ["kac-daegu-homepage"];
+      try {
+        const gateHistoryResult = await enrichGateHistory(flights, date, mode, airportCode);
+        flights = gateHistoryResult.flights;
+        if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
+      } catch (error) {
+        console.warn(`[${airportCode} FIDS] 홈페이지 fallback 게이트 이력 보강 조회 실패`, error);
+      }
+
+      return NextResponse.json(
+        payload(airportCode, mode, flights, "kac_homepage", liveErrors[0], dataSources),
+        { headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` } },
+      );
     } catch (error) {
       liveErrors.push(error instanceof Error ? error.message : "Homepage Unknown error");
     }
