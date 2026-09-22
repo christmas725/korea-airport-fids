@@ -57,10 +57,6 @@ function normalizedId(value: string) {
 
 function displayStatus(value: string, mode: FlightMode, language: DisplayLanguage, airportCode: string) {
   const status = value.trim() || (mode === "departures" ? "정시" : "예정");
-  if (language === "KO") return status;
-  if (/도착|arrived/i.test(status)) return language === "EN" ? "Arrived" : "Arrived";
-  if (/시간\s*변경|change/i.test(status)) return language === "EN" ? "Time Changed" : "Time Changed";
-  if (/예정|scheduled/i.test(status)) return language === "EN" ? "Scheduled" : "Scheduled";
   return localizedStatus(status, language, airportCode);
 }
 
