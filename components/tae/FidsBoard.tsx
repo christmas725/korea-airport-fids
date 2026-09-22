@@ -112,7 +112,14 @@ function groupFlights(flights: FidsFlight[]): FlightGroup[] {
 
 function destinationFor(flight: FidsFlight, language: DisplayLanguage) {
   if (language === "KO") return flight.airport || flight.airportCode || "-";
-  const english = flight.airportEnglish || destinationName(flight.airportCode, flight.airport, "EN");
+
+  const airportCode = flight.airportCode.trim().toUpperCase();
+  const feedEnglish = flight.airportEnglish?.trim() ?? "";
+  const english =
+    feedEnglish && feedEnglish.toUpperCase() !== airportCode
+      ? feedEnglish
+      : destinationName(flight.airportCode, flight.airport, "EN");
+
   return language === "LOCAL" ? localDestinationName(flight.airportCode, english) : english;
 }
 
