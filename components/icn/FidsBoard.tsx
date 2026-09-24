@@ -601,7 +601,7 @@ export default function FidsBoard() {
                         lang={contentLang}
                         dir={contentDirection}
                       >
-                        {displayedStatus}
+                        <SlidingText text={displayedStatus} direction={contentDirection} />
                       </span>
                     ) : (
                       <span className="status-empty">-</span>
