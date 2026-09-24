@@ -338,6 +338,7 @@ export default function FidsBoard() {
   const [rotationStep, setRotationStep] = useState(0);
   const rowsPerPage = useRowsPerPage();
   const previewTestActive = data?.warning?.startsWith("Preview 테스트 시나리오:") ?? false;
+  const fixedClock = previewTestActive ? formatClock(previewDateFromLocation()) : "";
   async function load() {
     try {
       setError("");
@@ -500,7 +501,7 @@ export default function FidsBoard() {
           </div>
 
           <div className="rail-time">
-            <strong>{now ? formatClock(now) : "--:--"}</strong>
+            <strong data-fixed-time={fixedClock || undefined}>{now ? formatClock(now) : "--:--"}</strong>
             <span>{now ? formatDate(now) : "--.--"}</span>
           </div>
 
