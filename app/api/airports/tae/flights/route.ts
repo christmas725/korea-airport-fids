@@ -784,13 +784,17 @@ function homepageCell(row: string, className: string) {
 
 function parseKacHomepageHtml(
   html: string,
-  airportCode: string,
+  _airportCode: string,
   mode: FlightMode,
   date: string
 ) {
   const flights: FidsFlight[] = [];
-  const rowPattern =
-    /<ul\\b[^>]*class=["'][^"']*\\bflight-stat-info\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/ul>/gi;
+  const rowPattern = new RegExp(
+    '<ul\\b[^>]*class=["\\'][^"\\']*\\bflight-stat-info\\b[^"\\']*["\\'][^>]*>([\\s\\S]*?)</ul>',
+    "gi"
+  );
+  const timePattern = new RegExp("([0-2]\\d):([0-5]\\d)", "g");
+  const flightPattern = new RegExp("([A-Z0-9]{2}\\s*\\d{1,4}[A-Z]?)", "i");
 
   let match: RegExpExecArray | null;
   let index = 0;
@@ -798,39 +802,33 @@ function parseKacHomepageHtml(
   while ((match = rowPattern.exec(html)) !== null) {
     const body = match[1] ?? "";
     const timeText = homepageCell(body, "fligt-time");
-    const times = timeText.match(/([0-2]\\d):([0-5]\\d)/g) ?? [];
+    const times = timeText.match(timePattern) ?? [];
     if (!times.length) continue;
 
     const nameText = homepageCell(body, "fligt-name");
-    const flightMatch = nameText.match(/([A-Z0-9]{2}\\s*\\d{1,4}[A-Z]?)/i);
+    const flightMatch = nameText.match(flightPattern);
     if (!flightMatch) continue;
 
     const flightId = normalizedFlightId(flightMatch[1]);
-    const airline = nameText
-      .replace(flightMatch[0], "")
-      .replace(/항공편|편명/gi, "")
-      .trim() || "-";
+    const airline =
+      nameText.replace(flightMatch[0], "").replace(/항공편|편명/gi, "").trim() || "-";
 
-    // 홈페이지에서 변경시각이 함께 노출될 경우 현재/변경시각이 먼저,
-    // 원래 예정시각이 뒤에 표시되는 구조를 따른다.
     const estimatedRaw = times[0]!.replace(":", "");
     const scheduleRaw = (times.length > 1 ? times[times.length - 1]! : times[0]!).replace(":", "");
     const scheduleDateTime = fullDateTime(scheduleRaw, date);
     const estimatedDateTime =
       fullDateTime(estimatedRaw, date, scheduleRaw) || scheduleDateTime;
 
-    const airport = homepageCell(body, "fligt-dest")
-      .replace(/목적지|출발지/gi, "")
-      .trim() || "-";
+    const airport =
+      homepageCell(body, "fligt-dest").replace(/목적지|출발지/gi, "").trim() || "-";
     const flightTypeText = homepageCell(body, "fligt-div");
-    const facility = homepageCell(body, "fligt-out")
-      .replace(/탑승구|수하물/gi, "")
-      .trim() || "-";
+    const facility =
+      homepageCell(body, "fligt-out").replace(/탑승구|수하물/gi, "").trim() || "-";
     const rawRemark = homepageCell(body, "fligt-stat").trim();
     const remark = rawRemark === "-" ? "" : rawRemark;
 
     flights.push({
-      id: `homepage-${date}-${mode}-${flightId}-${index++}`,
+      id: "homepage-" + date + "-" + mode + "-" + flightId + "-" + index++,
       mode,
       flightId,
       masterFlightId: "",
