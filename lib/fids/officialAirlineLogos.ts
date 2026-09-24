@@ -330,8 +330,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   SC: {
     url: "/airlines/SC.svg",
-    sourceUrl: "https://www.mushroomtravel.com/assets/images/airlinelogo/shandong-logo.svg?v=2",
-    source: "Shandong Airlines current horizontal SVG (stable travel-industry mirror; visually matched to current SDA branding)",
+    sourceUrl: "https://www.sda.cn/en/imgs/logo.36d0f3b.png",
+    source: "Shandong Airlines official website current horizontal header logo",
   },
   ZH: {
     url: "/airlines/ZH.svg",
@@ -395,8 +395,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   GJ: {
     url: "/airlines/GJ.svg",
-    sourceUrl: "https://www.loongair.cn/static/img/logonew2.8b5ce22.png",
-    source: "Loong Air official website horizontal logo",
+    sourceUrl: "https://wsrv.nl/?url=res.loongair.cn/360f969e978e4456bd01700fc2ec146a.png&output=png",
+    source: "Loong Air official website current horizontal header logo (build-time image cache)",
   },
   AS: {
     url: "/airlines/AS.svg",
