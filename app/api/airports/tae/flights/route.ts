@@ -997,18 +997,37 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     p0: "",
   });
 
+  const browserHeaders = {
+    Accept: "text/html,application/xhtml+xml",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+  };
+
+  // KAC 홈페이지는 브라우저가 페이지를 먼저 열어 세션 쿠키를 받은 뒤
+  // 운항편 검색 폼을 제출하는 흐름을 사용한다. 서버에서도 같은 순서를 재현한다.
+  const sessionResponse = await fetch(endpoint, {
+    headers: browserHeaders,
+    cache: "no-store",
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  const setCookie = sessionResponse.headers.get("set-cookie") ?? "";
+  const cookieHeader = setCookie
+    .split(/,(?=[^;,]+=)/)
+    .map((cookie) => cookie.split(";")[0]?.trim())
+    .filter(Boolean)
+    .join("; ");
+
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
-      Accept: "text/html,application/xhtml+xml",
-      "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      ...browserHeaders,
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       Origin: "https://www.airport.co.kr",
       Referer: endpoint,
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
     body,
-    next: { revalidate: CACHE_SECONDS },
+    cache: "no-store",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
