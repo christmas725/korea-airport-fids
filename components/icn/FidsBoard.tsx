@@ -41,10 +41,7 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function testAwareNow(dataSources?: string[], demoSource = false) {
-  const isPreviewTest =
-    (dataSources?.some((source) => source.startsWith("preview-test:")) ?? false) ||
-    (demoSource && new URLSearchParams(window.location.search).has("test"));
+function testAwareNow(isPreviewTest = false) {
   if (typeof window === "undefined" || !isPreviewTest) return new Date();
 
   const params = new URLSearchParams(window.location.search);
@@ -335,7 +332,7 @@ function RotatingFlightIdentity({
   );
 }
 
-export default function FidsBoard() {
+export default function FidsBoard({ previewTest = false }: { previewTest?: boolean }) {
   const [data, setData] = useState<DeparturesPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -345,9 +342,7 @@ export default function FidsBoard() {
   const [language, setLanguage] = useState<DisplayLanguage>("KO");
   const [rotationStep, setRotationStep] = useState(0);
   const rowsPerPage = useRowsPerPage();
-  const displayNow = data?.source === "demo"
-    ? testAwareNow(data.dataSources, true)
-    : now;
+  const displayNow = previewTest ? testAwareNow(true) : now;
 
   async function load() {
     try {
@@ -375,11 +370,11 @@ export default function FidsBoard() {
   }, []);
 
   useEffect(() => {
-    const updateClock = () => setNow(testAwareNow(data?.dataSources, data?.source === "demo"));
+    const updateClock = () => setNow(testAwareNow(previewTest));
     updateClock();
     const timer = window.setInterval(updateClock, 1000);
     return () => window.clearInterval(timer);
-  }, [data?.dataSources, data?.source]);
+  }, [previewTest]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

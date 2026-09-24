@@ -20,7 +20,7 @@ export default async function IcnFidsPage({
     <>
       <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
       <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-        <FidsBoard />
+        <FidsBoard previewTest={Boolean(testQuery)} />
       </InitialApiHydrator>
     </>
   );

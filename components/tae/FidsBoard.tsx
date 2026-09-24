@@ -48,10 +48,7 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function testAwareNow(dataSources?: string[], demoSource = false) {
-  const isPreviewTest =
-    (dataSources?.some((source) => source.startsWith("preview-test:")) ?? false) ||
-    (demoSource && new URLSearchParams(window.location.search).has("test"));
+function testAwareNow(isPreviewTest = false) {
   if (typeof window === "undefined" || !isPreviewTest) return new Date();
 
   const params = new URLSearchParams(window.location.search);
@@ -225,7 +222,7 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   );
 }
 
-export default function FidsBoard({ airport }: { airport: Airport }) {
+export default function FidsBoard({ airport, previewTest = false }: { airport: Airport; previewTest?: boolean }) {
   const [mode, setMode] = useState<FlightMode>("departures");
   const [payload, setPayload] = useState<FlightsPayload | null>(null);
   const [error, setError] = useState("");
@@ -261,12 +258,12 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, [mode]);
 
   useEffect(() => {
-    const updateClock = () => setNow(testAwareNow(payload?.dataSources, payload?.source === "demo"));
+    const updateClock = () => setNow(testAwareNow(previewTest));
     updateClock();
     const clock = window.setInterval(updateClock, 1000);
     const rotation = window.setInterval(() => setRotationStep((value) => value + 1), ROTATION_MS);
     return () => { window.clearInterval(clock); window.clearInterval(rotation); };
-  }, [payload?.dataSources, payload?.source]);
+  }, [previewTest]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -278,9 +275,7 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, []);
 
   const currentPayload = payload?.mode === mode ? payload : null;
-  const displayNow = currentPayload?.source === "demo"
-    ? testAwareNow(currentPayload.dataSources, true)
-    : now;
+  const displayNow = previewTest ? testAwareNow(true) : now;
   const latestDeparture = useMemo(
     () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
     [currentPayload, mode]
