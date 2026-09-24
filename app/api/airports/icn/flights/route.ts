@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getDemoFlights } from "@/lib/icn/demo";
+import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
 import type {
   DeparturesPayload,
   RawDepartureFlight,
@@ -909,20 +910,28 @@ function limitOperationsPerTerminal(flights: DepartureFlight[]) {
   });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const query = makeWindow();
+  const previewTest = previewTestAllowed() ? readPreviewTest(request.nextUrl.searchParams) : null;
   const demoMode = process.env.FIDS_DEMO_MODE === "true";
   const rawKey = process.env.INCHEON_API_KEY;
 
-  if (demoMode) {
+  if (previewTest || demoMode) {
+    const scenario = previewTest?.scenario ?? "normal";
+    const baseNow = testBaseDate(previewTest?.time);
     const payload: DeparturesPayload = {
-      flights: getDemoFlights(),
+      flights: getDemoFlights({ scenario, now: baseNow }),
       updatedAt: new Date().toISOString(),
       source: "demo",
-      dataSources: ["demo"],
+      dataSources: [previewTest ? `preview-test:${scenario}` : "demo"],
       query,
     };
-    return NextResponse.json(payload, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": "no-store",
+        ...(previewTest ? { "X-FIDS-Test-Scenario": scenario } : {}),
+      },
+    });
   }
 
   const serviceKey = rawKey ? normalizeServiceKey(rawKey) : "";

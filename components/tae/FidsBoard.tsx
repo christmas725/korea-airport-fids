@@ -36,6 +36,43 @@ const ROTATION_MS = 4_000;
 const DEPARTURE_SIGNAL_GRACE_MS = 5 * 60_000;
 const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
 
+function previewTestSuffix() {
+  if (typeof window === "undefined") return "";
+  const current = new URLSearchParams(window.location.search);
+  const next = new URLSearchParams();
+  const test = current.get("test");
+  const time = current.get("time");
+  if (test) next.set("test", test);
+  if (time) next.set("time", time);
+  const query = next.toString();
+  return query ? `&${query}` : "";
+}
+
+function testAwareNow(dataSources?: string[]) {
+  const isPreviewTest =
+    dataSources?.some((source) => source.startsWith("preview-test:")) ?? false;
+  if (typeof window === "undefined" || !isPreviewTest) return new Date();
+
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("test")) return new Date();
+
+  const time = (params.get("time") || "").replace(/\D/g, "").slice(0, 4);
+  if (!/^([01]\d|2[0-3])[0-5]\d$/.test(time)) return new Date();
+
+  const real = new Date();
+  const kst = new Date(real.getTime() + 9 * 60 * 60 * 1000);
+  return new Date(
+    Date.UTC(
+      kst.getUTCFullYear(),
+      kst.getUTCMonth(),
+      kst.getUTCDate(),
+      Number(time.slice(0, 2)) - 9,
+      Number(time.slice(2, 4))
+    )
+  );
+}
+
+
 function formatTime(value: string) {
   const date = parseKstDateTime(value);
   return date
@@ -201,7 +238,7 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch(`/api/airports/${airport.code.toLowerCase()}/flights?mode=${mode}`, { cache: "no-store" });
+      const response = await fetch(`/api/airports/${airport.code.toLowerCase()}/flights?mode=${mode}${previewTestSuffix()}`, { cache: "no-store" });
       const json = (await response.json()) as FlightsPayload & { error?: string };
       if (!response.ok) throw new Error(json.error || "운항정보를 불러오지 못했습니다.");
       setPayload(json);
@@ -223,10 +260,12 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, [mode]);
 
   useEffect(() => {
-    const clock = window.setInterval(() => setNow(new Date()), 1000);
+    const updateClock = () => setNow(testAwareNow(payload?.dataSources));
+    updateClock();
+    const clock = window.setInterval(updateClock, 1000);
     const rotation = window.setInterval(() => setRotationStep((value) => value + 1), ROTATION_MS);
     return () => { window.clearInterval(clock); window.clearInterval(rotation); };
-  }, []);
+  }, [payload?.dataSources]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {

@@ -29,6 +29,43 @@ const DATA_POLL_INTERVAL_MS = 60_000;
 const DEPARTED_GRACE_MS = 5 * 60_000;
 const MIN_STEPS_PER_LANGUAGE = 2;
 
+function previewTestSuffix() {
+  if (typeof window === "undefined") return "";
+  const current = new URLSearchParams(window.location.search);
+  const next = new URLSearchParams();
+  const test = current.get("test");
+  const time = current.get("time");
+  if (test) next.set("test", test);
+  if (time) next.set("time", time);
+  const query = next.toString();
+  return query ? `&${query}` : "";
+}
+
+function testAwareNow(dataSources?: string[]) {
+  const isPreviewTest =
+    dataSources?.some((source) => source.startsWith("preview-test:")) ?? false;
+  if (typeof window === "undefined" || !isPreviewTest) return new Date();
+
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("test")) return new Date();
+
+  const time = (params.get("time") || "").replace(/\D/g, "").slice(0, 4);
+  if (!/^([01]\d|2[0-3])[0-5]\d$/.test(time)) return new Date();
+
+  const real = new Date();
+  const kst = new Date(real.getTime() + 9 * 60 * 60 * 1000);
+  return new Date(
+    Date.UTC(
+      kst.getUTCFullYear(),
+      kst.getUTCMonth(),
+      kst.getUTCDate(),
+      Number(time.slice(0, 2)) - 9,
+      Number(time.slice(2, 4))
+    )
+  );
+}
+
+
 function parseApiDateTime(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.length < 12) return null;
@@ -312,7 +349,7 @@ export default function FidsBoard() {
     try {
       setError("");
 
-      const res = await fetch("/api/airports/icn/flights", { cache: "no-store" });
+      const res = await fetch(`/api/airports/icn/flights?view=board${previewTestSuffix()}`, { cache: "no-store" });
       const json = await res.json();
 
       if (!res.ok) {
@@ -334,10 +371,11 @@ export default function FidsBoard() {
   }, []);
 
   useEffect(() => {
-    setNow(new Date());
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    const updateClock = () => setNow(testAwareNow(data?.dataSources));
+    updateClock();
+    const timer = window.setInterval(updateClock, 1000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [data?.dataSources]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
