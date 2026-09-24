@@ -1,10 +1,19 @@
 import InitialApiHydrator from "@/components/fids/InitialApiHydrator";
 import FidsBoard from "@/components/icn/FidsBoard";
 import { fetchInitialJson } from "@/lib/fids/serverInitial";
+import {
+  previewTestQuery,
+  type PreviewTestPageSearchParams,
+} from "@/lib/fids/previewTest";
 import type { DeparturesPayload } from "@/lib/icn/types";
 
-export default async function IcnFidsPage() {
-  const requestPath = "/api/airports/icn/flights";
+export default async function IcnFidsPage({
+  searchParams,
+}: {
+  searchParams: Promise<PreviewTestPageSearchParams>;
+}) {
+  const testQuery = previewTestQuery(await searchParams);
+  const requestPath = `/api/airports/icn/flights?view=board${testQuery}`;
   const initialPayload = await fetchInitialJson<DeparturesPayload>(requestPath);
 
   return (

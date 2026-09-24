@@ -4,12 +4,18 @@ import InitialApiHydrator from "@/components/fids/InitialApiHydrator";
 import FidsBoard from "@/components/tae/FidsBoard";
 import { airportByCode } from "@/lib/airports";
 import { fetchInitialJson } from "@/lib/fids/serverInitial";
+import {
+  previewTestQuery,
+  type PreviewTestPageSearchParams,
+} from "@/lib/fids/previewTest";
 import type { FlightsPayload } from "@/lib/tae/types";
 
 export default async function PreparingAirportPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string }>;
+  searchParams: Promise<PreviewTestPageSearchParams>;
 }) {
   const { code } = await params;
   const airport = airportByCode(code);
@@ -19,7 +25,8 @@ export default async function PreparingAirportPage({
   }
 
   if (airport.status === "live") {
-    const requestPath = `/api/airports/${airport.code.toLowerCase()}/flights?mode=departures`;
+    const testQuery = previewTestQuery(await searchParams);
+    const requestPath = `/api/airports/${airport.code.toLowerCase()}/flights?mode=departures${testQuery}`;
     const initialPayload = await fetchInitialJson<FlightsPayload>(requestPath);
 
     return (

@@ -17,6 +17,11 @@ const SCENARIOS = new Set<FidsTestScenario>([
   "overnight",
 ]);
 
+export type PreviewTestPageSearchParams = Record<
+  string,
+  string | string[] | undefined
+>;
+
 export function previewTestAllowed() {
   return process.env.VERCEL_ENV === "preview" || process.env.NODE_ENV === "development";
 }
@@ -30,6 +35,23 @@ export function readPreviewTest(searchParams: URLSearchParams) {
     scenario: raw as FidsTestScenario,
     time: /^([01]\d|2[0-3])[0-5]\d$/.test(time) ? time : "",
   };
+}
+
+export function previewTestQuery(searchParams: PreviewTestPageSearchParams) {
+  if (!previewTestAllowed()) return "";
+
+  const candidate = new URLSearchParams();
+  const test = searchParams.test;
+  const time = searchParams.time;
+  if (typeof test === "string") candidate.set("test", test);
+  if (typeof time === "string") candidate.set("time", time);
+
+  const parsed = readPreviewTest(candidate);
+  if (!parsed) return "";
+
+  const query = new URLSearchParams({ test: parsed.scenario });
+  if (parsed.time) query.set("time", parsed.time);
+  return `&${query.toString()}`;
 }
 
 export function testBaseDate(hhmm = "", now = new Date()) {
