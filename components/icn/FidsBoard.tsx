@@ -41,9 +41,10 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function testAwareNow(dataSources?: string[]) {
+function testAwareNow(dataSources?: string[], demoSource = false) {
   const isPreviewTest =
-    dataSources?.some((source) => source.startsWith("preview-test:")) ?? false;
+    (dataSources?.some((source) => source.startsWith("preview-test:")) ?? false) ||
+    (demoSource && new URLSearchParams(window.location.search).has("test"));
   if (typeof window === "undefined" || !isPreviewTest) return new Date();
 
   const params = new URLSearchParams(window.location.search);
@@ -371,11 +372,11 @@ export default function FidsBoard() {
   }, []);
 
   useEffect(() => {
-    const updateClock = () => setNow(testAwareNow(data?.dataSources));
+    const updateClock = () => setNow(testAwareNow(data?.dataSources, data?.source === "demo"));
     updateClock();
     const timer = window.setInterval(updateClock, 1000);
     return () => window.clearInterval(timer);
-  }, [data?.dataSources]);
+  }, [data?.dataSources, data?.source]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
