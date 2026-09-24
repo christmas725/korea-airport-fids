@@ -984,8 +984,7 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
 
   const pageUrl =
     "https://www.airport.co.kr/" + slug + "/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2";
-  const flightListUrl =
-    "https://www.airport.co.kr/" + slug + "/cms/flightSearch/getFlightList.do";
+  const apiUrl = "https://www.airport.co.kr/flight/frPryInfoSvc/getPryInfoList.do";
   const body = new URLSearchParams({
     pGbn: mode === "departures" ? "O" : "I",
     pAirport: airportCode,
@@ -999,15 +998,14 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
   });
 
   const browserHeaders = {
-    Accept: "text/html,application/xhtml+xml,*/*;q=0.8",
+    Accept: "application/json,text/javascript,*/*;q=0.8",
     "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
   };
 
-  // 공식 페이지를 먼저 열어 세션 쿠키를 확보한다.
   const sessionResponse = await fetch(pageUrl, {
-    headers: browserHeaders,
+    headers: { ...browserHeaders, Accept: "text/html,application/xhtml+xml" },
     cache: "no-store",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
@@ -1018,8 +1016,7 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     .filter(Boolean)
     .join("; ");
 
-  // KAC 공항별 출발/도착 조회 화면이 사용하는 목록 전용 엔드포인트.
-  const response = await fetch(flightListUrl, {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       ...browserHeaders,
@@ -1034,20 +1031,39 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
-  const buffer = await response.arrayBuffer();
-  const contentType = response.headers.get("content-type") || "";
-  const responseBody = /euc-?kr/i.test(contentType)
-    ? new TextDecoder("euc-kr").decode(buffer)
-    : new TextDecoder("utf-8").decode(buffer);
-
+  const responseBody = await response.text();
   if (!response.ok) {
     throw new Error(
-      airportCode + "공항 홈페이지 운항목록 " + response.status + ": " +
+      airportCode + "공항 홈페이지 운항 API " + response.status + ": " +
       responseBody.replace(/\s+/g, " ").slice(0, 180)
     );
   }
 
-  return parseKacHomepageHtml(responseBody, airportCode, mode, date);
+  let json: any;
+  try {
+    json = JSON.parse(responseBody);
+  } catch {
+    return parseKacHomepageHtml(responseBody, airportCode, mode, date);
+  }
+
+  const candidates = [
+    json?.FR_PRY_INFO_LIST,
+    json?.data?.FR_PRY_INFO_LIST,
+    json?.result?.FR_PRY_INFO_LIST,
+    json?.list,
+    json?.data?.list,
+  ];
+  const items = candidates.find((value) => Array.isArray(value)) as RawKacFlight[] | undefined;
+  if (!items?.length) return [];
+
+  return items
+    .map((raw, index) => normalizeHomepageFlight(raw, mode, index, date))
+    .filter((flight) => flight.flightId !== "-" && flight.scheduleDateTime)
+    .sort(
+      (a, b) =>
+        sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
+        a.flightId.localeCompare(b.flightId)
+    );
 }
 
 function payload(
