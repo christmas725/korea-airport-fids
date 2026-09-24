@@ -48,9 +48,10 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function testAwareNow(dataSources?: string[]) {
+function testAwareNow(dataSources?: string[], demoSource = false) {
   const isPreviewTest =
-    dataSources?.some((source) => source.startsWith("preview-test:")) ?? false;
+    (dataSources?.some((source) => source.startsWith("preview-test:")) ?? false) ||
+    (demoSource && new URLSearchParams(window.location.search).has("test"));
   if (typeof window === "undefined" || !isPreviewTest) return new Date();
 
   const params = new URLSearchParams(window.location.search);
@@ -260,12 +261,12 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, [mode]);
 
   useEffect(() => {
-    const updateClock = () => setNow(testAwareNow(payload?.dataSources));
+    const updateClock = () => setNow(testAwareNow(payload?.dataSources, payload?.source === "demo"));
     updateClock();
     const clock = window.setInterval(updateClock, 1000);
     const rotation = window.setInterval(() => setRotationStep((value) => value + 1), ROTATION_MS);
     return () => { window.clearInterval(clock); window.clearInterval(rotation); };
-  }, [payload?.dataSources]);
+  }, [payload?.dataSources, payload?.source]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
