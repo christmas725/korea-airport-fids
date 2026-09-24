@@ -2,6 +2,7 @@ import InitialApiHydrator from "@/components/fids/InitialApiHydrator";
 import FidsBoard from "@/components/icn/FidsBoard";
 import { fetchInitialJson } from "@/lib/fids/serverInitial";
 import {
+  previewTestAllowed,
   previewTestQuery,
   type PreviewTestPageSearchParams,
 } from "@/lib/fids/previewTest";
@@ -20,7 +21,7 @@ export default async function IcnFidsPage({
     <>
       <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
       <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-        <FidsBoard previewTest={Boolean(testQuery)} />
+        <FidsBoard previewTest={previewTestAllowed()} />
       </InitialApiHydrator>
     </>
   );
