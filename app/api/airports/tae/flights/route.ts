@@ -3,6 +3,7 @@ import { demoFlights } from "@/lib/tae/demo";
 import type { FidsFlight, FlightMode, FlightsPayload, RawKacFlight } from "@/lib/tae/types";
 import { airportByCode } from "@/lib/airports";
 import { isWithinCompletedFlightGrace } from "@/lib/fids/visibility";
+import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -1114,7 +1115,7 @@ function payload(
 ): FlightsPayload {
   const { date } = kstParts();
   return {
-    flights: flights.filter((flight) => isWithinCompletedFlightGrace(flight)),
+    flights: source === "demo" ? flights : flights.filter((flight) => isWithinCompletedFlightGrace(flight)),
     mode,
     updatedAt: new Date().toISOString(),
     source,
@@ -1137,6 +1138,28 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
   const modeParam = request.nextUrl.searchParams.get("mode");
   const mode: FlightMode = modeParam === "arrivals" ? "arrivals" : "departures";
   const { date, formDate } = kstParts();
+  const previewTest = previewTestAllowed() ? readPreviewTest(request.nextUrl.searchParams) : null;
+
+  if (previewTest) {
+    const baseNow = testBaseDate(previewTest.time);
+    const demo = demoFlights(mode, { scenario: previewTest.scenario, now: baseNow });
+    return NextResponse.json(
+      payload(
+        airportCode,
+        mode,
+        demo,
+        "demo",
+        `Preview 테스트 시나리오: ${previewTest.scenario}`,
+        [`preview-test:${previewTest.scenario}`]
+      ),
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-FIDS-Test-Scenario": previewTest.scenario,
+        },
+      }
+    );
+  }
 
   if (process.env.FIDS_DEMO_MODE === "true") {
     const demo = airportCode === "TAE" ? demoFlights(mode) : [];

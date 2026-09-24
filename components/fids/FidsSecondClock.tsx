@@ -25,8 +25,11 @@ export default function FidsSecondClock() {
       const seconds = `:${second}`;
 
       document.querySelectorAll<HTMLElement>(".rail-time > strong").forEach((element) => {
-        if (element.textContent !== main) element.textContent = main;
-        if (element.dataset.seconds !== seconds) element.dataset.seconds = seconds;
+        const fixedTime = element.dataset.fixedTime;
+        const shownTime = fixedTime || main;
+        const shownSeconds = fixedTime ? ":00" : seconds;
+        if (element.textContent !== shownTime) element.textContent = shownTime;
+        if (element.dataset.seconds !== shownSeconds) element.dataset.seconds = shownSeconds;
       });
 
       applying = false;
