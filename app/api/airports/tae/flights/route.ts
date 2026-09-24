@@ -898,74 +898,73 @@ function parseKacHomepageFlights(
   date: string
 ) {
   const wantedIo = mode === "departures" ? "O" : "I";
-  const rowPattern =
-    /<li\b([^>]*\bclass=["'][^"']*\b(\d{8})_([OI])_([A-Z0-9]{3})_([A-Z0-9]{2})_([A-Z0-9]+)\b[^"']*["'][^>]*)>([\s\S]*?)<\/li>/gi;
   const flights: FidsFlight[] = [];
+  const rowPattern =
+    /<tr\b[^>]*class=["'][^"']*(_(?:[OI])_[A-Z0-9]{3}_[A-Z0-9]{2}_[A-Z0-9]+)[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi;
   let match: RegExpExecArray | null;
   let index = 0;
 
   while ((match = rowPattern.exec(html)) !== null) {
-    const operationDate = match[2];
-    const io = match[3];
-    const rowAirport = match[4];
-    const airlineCode = match[5];
-    const flightNumber = match[6];
-    const rowHtml = match[7];
+    const rowClass = match[1] ?? "";
+    const rowHtml = match[2] ?? "";
+    const keyMatch = rowClass.match(/^_([OI])_([A-Z0-9]{3})_([A-Z0-9]{2})_([A-Z0-9]+)$/i);
+    if (!keyMatch) continue;
+
+    const io = keyMatch[1].toUpperCase();
+    const rowAirport = keyMatch[2].toUpperCase();
+    const airlineCode = keyMatch[3].toUpperCase();
+    const flightNumber = keyMatch[4].toUpperCase();
     if (io !== wantedIo || rowAirport !== airportCode.toUpperCase()) continue;
 
-    const rowText = homepageCellText(rowHtml);
-    const time = rowText.match(/\b([0-2]\d):([0-5]\d)\b/);
-    if (!time) continue;
+    const cells = [...rowHtml.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)];
+    if (cells.length < 6) continue;
+
+    const timeCell = cells[0]?.[1] ?? "";
+    const scheduleText =
+      timeCell.match(/class=["'][^"']*\bico_time\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] ?? "";
+    const changedText =
+      timeCell.match(/class=["'][^"']*\btime_change\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] ?? "";
+
+    const scheduleMatch = homepageCellText(scheduleText).match(/([0-2]\d):([0-5]\d)/);
+    const changedMatch = homepageCellText(changedText).match(/([0-2]\d):([0-5]\d)/);
+    if (!scheduleMatch) continue;
+
+    const scheduleRaw = scheduleMatch[1] + scheduleMatch[2];
+    const estimatedRaw = changedMatch
+      ? changedMatch[1] + changedMatch[2]
+      : scheduleRaw;
+
+    const scheduleDateTime = fullDateTime(scheduleRaw, date);
+    const estimatedDateTime =
+      fullDateTime(estimatedRaw, date, scheduleRaw) || scheduleDateTime;
 
     const flightId = (airlineCode + flightNumber).toUpperCase();
-    const scheduleDateTime = fullDateTime(time[1] + time[2], operationDate || date);
-    const type = /국제선/.test(rowText) ? "국제선" : "국내선";
-    const statusMatch = rowText.match(
-      /(결항|지연|탑승구\s*변경|탑승중|탑승준비|탑승장\s*입장|출발|도착|수속중|수속마감|Gate\s*Change|Delayed|Departed|Arrived)/i
-    );
-
-    const textLines = rowText
-      .split(/\n+/)
-      .map((value) => value.trim())
-      .filter(Boolean);
-
-    const flightLineIndex = textLines.findIndex((value) =>
-      value.toUpperCase().includes(flightId)
-    );
-    const airlineFlightLine = flightLineIndex >= 0 ? textLines[flightLineIndex] : "";
-    const airline = airlineFlightLine.replace(flightId, "").trim() || "-";
-
-    const destination =
-      textLines.find((value, lineIndex) => {
-        if (lineIndex === flightLineIndex) return false;
-        if (/\b[0-2]\d:[0-5]\d\b/.test(value)) return false;
-        if (/^(국내선|국제선)$/.test(value)) return false;
-        if (/^(결항|지연|탑승구\s*변경|탑승중|탑승준비|탑승장\s*입장|출발|도착|수속중|수속마감|-)$/.test(value)) return false;
-        if (/^[0-9]{1,3}[A-Z]?$/.test(value)) return false;
-        return !value.toUpperCase().includes(flightId);
-      }) ?? "-";
-
-    const facilityCandidates = textLines.filter((value) => /^[0-9]{1,3}[A-Z]?$/.test(value));
-    const facility = facilityCandidates.at(-1) ?? "-";
+    const airlineFlight = homepageCellText(cells[1]?.[1] ?? "");
+    const airline = airlineFlight.replace(flightId, "").trim() || "-";
+    const airport = homepageCellText(cells[2]?.[1] ?? "") || "-";
+    const flightTypeText = homepageCellText(cells[3]?.[1] ?? "");
+    const facility = homepageCellText(cells[4]?.[1] ?? "") || "-";
+    const remarkText = homepageCellText(cells[5]?.[1] ?? "");
+    const remark = remarkText === "-" ? "" : remarkText;
 
     flights.push({
-      id: "homepage-" + operationDate + "-" + mode + "-" + flightId + "-" + index++,
+      id: "homepage-" + date + "-" + mode + "-" + flightId + "-" + index++,
       mode,
       flightId,
       masterFlightId: "",
       airline,
       airlineEnglish: "",
-      airport: destination,
+      airport,
       airportEnglish: "",
       airportCode: "",
       scheduleDateTime,
-      estimatedDateTime: scheduleDateTime,
-      actualDateTime: "",
+      estimatedDateTime,
+      actualDateTime: isCompleteStatus(remark) ? estimatedDateTime : "",
       facility,
       previousFacility: "",
       facilityLabel: mode === "departures" ? "탑승구" : "수하물",
-      flightType: type,
-      remark: statusMatch?.[1] ?? "",
+      flightType: normalizeType(flightTypeText),
+      remark,
       remarkEnglish: "",
       codeshare: "",
     });
@@ -1012,9 +1011,17 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
-  const responseBody = await response.text();
+  const buffer = await response.arrayBuffer();
+  const contentType = response.headers.get("content-type") || "";
+  const responseBody = /euc-?kr/i.test(contentType)
+    ? new TextDecoder("euc-kr").decode(buffer)
+    : new TextDecoder("utf-8").decode(buffer);
+
   if (!response.ok) {
-    throw new Error(airportCode + "공항 홈페이지 " + response.status + ": " + responseBody.slice(0, 180));
+    throw new Error(
+      airportCode + "공항 홈페이지 " + response.status + ": " +
+      responseBody.replace(/\s+/g, " ").slice(0, 180)
+    );
   }
 
   return parseKacHomepageFlights(responseBody, airportCode, mode, date);
