@@ -275,7 +275,6 @@ export default function FidsBoard({ airport, previewTest = false }: { airport: A
   }, []);
 
   const currentPayload = payload?.mode === mode ? payload : null;
-  const displayNow = previewTest ? testAwareNow(true) : now;
   const latestDeparture = useMemo(
     () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
     [currentPayload, mode]
@@ -426,7 +425,7 @@ export default function FidsBoard({ airport, previewTest = false }: { airport: A
 
           <div className="rail-spacer" />
           <div className="page-number">{String(page + 1).padStart(2, "0")} / {String(totalPages).padStart(2, "0")}</div>
-          <div className="rail-time"><strong>{formatClock(displayNow)}</strong><span>{formatDate(displayNow)}</span></div>
+          <div className="rail-time"><strong>{formatClock(now)}</strong><span>{formatDate(now)}</span></div>
           <div className="rail-brand">KAC · {airport.code} FIDS v0.1</div>
         </aside>
 
