@@ -345,6 +345,9 @@ export default function FidsBoard() {
   const [language, setLanguage] = useState<DisplayLanguage>("KO");
   const [rotationStep, setRotationStep] = useState(0);
   const rowsPerPage = useRowsPerPage();
+  const displayNow = data?.source === "demo"
+    ? testAwareNow(data.dataSources, true)
+    : now;
 
   async function load() {
     try {
@@ -508,8 +511,8 @@ export default function FidsBoard() {
           </div>
 
           <div className="rail-time">
-            <strong>{now ? formatClock(now) : "--:--"}</strong>
-            <span>{now ? formatDate(now) : "--.--"}</span>
+            <strong>{displayNow ? formatClock(displayNow) : "--:--"}</strong>
+            <span>{displayNow ? formatDate(displayNow) : "--.--"}</span>
           </div>
 
           <div className="rail-brand">INCHEON AIRPORT</div>
