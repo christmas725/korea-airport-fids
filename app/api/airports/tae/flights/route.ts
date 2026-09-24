@@ -790,7 +790,7 @@ function parseKacHomepageHtml(
 ) {
   const flights: FidsFlight[] = [];
   const rowPattern = new RegExp(
-    '<ul\\b[^>]*class=["\\'][^"\\']*\\bflight-stat-info\\b[^"\\']*["\\'][^>]*>([\\s\\S]*?)</ul>',
+    "<ul\\b[^>]*class=[\"'][^\"']*\\bflight-stat-info\\b[^\"']*[\"'][^>]*>([\\s\\S]*?)</ul>",
     "gi"
   );
   const timePattern = new RegExp("([0-2]\\d):([0-5]\\d)", "g");
@@ -809,9 +809,12 @@ function parseKacHomepageHtml(
     const flightMatch = nameText.match(flightPattern);
     if (!flightMatch) continue;
 
-    const flightId = normalizedFlightId(flightMatch[1]);
+    const flightIdText = flightMatch[1];
+    if (!flightIdText) continue;
+    const flightId = normalizedFlightId(flightIdText);
+    const matchedFlightText = flightMatch[0] || flightIdText;
     const airline =
-      nameText.replace(flightMatch[0], "").replace(/항공편|편명/gi, "").trim() || "-";
+      nameText.replace(matchedFlightText, "").replace(/항공편|편명/gi, "").trim() || "-";
 
     const estimatedRaw = times[0]!.replace(":", "");
     const scheduleRaw = (times.length > 1 ? times[times.length - 1]! : times[0]!).replace(":", "");
