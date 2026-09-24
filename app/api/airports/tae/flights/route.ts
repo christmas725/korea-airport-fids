@@ -983,14 +983,19 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
   if (!slug) throw new Error("KAC 홈페이지 경로를 알 수 없는 공항입니다: " + airportCode);
 
   const pageUrl =
-    "https://www.airport.co.kr/" + slug + "/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2";
-  const apiUrl = "https://www.airport.co.kr/flight/frPryInfoSvc/getPryInfoList.do";
+    "https://www.airport.co.kr/" +
+    slug +
+    "/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=" +
+    (mode === "departures" ? "1" : "2");
+  const apiUrl =
+    "https://www.airport.co.kr/" + slug + "/ajaxf/frPryInfoSvc/getPryInfoList.do";
   const body = new URLSearchParams({
-    pGbn: mode === "departures" ? "O" : "I",
+    pInoutGbn: mode === "departures" ? "O" : "I",
     pAirport: airportCode,
+    pGbn: "",
     pActDate: formDate,
-    pSthourMin: "0000",
-    pEnhourMin: "2359",
+    pSthourMin: "00:00",
+    pEnhourMin: "23:59",
     pCity: "",
     pAirline: "",
     pAirlinenum: "",
