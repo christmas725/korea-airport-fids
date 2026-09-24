@@ -900,20 +900,21 @@ function parseKacHomepageFlights(
   const wantedIo = mode === "departures" ? "O" : "I";
   const flights: FidsFlight[] = [];
   const rowPattern =
-    /<tr\b[^>]*class=["'][^"']*(_(?:[OI])_[A-Z0-9]{3}_[A-Z0-9]{2}_[A-Z0-9]+)[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi;
+    /<tr\b[^>]*class=["'][^"']*((?:\d{8})?_(?:[OI])_[A-Z0-9]{3}_[A-Z0-9]{2}_[A-Z0-9]+)[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi;
   let match: RegExpExecArray | null;
   let index = 0;
 
   while ((match = rowPattern.exec(html)) !== null) {
     const rowClass = match[1] ?? "";
     const rowHtml = match[2] ?? "";
-    const keyMatch = rowClass.match(/^_([OI])_([A-Z0-9]{3})_([A-Z0-9]{2})_([A-Z0-9]+)$/i);
+    const keyMatch = rowClass.match(/^(?:(\d{8}))?_([OI])_([A-Z0-9]{3})_([A-Z0-9]{2})_([A-Z0-9]+)$/i);
     if (!keyMatch) continue;
 
-    const io = keyMatch[1].toUpperCase();
-    const rowAirport = keyMatch[2].toUpperCase();
-    const airlineCode = keyMatch[3].toUpperCase();
-    const flightNumber = keyMatch[4].toUpperCase();
+    const operationDate = keyMatch[1] || date;
+    const io = keyMatch[2].toUpperCase();
+    const rowAirport = keyMatch[3].toUpperCase();
+    const airlineCode = keyMatch[4].toUpperCase();
+    const flightNumber = keyMatch[5].toUpperCase();
     if (io !== wantedIo || rowAirport !== airportCode.toUpperCase()) continue;
 
     const cells = [...rowHtml.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)];
@@ -934,9 +935,9 @@ function parseKacHomepageFlights(
       ? changedMatch[1] + changedMatch[2]
       : scheduleRaw;
 
-    const scheduleDateTime = fullDateTime(scheduleRaw, date);
+    const scheduleDateTime = fullDateTime(scheduleRaw, operationDate);
     const estimatedDateTime =
-      fullDateTime(estimatedRaw, date, scheduleRaw) || scheduleDateTime;
+      fullDateTime(estimatedRaw, operationDate, scheduleRaw) || scheduleDateTime;
 
     const flightId = (airlineCode + flightNumber).toUpperCase();
     const airlineFlight = homepageCellText(cells[1]?.[1] ?? "");
@@ -948,7 +949,7 @@ function parseKacHomepageFlights(
     const remark = remarkText === "-" ? "" : remarkText;
 
     flights.push({
-      id: "homepage-" + date + "-" + mode + "-" + flightId + "-" + index++,
+      id: "homepage-" + operationDate + "-" + mode + "-" + flightId + "-" + index++,
       mode,
       flightId,
       masterFlightId: "",
