@@ -45,18 +45,22 @@ export function flightDisplayDateTime(flight: TimedFlight) {
   );
 }
 
+export function isOvernightYFlightId(flightId: string) {
+  const normalized = flightId.replace(/\s+/g, "").toUpperCase();
+  // The airline designator occupies the first two characters. Only a Y in the
+  // service-number portion marks the previous-day operation that crosses midnight.
+  return normalized.slice(2).includes("Y");
+}
+
 export function isOvernightYActiveFlight(
   flight: Pick<TimedFlight, "mode" | "flightId" | "remark">
 ) {
   if (flight.mode !== "departures") return false;
-
-  const flightId = (flight.flightId ?? "").replace(/\s+/g, "").toUpperCase();
-  // The airline designator occupies the first two characters. Only a Y in the
-  // service-number portion marks the previous-day operation that crosses midnight.
-  if (!flightId.slice(2).includes("Y")) return false;
+  if (!isOvernightYFlightId(flight.flightId ?? "")) return false;
 
   const status = flight.remark.trim().toLowerCase();
   return (
+    status.includes("\uAC8C\uC774\uD2B8") ||
     status.includes("\uD0D1\uC2B9") ||
     status.includes("\uB9C8\uAC10") ||
     status.startsWith("\uCD9C\uBC1C") ||
