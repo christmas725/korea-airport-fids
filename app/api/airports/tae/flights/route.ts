@@ -788,43 +788,37 @@ function parseKacHomepageHtml(
   mode: FlightMode,
   date: string
 ) {
-  const expectedIo = mode === "departures" ? "O" : "I";
   const flights: FidsFlight[] = [];
   const rowPattern =
-    /<li\b([^>]*)>\s*<ul\b[^>]*class=["'][^"']*\bflight-stat-info\b[^"']*["'][^>]*>([\s\S]*?)<\/ul>\s*<\/li>/gi;
+    /<ul\\b[^>]*class=["'][^"']*\\bflight-stat-info\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/ul>/gi;
 
   let match: RegExpExecArray | null;
   let index = 0;
 
   while ((match = rowPattern.exec(html)) !== null) {
-    const attrs = match[1] ?? "";
-    const body = match[2] ?? "";
-    const attr = (name: string) =>
-      attrs.match(new RegExp(`\\b${name}=["']([^"']*)["']`, "i"))?.[1]?.trim() ?? "";
-
-    const operationDate = attr("data-p1").replace(/\D/g, "").slice(0, 8) || date;
-    const io = attr("data-p2").toUpperCase();
-    const rowAirport = attr("data-p3").toUpperCase();
-    const airlineCode = attr("data-p4").toUpperCase();
-    const flightNumber = attr("data-p5").replace(/\s+/g, "");
-    if (io && io !== expectedIo) continue;
-    if (rowAirport && rowAirport !== airportCode) continue;
-    if (!airlineCode || !flightNumber) continue;
-
-    const flightId = normalizedFlightId(`${airlineCode}${flightNumber}`);
+    const body = match[1] ?? "";
     const timeText = homepageCell(body, "fligt-time");
-    const times = timeText.match(/([0-2]\d):([0-5]\d)/g) ?? [];
+    const times = timeText.match(/([0-2]\\d):([0-5]\\d)/g) ?? [];
     if (!times.length) continue;
 
-    // 변경시간이 있으면 홈페이지는 현재/변경시각을 먼저, 원래 예정시각을 뒤에 표출한다.
+    const nameText = homepageCell(body, "fligt-name");
+    const flightMatch = nameText.match(/([A-Z0-9]{2}\\s*\\d{1,4}[A-Z]?)/i);
+    if (!flightMatch) continue;
+
+    const flightId = normalizedFlightId(flightMatch[1]);
+    const airline = nameText
+      .replace(flightMatch[0], "")
+      .replace(/항공편|편명/gi, "")
+      .trim() || "-";
+
+    // 홈페이지에서 변경시각이 함께 노출될 경우 현재/변경시각이 먼저,
+    // 원래 예정시각이 뒤에 표시되는 구조를 따른다.
     const estimatedRaw = times[0]!.replace(":", "");
     const scheduleRaw = (times.length > 1 ? times[times.length - 1]! : times[0]!).replace(":", "");
-    const scheduleDateTime = fullDateTime(scheduleRaw, operationDate);
+    const scheduleDateTime = fullDateTime(scheduleRaw, date);
     const estimatedDateTime =
-      fullDateTime(estimatedRaw, operationDate, scheduleRaw) || scheduleDateTime;
+      fullDateTime(estimatedRaw, date, scheduleRaw) || scheduleDateTime;
 
-    const nameText = homepageCell(body, "fligt-name");
-    const airline = nameText.replace(new RegExp(flightId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "").trim() || "-";
     const airport = homepageCell(body, "fligt-dest")
       .replace(/목적지|출발지/gi, "")
       .trim() || "-";
@@ -832,10 +826,11 @@ function parseKacHomepageHtml(
     const facility = homepageCell(body, "fligt-out")
       .replace(/탑승구|수하물/gi, "")
       .trim() || "-";
-    const remark = homepageCell(body, "fligt-stat");
+    const rawRemark = homepageCell(body, "fligt-stat").trim();
+    const remark = rawRemark === "-" ? "" : rawRemark;
 
     flights.push({
-      id: `${operationDate}-${mode}-${flightId}-homepage-${index++}`,
+      id: `homepage-${date}-${mode}-${flightId}-${index++}`,
       mode,
       flightId,
       masterFlightId: "",
@@ -857,7 +852,11 @@ function parseKacHomepageHtml(
     });
   }
 
-  return flights;
+  return flights.sort(
+    (a, b) =>
+      sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
+      a.flightId.localeCompare(b.flightId)
+  );
 }
 
 function decodeHomepageHtml(input: string) {
@@ -1044,7 +1043,7 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     );
   }
 
-  return parseKacHomepageFlights(responseBody, airportCode, mode, date);
+  return parseKacHomepageHtml(responseBody, airportCode, mode, date);
 }
 
 function payload(
