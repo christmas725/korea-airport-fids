@@ -7,15 +7,12 @@ import {
 } from "@/lib/fids/previewTest";
 import type { DeparturesPayload } from "@/lib/icn/types";
 
-export const dynamic = "force-dynamic";
-
 export default async function IcnFidsPage({
   searchParams,
 }: {
   searchParams: Promise<PreviewTestPageSearchParams>;
 }) {
   const testQuery = previewTestQuery(await searchParams);
-  const previewTime = new URLSearchParams(testQuery.slice(1)).get("time") ?? "";
   const requestPath = `/api/airports/icn/flights?view=board${testQuery}`;
   const initialPayload = await fetchInitialJson<DeparturesPayload>(requestPath);
 
@@ -23,7 +20,7 @@ export default async function IcnFidsPage({
     <>
       <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
       <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-        <FidsBoard previewTime={previewTime} />
+        <FidsBoard />
       </InitialApiHydrator>
     </>
   );

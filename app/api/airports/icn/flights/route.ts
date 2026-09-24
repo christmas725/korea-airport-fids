@@ -924,6 +924,7 @@ export async function GET(request: NextRequest) {
       updatedAt: new Date().toISOString(),
       source: "demo",
       dataSources: [previewTest ? `preview-test:${scenario}` : "demo"],
+      ...(previewTest ? { warning: `Preview 테스트 시나리오: ${scenario}` } : {}),
       query,
     };
     return NextResponse.json(payload, {

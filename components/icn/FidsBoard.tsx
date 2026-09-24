@@ -41,6 +41,16 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
+function previewClockFromLocation() {
+  if (typeof window === "undefined") return "";
+  const time = (new URLSearchParams(window.location.search).get("time") || "")
+    .replace(/\D/g, "")
+    .slice(0, 4);
+  return /^([01]\d|2[0-3])[0-5]\d$/.test(time)
+    ? `${time.slice(0, 2)}:${time.slice(2, 4)}`
+    : "";
+}
+
 function parseApiDateTime(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.length < 12) return null;
@@ -309,7 +319,7 @@ function RotatingFlightIdentity({
   );
 }
 
-export default function FidsBoard({ previewTime = "" }: { previewTime?: string }) {
+export default function FidsBoard() {
   const [data, setData] = useState<DeparturesPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -319,8 +329,8 @@ export default function FidsBoard({ previewTime = "" }: { previewTime?: string }
   const [language, setLanguage] = useState<DisplayLanguage>("KO");
   const [rotationStep, setRotationStep] = useState(0);
   const rowsPerPage = useRowsPerPage();
-  const fixedClock = /^([01]\d|2[0-3])[0-5]\d$/.test(previewTime)
-    ? `${previewTime.slice(0, 2)}:${previewTime.slice(2, 4)}`
+  const fixedClock = data?.warning?.startsWith("Preview 테스트 시나리오:")
+    ? previewClockFromLocation()
     : "";
   async function load() {
     try {

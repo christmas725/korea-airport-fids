@@ -73,10 +73,10 @@ export type DeparturesPayload = {
   source: "airport.kr" | "passenger_api" | "demo";
   /** 상세 OpenAPI 보강 성공 여부 등 실제 사용 소스 */
   dataSources?: string[];
+  warning?: string;
   query: {
     searchDate: string;
     searchFrom: string;
     searchTo: string;
   };
 };
-

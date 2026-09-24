@@ -48,6 +48,16 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
+function previewClockFromLocation() {
+  if (typeof window === "undefined") return "";
+  const time = (new URLSearchParams(window.location.search).get("time") || "")
+    .replace(/\D/g, "")
+    .slice(0, 4);
+  return /^([01]\d|2[0-3])[0-5]\d$/.test(time)
+    ? `${time.slice(0, 2)}:${time.slice(2, 4)}`
+    : "";
+}
+
 function formatTime(value: string) {
   const date = parseKstDateTime(value);
   return date
@@ -199,7 +209,7 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   );
 }
 
-export default function FidsBoard({ airport, previewTime = "" }: { airport: Airport; previewTime?: string }) {
+export default function FidsBoard({ airport }: { airport: Airport }) {
   const [mode, setMode] = useState<FlightMode>("departures");
   const [payload, setPayload] = useState<FlightsPayload | null>(null);
   const [error, setError] = useState("");
@@ -252,8 +262,8 @@ export default function FidsBoard({ airport, previewTime = "" }: { airport: Airp
   }, []);
 
   const currentPayload = payload?.mode === mode ? payload : null;
-  const fixedClock = /^([01]\d|2[0-3])[0-5]\d$/.test(previewTime)
-    ? `${previewTime.slice(0, 2)}:${previewTime.slice(2, 4)}`
+  const fixedClock = currentPayload?.warning?.startsWith("Preview 테스트 시나리오:")
+    ? previewClockFromLocation()
     : "";
   const latestDeparture = useMemo(
     () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
