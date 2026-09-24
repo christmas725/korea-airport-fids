@@ -860,18 +860,134 @@ function parseKacHomepageHtml(
   return flights;
 }
 
+function decodeHomepageHtml(input: string) {
+  const entities: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+
+  return input
+    .replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, value) => String.fromCodePoint(parseInt(value, 16)))
+    .replace(/&([a-z]+);/gi, (all, name) => entities[name.toLowerCase()] ?? all);
+}
+
+function homepageCellText(html: string) {
+  return decodeHomepageHtml(
+    html
+      .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+      .replace(/<br\s*\/?\s*>/gi, "\n")
+      .replace(/<[^>]+>/g, " ")
+  )
+    .replace(/\r/g, "\n")
+    .replace(/[ \t\f\v]+/g, " ")
+    .replace(/\n\s*/g, "\n")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+}
+
+function parseKacHomepageFlights(
+  html: string,
+  airportCode: string,
+  mode: FlightMode,
+  date: string
+) {
+  const wantedIo = mode === "departures" ? "O" : "I";
+  const rowPattern =
+    /<li\b([^>]*\bclass=["'][^"']*\b(\d{8})_([OI])_([A-Z0-9]{3})_([A-Z0-9]{2})_([A-Z0-9]+)\b[^"']*["'][^>]*)>([\s\S]*?)<\/li>/gi;
+  const flights: FidsFlight[] = [];
+  let match: RegExpExecArray | null;
+  let index = 0;
+
+  while ((match = rowPattern.exec(html)) !== null) {
+    const operationDate = match[2];
+    const io = match[3];
+    const rowAirport = match[4];
+    const airlineCode = match[5];
+    const flightNumber = match[6];
+    const rowHtml = match[7];
+    if (io !== wantedIo || rowAirport !== airportCode.toUpperCase()) continue;
+
+    const rowText = homepageCellText(rowHtml);
+    const time = rowText.match(/\b([0-2]\d):([0-5]\d)\b/);
+    if (!time) continue;
+
+    const flightId = (airlineCode + flightNumber).toUpperCase();
+    const scheduleDateTime = fullDateTime(time[1] + time[2], operationDate || date);
+    const type = /국제선/.test(rowText) ? "국제선" : "국내선";
+    const statusMatch = rowText.match(
+      /(결항|지연|탑승구\s*변경|탑승중|탑승준비|탑승장\s*입장|출발|도착|수속중|수속마감|Gate\s*Change|Delayed|Departed|Arrived)/i
+    );
+
+    const textLines = rowText
+      .split(/\n+/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const flightLineIndex = textLines.findIndex((value) =>
+      value.toUpperCase().includes(flightId)
+    );
+    const airlineFlightLine = flightLineIndex >= 0 ? textLines[flightLineIndex] : "";
+    const airline = airlineFlightLine.replace(flightId, "").trim() || "-";
+
+    const destination =
+      textLines.find((value, lineIndex) => {
+        if (lineIndex === flightLineIndex) return false;
+        if (/\b[0-2]\d:[0-5]\d\b/.test(value)) return false;
+        if (/^(국내선|국제선)$/.test(value)) return false;
+        if (/^(결항|지연|탑승구\s*변경|탑승중|탑승준비|탑승장\s*입장|출발|도착|수속중|수속마감|-)$/.test(value)) return false;
+        if (/^[0-9]{1,3}[A-Z]?$/.test(value)) return false;
+        return !value.toUpperCase().includes(flightId);
+      }) ?? "-";
+
+    const facilityCandidates = textLines.filter((value) => /^[0-9]{1,3}[A-Z]?$/.test(value));
+    const facility = facilityCandidates.at(-1) ?? "-";
+
+    flights.push({
+      id: "homepage-" + operationDate + "-" + mode + "-" + flightId + "-" + index++,
+      mode,
+      flightId,
+      masterFlightId: "",
+      airline,
+      airlineEnglish: "",
+      airport: destination,
+      airportEnglish: "",
+      airportCode: "",
+      scheduleDateTime,
+      estimatedDateTime: scheduleDateTime,
+      actualDateTime: "",
+      facility,
+      previousFacility: "",
+      facilityLabel: mode === "departures" ? "탑승구" : "수하물",
+      flightType: type,
+      remark: statusMatch?.[1] ?? "",
+      remarkEnglish: "",
+      codeshare: "",
+    });
+  }
+
+  return flights.sort(
+    (a, b) =>
+      sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
+      a.flightId.localeCompare(b.flightId)
+  );
+}
+
 async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
   const slug = KAC_SITE_SLUGS[airportCode.toUpperCase()];
-  if (!slug) throw new Error(`KAC 홈페이지 경로를 알 수 없는 공항입니다: ${airportCode}`);
+  if (!slug) throw new Error("KAC 홈페이지 경로를 알 수 없는 공항입니다: " + airportCode);
 
   const endpoint =
     process.env.KAC_HOMEPAGE_API_URL?.trim() ||
-    `https://www.airport.co.kr/${slug}/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2`;
-  const io = mode === "departures" ? "O" : "I";
+    "https://www.airport.co.kr/" + slug + "/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2";
   const body = new URLSearchParams({
-    pInoutGbn: io,
+    pGbn: mode === "departures" ? "O" : "I",
     pAirport: airportCode,
-    pGbn: io,
     pActDate: formDate,
     pSthourMin: "0000",
     pEnhourMin: "2359",
@@ -896,24 +1012,12 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
-  const buffer = await response.arrayBuffer();
-  const contentType = response.headers.get("content-type") || "";
-  const responseBody = /euc-?kr/i.test(contentType)
-    ? new TextDecoder("euc-kr").decode(buffer)
-    : new TextDecoder("utf-8").decode(buffer);
-
+  const responseBody = await response.text();
   if (!response.ok) {
-    throw new Error(`${airportCode}공항 홈페이지 ${response.status}: ${responseBody.replace(/\s+/g, " ").slice(0, 180)}`);
+    throw new Error(airportCode + "공항 홈페이지 " + response.status + ": " + responseBody.slice(0, 180));
   }
 
-  const flights = parseKacHomepageHtml(responseBody, airportCode, mode, date);
-  return flights
-    .filter((flight) => flight.flightId !== "-" && flight.scheduleDateTime)
-    .sort(
-      (a, b) =>
-        sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
-        a.flightId.localeCompare(b.flightId)
-    );
+  return parseKacHomepageFlights(responseBody, airportCode, mode, date);
 }
 
 function payload(
