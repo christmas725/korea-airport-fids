@@ -5,11 +5,12 @@ import FidsBoard from "@/components/tae/FidsBoard";
 import { airportByCode } from "@/lib/airports";
 import { fetchInitialJson } from "@/lib/fids/serverInitial";
 import {
-  previewTestAllowed,
   previewTestQuery,
   type PreviewTestPageSearchParams,
 } from "@/lib/fids/previewTest";
 import type { FlightsPayload } from "@/lib/tae/types";
+
+export const dynamic = "force-dynamic";
 
 export default async function PreparingAirportPage({
   params,
@@ -34,7 +35,7 @@ export default async function PreparingAirportPage({
       <>
         <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
         <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-          <FidsBoard airport={airport} previewTest={previewTestAllowed()} />
+          <FidsBoard airport={airport} previewTest={Boolean(testQuery)} />
         </InitialApiHydrator>
       </>
     );
