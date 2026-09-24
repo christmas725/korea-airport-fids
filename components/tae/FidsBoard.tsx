@@ -180,7 +180,9 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
           <strong>{currentGate}</strong>
         )}
       </div>
-      <div className={`status-cell ${statusClass(status)}`}><strong>{status}</strong></div>
+      <div className={`status-cell ${statusClass(status)}`}>
+        <strong><SlidingText text={status} direction={directionForAirport(flight.airportCode, language)} /></strong>
+      </div>
     </div>
   );
 }

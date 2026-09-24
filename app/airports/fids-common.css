@@ -187,6 +187,64 @@
   display: inline-block;
 }
 
+/* Give every status the available cell width; pan only when the text overflows. */
+.flight-row .status-cell {
+  min-width: 0;
+}
+
+.flight-row .status-chip,
+.flight-row .status-chip[lang]:not([lang="ko"]):not([lang="en"]),
+.flight-row .status-cell strong {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: clamp(24px, 3.8vh, 42px);
+  max-height: calc(100% - 4px);
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: clamp(12px, 1.25vw, 18px);
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.flight-row .status-cell .sliding-text {
+  display: block;
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-align: center;
+}
+
+.flight-row .status-cell .sliding-text-track {
+  display: inline-block;
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.flight-row .status-cell .sliding-text.is-overflowing {
+  text-align: start;
+}
+
+@supports (font-size: 1cqh) {
+  .flight-row .status-chip,
+  .flight-row .status-chip[lang]:not([lang="ko"]):not([lang="en"]),
+  .flight-row .status-cell strong {
+    height: clamp(20px, 68cqh, 42px);
+    max-height: calc(100cqh - 4px);
+    font-size: clamp(11px, 31cqh, 19px);
+  }
+}
+
 .sliding-text.is-overflowing .sliding-text-track {
   animation: destination-pan 7s ease-in-out infinite;
 }
