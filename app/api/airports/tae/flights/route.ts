@@ -978,55 +978,40 @@ function parseKacHomepageFlights(
   );
 }
 
-async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date: string, formDate: string) {
+async function fetchHomepageFlights(
+  airportCode: string,
+  mode: FlightMode,
+  date: string,
+  formDate: string
+) {
   const slug = KAC_SITE_SLUGS[airportCode.toUpperCase()];
   if (!slug) throw new Error("KAC 홈페이지 경로를 알 수 없는 공항입니다: " + airportCode);
 
-  const endpoint =
+  const endpoint = new URL(
     process.env.KAC_HOMEPAGE_API_URL?.trim() ||
-    "https://www.airport.co.kr/" + slug + "/cms/frCon/index.do?MENU_ID=100&CONTENTS_NO=2";
-  const body = new URLSearchParams({
-    pGbn: mode === "departures" ? "O" : "I",
-    pAirport: airportCode,
-    pActDate: formDate,
-    pSthourMin: "0000",
-    pEnhourMin: "2359",
-    pCity: "",
-    pAirline: "",
-    pAirlinenum: "",
-    p0: "",
-  });
-
-  const browserHeaders = {
-    Accept: "text/html,application/xhtml+xml",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-  };
-
-  // KAC 홈페이지는 브라우저가 페이지를 먼저 열어 세션 쿠키를 받은 뒤
-  // 운항편 검색 폼을 제출하는 흐름을 사용한다. 서버에서도 같은 순서를 재현한다.
-  const sessionResponse = await fetch(endpoint, {
-    headers: browserHeaders,
-    cache: "no-store",
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-  const setCookie = sessionResponse.headers.get("set-cookie") ?? "";
-  const cookieHeader = setCookie
-    .split(/,(?=[^;,]+=)/)
-    .map((cookie) => cookie.split(";")[0]?.trim())
-    .filter(Boolean)
-    .join("; ");
+      "https://www.airport.co.kr/" + slug + "/cms/frCon/index.do"
+  );
+  endpoint.searchParams.set("MENU_ID", "100");
+  endpoint.searchParams.set("CONTENTS_NO", "2");
+  endpoint.searchParams.set("rDep", airportCode);
+  endpoint.searchParams.set("pAirport", airportCode);
+  endpoint.searchParams.set("pGbn", mode === "departures" ? "D" : "A");
+  endpoint.searchParams.set("pActDate", formDate);
+  endpoint.searchParams.set("pSthourMin", "00:00");
+  endpoint.searchParams.set("pEnhourMin", "23:59");
+  endpoint.searchParams.set("pCity", "");
+  endpoint.searchParams.set("pAirline", "");
+  endpoint.searchParams.set("pAirlinenum", "");
+  endpoint.searchParams.set("searchFlightType", mode === "departures" ? "D" : "A");
 
   const response = await fetch(endpoint, {
-    method: "POST",
+    method: "GET",
     headers: {
-      ...browserHeaders,
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      Origin: "https://www.airport.co.kr",
-      Referer: endpoint,
-      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      Accept: "text/html,application/xhtml+xml",
+      "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "User-Agent":
+        "Mozilla/5.0 (compatible; Korea-Airport-FIDS/0.1; +https://www.airport.co.kr/)",
     },
-    body,
     cache: "no-store",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
@@ -1039,8 +1024,11 @@ async function fetchHomepageFlights(airportCode: string, mode: FlightMode, date:
 
   if (!response.ok) {
     throw new Error(
-      airportCode + "공항 홈페이지 " + response.status + ": " +
-      responseBody.replace(/\s+/g, " ").slice(0, 180)
+      airportCode +
+        "공항 홈페이지 " +
+        response.status +
+        ": " +
+        responseBody.replace(/\\s+/g, " ").slice(0, 180)
     );
   }
 
