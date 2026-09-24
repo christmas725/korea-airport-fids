@@ -498,17 +498,50 @@ function homepageSupplementKey(flight: FidsFlight) {
 
 /**
  * KAC GW가 일부 편을 누락하더라도 공식 공항 홈페이지에 남아 있는 당일 운항편은
- * 보조 소스로 추가한다. 동일 편은 GW 값을 우선하며, 홈페이지는 누락 편만 보충한다.
+ * 보조 소스로 추가한다. 동일 편은 GW 값을 우선하되, 비어 있는 필드는 홈페이지 값으로
+ * 보충해 API 한도 초과나 부분 응답에서도 게이트와 목적지 정보가 사라지지 않게 한다.
  */
 function mergeHomepageSupplement(baseFlights: FidsFlight[], homepageFlights: FidsFlight[]) {
   const result = [...baseFlights];
-  const seen = new Set(result.map(homepageSupplementKey));
+  const indexes = new Map(result.map((flight, index) => [homepageSupplementKey(flight), index]));
+  function preferValue(primary: string, fallback: string): string;
+  function preferValue(
+    primary: string | undefined,
+    fallback: string | undefined
+  ): string | undefined;
+  function preferValue(primary: string | undefined, fallback: string | undefined) {
+    const value = (primary ?? "").trim();
+    return value && value !== "-" ? primary : fallback;
+  }
 
   for (const flight of homepageFlights) {
     const key = homepageSupplementKey(flight);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(flight);
+    const existingIndex = indexes.get(key);
+    if (existingIndex === undefined) {
+      indexes.set(key, result.length);
+      result.push(flight);
+      continue;
+    }
+
+    const existing = result[existingIndex];
+    result[existingIndex] = {
+      ...existing,
+      masterFlightId: preferValue(existing.masterFlightId, flight.masterFlightId),
+      airline: preferValue(existing.airline, flight.airline),
+      airlineEnglish: preferValue(existing.airlineEnglish, flight.airlineEnglish),
+      airport: preferValue(existing.airport, flight.airport),
+      airportEnglish: preferValue(existing.airportEnglish, flight.airportEnglish),
+      airportCode: preferValue(existing.airportCode, flight.airportCode),
+      estimatedDateTime: preferValue(existing.estimatedDateTime, flight.estimatedDateTime),
+      actualDateTime: preferValue(existing.actualDateTime, flight.actualDateTime),
+      facility: validGate(existing.facility) || validGate(flight.facility) || "-",
+      previousFacility:
+        validGate(existing.previousFacility) || validGate(flight.previousFacility),
+      flightType: existing.flightType,
+      remark: preferValue(existing.remark, flight.remark),
+      remarkEnglish: preferValue(existing.remarkEnglish, flight.remarkEnglish),
+      codeshare: preferValue(existing.codeshare, flight.codeshare),
+    };
   }
 
   return result.sort(
