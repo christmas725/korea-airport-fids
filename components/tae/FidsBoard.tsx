@@ -48,14 +48,22 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function previewClockFromLocation() {
-  if (typeof window === "undefined") return "";
+function previewDateFromLocation() {
+  if (typeof window === "undefined") return new Date();
   const time = (new URLSearchParams(window.location.search).get("time") || "")
     .replace(/\D/g, "")
     .slice(0, 4);
-  return /^([01]\d|2[0-3])[0-5]\d$/.test(time)
-    ? `${time.slice(0, 2)}:${time.slice(2, 4)}`
-    : "";
+  if (!/^([01]\d|2[0-3])[0-5]\d$/.test(time)) return new Date();
+
+  const real = new Date();
+  const kst = new Date(real.getTime() + 9 * 60 * 60 * 1000);
+  return new Date(Date.UTC(
+    kst.getUTCFullYear(),
+    kst.getUTCMonth(),
+    kst.getUTCDate(),
+    Number(time.slice(0, 2)) - 9,
+    Number(time.slice(2, 4))
+  ));
 }
 
 function formatTime(value: string) {
@@ -220,6 +228,7 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   const previousDepartureStatus = useRef<{ key: string; completed: boolean } | null>(null);
   const rowsPerPage = useRowsPerPage();
   const language = LANGUAGES[Math.floor(rotationStep / 2) % LANGUAGES.length];
+  const previewTestActive = payload?.warning?.startsWith("Preview 테스트 시나리오:") ?? false;
 
   const load = useCallback(async () => {
     try {
@@ -245,12 +254,12 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, [mode]);
 
   useEffect(() => {
-    const updateClock = () => setNow(new Date());
+    const updateClock = () => setNow(previewTestActive ? previewDateFromLocation() : new Date());
     updateClock();
     const clock = window.setInterval(updateClock, 1000);
     const rotation = window.setInterval(() => setRotationStep((value) => value + 1), ROTATION_MS);
     return () => { window.clearInterval(clock); window.clearInterval(rotation); };
-  }, []);
+  }, [previewTestActive]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -262,9 +271,6 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
   }, []);
 
   const currentPayload = payload?.mode === mode ? payload : null;
-  const fixedClock = currentPayload?.warning?.startsWith("Preview 테스트 시나리오:")
-    ? previewClockFromLocation()
-    : "";
   const latestDeparture = useMemo(
     () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
     [currentPayload, mode]
@@ -415,7 +421,7 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
 
           <div className="rail-spacer" />
           <div className="page-number">{String(page + 1).padStart(2, "0")} / {String(totalPages).padStart(2, "0")}</div>
-          <div className="rail-time"><strong>{fixedClock || formatClock(now)}</strong><span>{formatDate(now)}</span></div>
+          <div className="rail-time"><strong>{formatClock(now)}</strong><span>{formatDate(now)}</span></div>
           <div className="rail-brand">KAC · {airport.code} FIDS v0.1</div>
         </aside>
 
