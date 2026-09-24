@@ -1,6 +1,9 @@
 export type DestinationLanguage = "KO" | "EN";
 
-import { sharedDestinationEnglish } from "@/lib/fids/destinationOverrides";
+import {
+  sharedDestinationEnglish,
+  sharedDestinationKorean,
+} from "@/lib/fids/destinationOverrides";
 
 // 인천공항 출발편에서 자주 보이는 목적지의 FIDS용 영문 표기.
 // API가 한국어 공항명을 내려주는 경우에도 airportCode를 기준으로 영문명을 안정적으로 표시한다.
@@ -191,9 +194,16 @@ export function destinationName(
   koreanName: string,
   language: DestinationLanguage
 ) {
-  if (language === "KO") return koreanName || airportCode || "-";
-
   const code = airportCode.trim().toUpperCase();
+
+  if (language === "KO") {
+    const rawKorean = koreanName.trim();
+    const sharedKorean = sharedDestinationKorean(code);
+    if (sharedKorean && (!rawKorean || rawKorean.toUpperCase() === code)) {
+      return sharedKorean;
+    }
+    return rawKorean || sharedKorean || code || "-";
+  }
   const shared = sharedDestinationEnglish(code);
   if (shared) return shared;
   const mapped = DESTINATION_EN[code];

@@ -263,6 +263,41 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scandinavian_Airlines_logo.svg",
     source: "SAS current horizontal logo (stable mirror sourced from flysas.com)",
   },
+  AA: {
+    url: "/airlines/AA.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/American_Airlines_wordmark_(2013).svg",
+    source: "American Airlines current horizontal wordmark (Wikimedia Commons; artwork by American Airlines)",
+  },
+  TP: {
+    url: "/airlines/TP.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/TAP-Portugal-Logo.svg",
+    source: "TAP Air Portugal horizontal logo (Wikimedia Commons; sourced from flytap.com)",
+  },
+  WB: {
+    url: "/airlines/WB.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/RwandAir_logo.svg",
+    source: "RwandAir horizontal logo (Wikimedia Commons; checked against current RwandAir branding)",
+  },
+  HX: {
+    url: "/airlines/HX.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hong_Kong_Airlines_Logo.svg",
+    source: "Hong Kong Airlines horizontal logo (Wikimedia Commons; checked against current airline materials)",
+  },
+  OD: {
+    url: "/airlines/OD.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Batik_Air_logo.svg",
+    source: "Batik Air Malaysia current horizontal logo (Wikimedia Commons; current Batik Air branding)",
+  },
+  DV: {
+    url: "/airlines/DV.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/SCAT_Air_Company_Logo.svg",
+    source: "SCAT Airlines horizontal logo (Wikimedia Commons; sourced from SCAT airline materials)",
+  },
+  UL: {
+    url: "/airlines/UL.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/SriLankan_Airlines_Logo.svg",
+    source: "SriLankan Airlines horizontal logo (Wikimedia Commons; checked against current airline branding)",
+  },
   VZ: {
     url: "/airlines/VZ.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vietjet_Air_Thailand_logo.svg",

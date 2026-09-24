@@ -3,7 +3,7 @@ export type LocalLocale =
   | "id" | "ms" | "lo" | "km" | "my" | "hi" | "ne" | "si" | "bn"
   | "uz" | "kk" | "ky" | "mn" | "ar" | "tr" | "he" | "fr" | "de"
   | "it" | "nl" | "es" | "cs" | "hu" | "pl" | "fi" | "da" | "no"
-  | "sv" | "el" | "pt" | "hr" | "ka";
+  | "sv" | "el" | "pt" | "hr" | "ka" | "am";
 
 import {
   SHARED_DESTINATION_LOCALE,

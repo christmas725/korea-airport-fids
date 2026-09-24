@@ -90,10 +90,6 @@ function displayStatus(value: string, mode: FlightMode, language: DisplayLanguag
   return localizedStatus(status, language, airportCode);
 }
 
-function isGateChangedStatus(value: string) {
-  return /탑승구\s*변경|gate\s*change/i.test(value);
-}
-
 function statusClass(value: string) {
   const status = value.toLowerCase();
   if (/결항|cancel/.test(status)) return "cancelled";
@@ -170,11 +166,12 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   const changed = scheduled !== estimated && estimated !== "--:--";
   const status = displayStatus(flight.remark, mode, language, flight.airportCode);
   const airlineName = shown.airline || shown.airlineEnglish || "-";
-  const previousGate =
-    mode === "departures" && isGateChangedStatus(flight.remark)
-      ? (flight.previousFacility ?? "").trim()
-      : "";
+  const previousGateRaw = (flight.previousFacility ?? "").trim();
   const currentGate = (flight.facility || "-").trim();
+  const previousGate =
+    mode === "departures" && previousGateRaw && previousGateRaw !== currentGate
+      ? previousGateRaw
+      : "";
 
   return (
     <div className="flight-row row-grid" role="row">

@@ -1,7 +1,9 @@
 export const COMPLETED_FLIGHT_GRACE_MS = 5 * 60_000;
+export const OVERNIGHT_Y_FLIGHT_MAX_AGE_MS = 8 * 60 * 60_000;
 
 type TimedFlight = {
   mode: "departures" | "arrivals";
+  flightId?: string;
   remark: string;
   scheduleDateTime: string;
   estimatedDateTime?: string;
@@ -43,6 +45,25 @@ export function flightDisplayDateTime(flight: TimedFlight) {
   );
 }
 
+export function isOvernightYActiveFlight(
+  flight: Pick<TimedFlight, "mode" | "flightId" | "remark">
+) {
+  if (flight.mode !== "departures") return false;
+
+  const flightId = (flight.flightId ?? "").replace(/\s+/g, "").toUpperCase();
+  // The airline designator occupies the first two characters. Only a Y in the
+  // service-number portion marks the previous-day operation that crosses midnight.
+  if (!flightId.slice(2).includes("Y")) return false;
+
+  const status = flight.remark.trim().toLowerCase();
+  return (
+    status.includes("\uD0D1\uC2B9") ||
+    status.includes("\uB9C8\uAC10") ||
+    status.startsWith("\uCD9C\uBC1C") ||
+    /gate\s*change|gate\s*open|ready|boarding|final\s*call|gate\s*(closing|closed)|departed/.test(status)
+  );
+}
+
 /**
  * 현재시각 기준 FIDS 노출 여부.
  *
@@ -57,6 +78,13 @@ export function isWithinCompletedFlightGrace(
   now = Date.now(),
   graceMs = COMPLETED_FLIGHT_GRACE_MS
 ) {
+  if (isOvernightYActiveFlight(flight)) {
+    const scheduledAt = parseKstDateTime(flight.scheduleDateTime)?.getTime();
+    if (typeof scheduledAt === "number") {
+      return now - scheduledAt <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+    }
+  }
+
   const displayAt = flightDisplayDateTime(flight)?.getTime();
   return typeof displayAt === "number" && displayAt >= now - graceMs;
 }

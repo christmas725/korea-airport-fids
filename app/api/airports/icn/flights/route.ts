@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDemoFlights } from "@/lib/icn/demo";
 import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
+import { isOvernightYActiveFlight, OVERNIGHT_Y_FLIGHT_MAX_AGE_MS } from "@/lib/fids/visibility";
 import type {
   DeparturesPayload,
   RawDepartureFlight,
@@ -46,7 +47,8 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_SIAqFa0yNUBg5YcFUidg_hmo6-TaI
 // 화면에는 터미널별 최대 80개 실제 운항까지만 유지한다.
 const DISPLAY_HORIZON_MINUTES = 8 * 60;
 const TARGET_OPERATIONS_PER_TERMINAL = 80;
-const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 2 * 60;
+const STANDARD_ROLLOVER_UNTIL_MINUTE = 2 * 60;
+const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 8 * 60;
 
 // 같은 Vercel 함수 인스턴스에서는 429 이후 상세 API를 즉시 재호출하지 않는다.
 // 인스턴스가 교체되더라도 고정된 30분 query URL + Next fetch cache가 호출량을 억제한다.
@@ -235,6 +237,10 @@ function isDepartedRemark(value: unknown) {
 
 function retainRecentlyDeparted(flights: DepartureFlight[], now = Date.now()) {
   return flights.filter((flight) => {
+    if (isOvernightYActiveFlight({ mode: "departures", ...flight })) {
+      const scheduled = flightEpoch(flight.scheduleDateTime);
+      return Number.isFinite(scheduled) && now - scheduled <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+    }
     if (!isDepartedRemark(flight.remark)) return true;
     const departure = flightEpoch(flight.estimatedDateTime || flight.scheduleDateTime);
     return Number.isFinite(departure) && departure >= now - 5 * 60 * 1000;
@@ -829,16 +835,20 @@ function isProtectedRolloverFlight(
   today: string,
   now = Date.now()
 ) {
+  const scheduleTime = flightEpoch(flight.scheduleDateTime);
+  if (isOvernightYActiveFlight({ mode: "departures", ...flight })) {
+    return Number.isFinite(scheduleTime) &&
+      now - scheduleTime <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+  }
+
+  const p = kstParts(new Date(now));
+  if (p.hour * 60 + p.minute >= STANDARD_ROLLOVER_UNTIL_MINUTE) return false;
   if (isDepartedRemark(flight.remark)) return false;
 
   const estimatedDigits = (flight.estimatedDateTime || "").replace(/\D/g, "");
   const estimatedDay = estimatedDigits.slice(0, 8);
   if (estimatedDay === today) return true;
-
-  const scheduleTime = flightEpoch(flight.scheduleDateTime);
   if (!Number.isFinite(scheduleTime)) return isActiveRemark(flight.remark);
-
-  // 전날 늦은 편이 아직 지연/탑승 상태라면 자정 이후 최대 8시간 범위에서 유지.
   return isActiveRemark(flight.remark) && now - scheduleTime <= 8 * 60 * 60 * 1000;
 }
 
