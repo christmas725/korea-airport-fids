@@ -28,6 +28,7 @@ export default async function PreparingAirportPage({
 
   if (airport.status === "live") {
     const testQuery = previewTestQuery(await searchParams);
+    const previewTime = new URLSearchParams(testQuery.slice(1)).get("time") ?? "";
     const requestPath = `/api/airports/${airport.code.toLowerCase()}/flights?mode=departures${testQuery}`;
     const initialPayload = await fetchInitialJson<FlightsPayload>(requestPath);
 
@@ -35,7 +36,7 @@ export default async function PreparingAirportPage({
       <>
         <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
         <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-          <FidsBoard airport={airport} previewTest={Boolean(testQuery)} />
+          <FidsBoard airport={airport} previewTime={previewTime} />
         </InitialApiHydrator>
       </>
     );

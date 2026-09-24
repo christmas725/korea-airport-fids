@@ -41,29 +41,6 @@ function previewTestSuffix() {
   return query ? `&${query}` : "";
 }
 
-function testAwareNow(isPreviewTest = false) {
-  if (typeof window === "undefined" || !isPreviewTest) return new Date();
-
-  const params = new URLSearchParams(window.location.search);
-  if (!params.get("test")) return new Date();
-
-  const time = (params.get("time") || "").replace(/\D/g, "").slice(0, 4);
-  if (!/^([01]\d|2[0-3])[0-5]\d$/.test(time)) return new Date();
-
-  const real = new Date();
-  const kst = new Date(real.getTime() + 9 * 60 * 60 * 1000);
-  return new Date(
-    Date.UTC(
-      kst.getUTCFullYear(),
-      kst.getUTCMonth(),
-      kst.getUTCDate(),
-      Number(time.slice(0, 2)) - 9,
-      Number(time.slice(2, 4))
-    )
-  );
-}
-
-
 function parseApiDateTime(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.length < 12) return null;
@@ -332,7 +309,7 @@ function RotatingFlightIdentity({
   );
 }
 
-export default function FidsBoard({ previewTest = false }: { previewTest?: boolean }) {
+export default function FidsBoard({ previewTime = "" }: { previewTime?: string }) {
   const [data, setData] = useState<DeparturesPayload | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -342,6 +319,9 @@ export default function FidsBoard({ previewTest = false }: { previewTest?: boole
   const [language, setLanguage] = useState<DisplayLanguage>("KO");
   const [rotationStep, setRotationStep] = useState(0);
   const rowsPerPage = useRowsPerPage();
+  const fixedClock = /^([01]\d|2[0-3])[0-5]\d$/.test(previewTime)
+    ? `${previewTime.slice(0, 2)}:${previewTime.slice(2, 4)}`
+    : "";
   async function load() {
     try {
       setError("");
@@ -368,11 +348,11 @@ export default function FidsBoard({ previewTest = false }: { previewTest?: boole
   }, []);
 
   useEffect(() => {
-    const updateClock = () => setNow(testAwareNow(previewTest));
+    const updateClock = () => setNow(new Date());
     updateClock();
     const timer = window.setInterval(updateClock, 1000);
     return () => window.clearInterval(timer);
-  }, [previewTest]);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -504,7 +484,7 @@ export default function FidsBoard({ previewTest = false }: { previewTest?: boole
           </div>
 
           <div className="rail-time">
-            <strong>{now ? formatClock(now) : "--:--"}</strong>
+            <strong>{fixedClock || (now ? formatClock(now) : "--:--")}</strong>
             <span>{now ? formatDate(now) : "--.--"}</span>
           </div>
 
