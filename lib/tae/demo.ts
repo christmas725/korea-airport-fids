@@ -25,6 +25,16 @@ const AIRLINES = [
   ["7C", "제주항공"], ["LJ", "진에어"], ["BX", "에어부산"],
 ] as const;
 
+const LOGO_TEST_AIRLINES = [
+  ["SK", "스칸디나비아항공"], ["AA", "아메리칸항공"],
+  ["TP", "TAP 포르투갈항공"], ["MH", "말레이시아항공"],
+  ["WB", "르완드에어"], ["HX", "홍콩항공"],
+  ["OD", "바틱에어 말레이시아"], ["DV", "SCAT항공"],
+  ["UL", "스리랑카항공"], ["VA", "버진 오스트레일리아"],
+] as const;
+
+const DESTINATION_TESTS = ["HPH", "CIT", "ADD"] as const;
+
 function generated(mode: FlightMode, count: number, baseNow: Date): FidsFlight[] {
   const departure = mode === "departures";
   return Array.from({ length: count }, (_, i) => {
@@ -57,12 +67,32 @@ export function demoFlights(mode: FlightMode, options: DemoOptions = {}) {
   let rows = generated(mode, scenario === "paging" ? 84 : scenario === "busy" ? 56 : 24, baseNow);
 
   if (scenario === "overnight") {
-    rows = generated(mode, 12, baseNow).map((flight, i) => ({
+    const statuses = ["게이트 변경", "탑승준비", "탑승중", "탑승마감", "출발"];
+    rows = generated(mode, 10, baseNow).map((flight, i) => ({
       ...flight,
-      scheduleDateTime: kstDateTime(60 + i * 15, baseNow),
-      estimatedDateTime: kstDateTime(60 + i * 15, baseNow),
-      remark: mode === "departures" ? "정시" : "예정",
+      flightId: mode === "departures" ? `ZE${780 + i}Y` : flight.flightId,
+      masterFlightId: mode === "departures" ? `ZE${780 + i}Y` : flight.masterFlightId,
+      scheduleDateTime: kstDateTime(-40 + i * 2, baseNow),
+      estimatedDateTime: kstDateTime(5 + i * 2, baseNow),
+      facility: String(257 + i),
+      previousFacility: mode === "departures" ? String(252 + i) : undefined,
+      remark: mode === "departures" ? statuses[i % statuses.length]! : "예정",
     }));
+  } else if (scenario === "logos") {
+    rows = generated(mode, LOGO_TEST_AIRLINES.length, baseNow).map((flight, i) => {
+      const [code, airline] = LOGO_TEST_AIRLINES[i]!;
+      return {
+        ...flight,
+        flightId: `${code}${900 + i}`,
+        masterFlightId: `${code}${900 + i}`,
+        airline,
+      };
+    });
+  } else if (scenario === "destinations") {
+    rows = generated(mode, DESTINATION_TESTS.length, baseNow).map((flight, i) => {
+      const airportCode = DESTINATION_TESTS[i]!;
+      return { ...flight, airport: airportCode, airportCode };
+    });
   } else if (scenario === "gate-change" && mode === "departures") {
     rows = rows.map((flight, i) => i < 10 ? {
       ...flight,

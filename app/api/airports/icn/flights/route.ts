@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDemoFlights } from "@/lib/icn/demo";
 import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
 import { isOvernightYActiveFlight, OVERNIGHT_Y_FLIGHT_MAX_AGE_MS } from "@/lib/fids/visibility";
+import { normalizedGate, resolvePreviousGate } from "@/lib/fids/gateHistory";
 import type {
   DeparturesPayload,
   RawDepartureFlight,
@@ -475,8 +476,17 @@ function parseHomepageFlights(
     const nowKst = kstParts();
     const nowMinutes = nowKst.hour * 60 + nowKst.minute;
     const scheduleMinutes = hhmmToMinutes(time.schedule);
+    const remark = cleanOperationalRemark(match[7]);
+    const activeOvernightY = isOvernightYActiveFlight({
+      mode: "departures",
+      flightId: flightAndAirline.flightId,
+      remark,
+    });
+    const rolloverUntil = activeOvernightY
+      ? MIDNIGHT_ROLLOVER_UNTIL_MINUTE
+      : STANDARD_ROLLOVER_UNTIL_MINUTE;
     const scheduleDate =
-      nowMinutes < MIDNIGHT_ROLLOVER_UNTIL_MINUTE &&
+      nowMinutes < rolloverUntil &&
       scheduleMinutes !== null &&
       scheduleMinutes >= 18 * 60
         ? addDays(searchDate, -1)
@@ -500,7 +510,7 @@ function parseHomepageFlights(
       previousGate: "",
       terminalId,
       terminalLabel: terminalLabel(terminalId),
-      remark: cleanOperationalRemark(match[7]),
+      remark,
       codeshare: "",
     });
   }
@@ -702,8 +712,7 @@ type GateHistoryRow = {
 };
 
 function validGate(value: string | null | undefined) {
-  const gate = (value ?? "").trim();
-  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+  return normalizedGate(value);
 }
 
 function isoOperationDate(value: string) {
@@ -771,8 +780,6 @@ async function enrichGateHistory(
   return {
     usedHistory: true,
     flights: flights.map((flight) => {
-      if (validGate(flight.previousGate)) return flight;
-
       const key = normalizeFlightId(flight.masterFlightId || flight.flightId);
       const date = isoOperationDate(flight.scheduleDateTime);
       const row = history.get(`${date}|${key}`);
@@ -781,12 +788,15 @@ async function enrichGateHistory(
       const current = validGate(row.current_gate);
       const previous = validGate(row.previous_gate);
       const displayedCurrent = validGate(flight.gate);
+      const resolvedPrevious = resolvePreviousGate(
+        displayedCurrent,
+        flight.previousGate,
+        { previousGate: previous, currentGate: current }
+      );
 
-      if (!previous || !current || previous === current || current !== displayedCurrent) {
-        return flight;
-      }
-
-      return { ...flight, previousGate: previous };
+      return resolvedPrevious === validGate(flight.previousGate)
+        ? flight
+        : { ...flight, previousGate: resolvedPrevious };
     }),
   };
 }

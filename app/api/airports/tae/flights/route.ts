@@ -8,6 +8,7 @@ import {
   isWithinCompletedFlightGrace,
 } from "@/lib/fids/visibility";
 import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
+import { normalizedGate, resolvePreviousGate } from "@/lib/fids/gateHistory";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -725,8 +726,7 @@ function isoOperationDate(date: string) {
 }
 
 function validGate(value: string | null | undefined) {
-  const gate = (value ?? "").trim();
-  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+  return normalizedGate(value);
 }
 
 async function enrichGateHistory(
@@ -772,8 +772,6 @@ async function enrichGateHistory(
   return {
     usedHistory: true,
     flights: flights.map((flight) => {
-      if (validGate(flight.previousFacility)) return flight;
-
       const key = normalizedFlightId(flight.masterFlightId || flight.flightId);
       const row = history.get(key);
       if (!row) return flight;
@@ -781,12 +779,15 @@ async function enrichGateHistory(
       const current = validGate(row.current_gate);
       const previous = validGate(row.previous_gate);
       const displayedCurrent = validGate(flight.facility);
+      const resolvedPrevious = resolvePreviousGate(
+        displayedCurrent,
+        flight.previousFacility,
+        { previousGate: previous, currentGate: current }
+      );
 
-      if (!previous || !current || previous === current || current !== displayedCurrent) {
-        return flight;
-      }
-
-      return { ...flight, previousFacility: previous };
+      return resolvedPrevious === validGate(flight.previousFacility)
+        ? flight
+        : { ...flight, previousFacility: resolvedPrevious };
     }),
   };
 }

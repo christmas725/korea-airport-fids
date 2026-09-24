@@ -260,33 +260,33 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   SK: {
     url: "/airlines/SK.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scandinavian_Airlines_logo.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/3/33/Scandinavian_Airlines_logo.svg",
     source: "SAS current horizontal logo (stable mirror sourced from flysas.com)",
   },
   AA: {
     url: "/airlines/AA.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/American_Airlines_wordmark_(2013).svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/American_Airlines_wordmark_%282013%29.svg",
     source: "American Airlines current horizontal wordmark (Wikimedia Commons; artwork by American Airlines)",
   },
   TP: {
     url: "/airlines/TP.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/TAP-Portugal-Logo.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4b/TAP_Air_Portugal_logo.svg",
     source: "TAP Air Portugal horizontal logo (Wikimedia Commons; sourced from flytap.com)",
   },
   WB: {
     url: "/airlines/WB.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/RwandAir_logo.svg",
-    source: "RwandAir horizontal logo (Wikimedia Commons; checked against current RwandAir branding)",
+    sourceUrl: "https://www.rwandair.com/dist/phoenix/V1.0/img/logo.svg",
+    source: "RwandAir official website horizontal header logo",
   },
   HX: {
     url: "/airlines/HX.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hong_Kong_Airlines_Logo.svg",
-    source: "Hong Kong Airlines horizontal logo (Wikimedia Commons; checked against current airline materials)",
+    sourceUrl: "https://b2b.hongkongairlines.com/images/logo_inner_new.png",
+    source: "Hong Kong Airlines official B2B website horizontal header logo",
   },
   OD: {
     url: "/airlines/OD.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Batik_Air_logo.svg",
-    source: "Batik Air Malaysia current horizontal logo (Wikimedia Commons; current Batik Air branding)",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/9/9e/Batik_Air_logo.svg",
+    source: "Batik Air Malaysia current horizontal logo (English Wikipedia brand asset)",
   },
   DV: {
     url: "/airlines/DV.svg",
@@ -295,8 +295,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   UL: {
     url: "/airlines/UL.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/SriLankan_Airlines_Logo.svg",
-    source: "SriLankan Airlines horizontal logo (Wikimedia Commons; checked against current airline branding)",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/7/78/SriLankan_Airlines_Logo.svg",
+    source: "SriLankan Airlines horizontal logo (English Wikipedia brand asset; checked against current airline branding)",
   },
   VZ: {
     url: "/airlines/VZ.svg",
@@ -385,8 +385,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   VA: {
     url: "/airlines/VA.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Virgin_Australia_Logo_2022.svg",
-    source: "Virgin Australia 2022 current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/0/06/Virgin_Australia_Logo_2022.svg",
+    source: "Virgin Australia 2022 current logo (English Wikipedia brand asset)",
   },
   FM: {
     url: "/airlines/FM.svg",
