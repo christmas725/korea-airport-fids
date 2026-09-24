@@ -395,8 +395,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   GJ: {
     url: "/airlines/GJ.svg",
-    sourceUrl: "https://wsrv.nl/?url=res.loongair.cn/360f969e978e4456bd01700fc2ec146a.png&output=png",
-    source: "Loong Air official website current horizontal header logo (build-time image cache)",
+    sourceUrl: "https://wsrv.nl/?url=res.loongair.cn/dfc5f11f038d4c0f92bbc5e5f574494e.png&output=png",
+    source: "Loong Air official website light-background horizontal header logo (build-time image cache)",
   },
   AS: {
     url: "/airlines/AS.svg",
