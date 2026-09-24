@@ -100,7 +100,7 @@ function kstMinuteOfDay(now = new Date()) {
 }
 
 function formDateFromCompact(date: string) {
-  return /^d{8}$/.test(date)
+  return /^\\d{8}$/.test(date)
     ? `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`
     : "";
 }
