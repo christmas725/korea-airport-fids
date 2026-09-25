@@ -129,7 +129,16 @@
   [data-airline-code="OD"],
   [data-airline-code="DV"],
   [data-airline-code="UL"],
-  [data-airline-code="VA"]
+  [data-airline-code="VA"],
+  [data-airline-code="8M"],
+  [data-airline-code="HY"],
+  [data-airline-code="JD"],
+  [data-airline-code="JT"],
+  [data-airline-code="B7"],
+  [data-airline-code="QV"],
+  [data-airline-code="SV"],
+  [data-airline-code="KU"],
+  [data-airline-code="LY"]
 ),
 .carrier-logo-shell:is(
   [data-airline-code="SK"],
@@ -141,7 +150,16 @@
   [data-airline-code="OD"],
   [data-airline-code="DV"],
   [data-airline-code="UL"],
-  [data-airline-code="VA"]
+  [data-airline-code="VA"],
+  [data-airline-code="8M"],
+  [data-airline-code="HY"],
+  [data-airline-code="JD"],
+  [data-airline-code="JT"],
+  [data-airline-code="B7"],
+  [data-airline-code="QV"],
+  [data-airline-code="SV"],
+  [data-airline-code="KU"],
+  [data-airline-code="LY"]
 ) {
   padding: 1px 2px !important;
 }

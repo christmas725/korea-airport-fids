@@ -350,8 +350,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   QV: {
     url: "/airlines/QV.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/LaoAirlineslogo.png",
-    source: "Lao Airlines horizontal logo (stable mirror)",
+    sourceUrl: "https://laoairlines.com/wp-content/uploads/2020/10/logo-laoairlines.png",
+    source: "Lao Airlines official website horizontal header logo",
   },
   GS: {
     url: "/airlines/GS.svg",
@@ -375,8 +375,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   SV: {
     url: "/airlines/SV.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_Saudia.svg",
-    source: "Saudia current logo (Wikimedia Commons; file used by current Wikipedia infobox)",
+    sourceUrl: "https://files.brandlogos.net/svg/JsRIbNiiis/saudia-airlines-logo-brandlogos.net_7l2fwwwm1.svg",
+    source: "Saudia 2023 horizontal wordmark (Brandlogos mirror; checked against current Saudia identity)",
   },
   HO: {
     url: "/airlines/HO.svg",
@@ -400,8 +400,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   B7: {
     url: "/airlines/B7.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/UNI_Air_Logo.svg",
-    source: "UNI Air current horizontal SVG (Wikimedia Commons; used by current Wikipedia infobox)",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/fr/9/94/UNI_Air_Logo.svg",
+    source: "UNI Air current horizontal SVG (French Wikipedia brand asset)",
   },
   C6: {
     url: "/airlines/C6.svg",
@@ -482,6 +482,36 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     url: "/airlines/JU.svg",
     sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Serbia_logo.svg",
     source: "Air Serbia horizontal wordmark (Wikimedia Commons; sourced from Air Serbia)",
+  },
+  "8M": {
+    url: "/airlines/8M.svg",
+    sourceUrl: "https://www.maiair.com/templates/hititcs/images/logo_mai.png",
+    source: "Myanmar Airways International official website horizontal header logo",
+  },
+  HY: {
+    url: "/airlines/HY.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/e/ef/Uzbekistan_Airways_logo.svg",
+    source: "Uzbekistan Airways current horizontal logo (English Wikipedia brand asset)",
+  },
+  JD: {
+    url: "/airlines/JD.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/8/88/Beijing_Capital_Airlines.png",
+    source: "Beijing Capital Airlines horizontal logo (English Wikipedia brand asset)",
+  },
+  JT: {
+    url: "/airlines/JT.svg",
+    sourceUrl: "https://i.logos-download.com/5734/1274-b34d53f88940ad15f1e351d41e4c22e2.svg/Lion_Air_Logo_2008.svg?dl",
+    source: "Lion Air current horizontal logo (Logos Download vector asset)",
+  },
+  KU: {
+    url: "/airlines/KU.svg",
+    sourceUrl: "https://files.brandlogos.net/svg/4yu3BbTeAj/Kuwait_Airways-Oi4HM9Uy7_brandlogos.net.svg",
+    source: "Kuwait Airways current horizontal logo (Brandlogos vector asset)",
+  },
+  LY: {
+    url: "/airlines/LY.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0f/ELAL2023Logo.svg",
+    source: "EL AL 2023 horizontal wordmark (Wikimedia Commons; sourced from current branding)",
   },
 };
 
