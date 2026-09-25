@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:fids": "node --experimental-strip-types scripts/check-fids-regressions.mts",
+    "audit:fids": "node --experimental-strip-types scripts/audit-live-fids.mts",
     "test:responsive": "node scripts/check-responsive-layout.mjs",
     "sync:airports": "node scripts/sync-airport-sources.mjs",
     "sync:airports:check": "node scripts/sync-airport-sources.mjs --check"
