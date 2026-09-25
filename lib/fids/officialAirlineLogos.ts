@@ -275,8 +275,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   WB: {
     url: "/airlines/WB.svg",
-    sourceUrl: "https://www.rwandair.com/dist/phoenix/V1.0/img/logo.svg",
-    source: "RwandAir official website horizontal header logo",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/6/6e/RwandAir_logo.svg",
+    source: "RwandAir current colored horizontal logo (stable mirror; checked against rwandair.com branding)",
   },
   HX: {
     url: "/airlines/HX.svg",

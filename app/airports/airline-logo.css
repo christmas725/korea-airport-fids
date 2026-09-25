@@ -146,9 +146,9 @@
   padding: 1px 2px !important;
 }
 
-/* Malaysia Airlines' source artwork has comparatively generous whitespace. */
+/* Malaysia Airlines' source artwork uses only about 30% of its wide SVG canvas. */
 .flight-cell > img[data-airline-code="MH"],
 .carrier-logo-shell[data-airline-code="MH"] .carrier-logo-img {
-  transform: scale(1.14);
+  transform: scale(2.8);
   transform-origin: 50% 50%;
 }
