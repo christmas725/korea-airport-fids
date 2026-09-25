@@ -280,8 +280,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   HX: {
     url: "/airlines/HX.svg",
-    sourceUrl: "https://b2b.hongkongairlines.com/images/logo_inner_new.png",
-    source: "Hong Kong Airlines official B2B website horizontal header logo",
+    sourceUrl: "bundled:assets/airline-logo-sources/HX.png",
+    source: "Hong Kong Airlines compact bilingual logo supplied by the site owner",
   },
   OD: {
     url: "/airlines/OD.svg",

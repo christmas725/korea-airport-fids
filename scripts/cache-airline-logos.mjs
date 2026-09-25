@@ -168,6 +168,13 @@ async function fetchBytes(url) {
 }
 
 async function fetchSource(entry) {
+  if (entry.sourceUrl.startsWith("bundled:")) {
+    const sourcePath = entry.sourceUrl.slice("bundled:".length);
+    if (!/^assets\/airline-logo-sources\/[A-Z0-9]{2}\.png$/.test(sourcePath)) {
+      throw new Error(`Invalid bundled logo source: ${sourcePath}`);
+    }
+    return { bytes: await readFile(path.join(ROOT, sourcePath)), contentType: "image/png" };
+  }
   const attempt = async () => {
     let lastError;
     for (let i = 0; i < MAX_SOURCE_ATTEMPTS; i++) {
