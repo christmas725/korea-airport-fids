@@ -362,6 +362,10 @@ button {
   line-height: 1;
 }
 
+.gate-value-changed .gate-current {
+  color: var(--fids-yellow);
+}
+
 .gate-value span {
   margin-top: 4px;
   min-width: 28px;
@@ -796,4 +800,3 @@ html {
   user-select: none;
   pointer-events: none;
 }
-

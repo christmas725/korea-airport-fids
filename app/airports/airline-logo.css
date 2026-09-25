@@ -174,3 +174,10 @@
   transform: scale(2.8);
   transform-origin: 50% 50%;
 }
+
+/* Shanghai Airlines' artwork also has generous whitespace in its source
+   canvas. Enlarge it only inside ICN's clipped logo frame. */
+.carrier-logo-shell[data-airline-code="FM"] .carrier-logo-img {
+  transform: scale(3);
+  transform-origin: 50% 50%;
+}
