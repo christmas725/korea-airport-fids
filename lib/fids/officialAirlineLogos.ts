@@ -505,8 +505,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   KU: {
     url: "/airlines/KU.svg",
-    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/0/08/Kuwait_Airways_logo.svg",
-    source: "Kuwait Airways current horizontal logo (English Wikipedia brand asset)",
+    sourceUrl: "https://files.brandlogos.net/svg/4yu3BbTeAj/Kuwait_Airways-Oi4HM9Uy7_brandlogos.net.svg",
+    source: "Kuwait Airways current horizontal logo (Brandlogos vector asset)",
   },
   LY: {
     url: "/airlines/LY.svg",

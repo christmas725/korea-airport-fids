@@ -3,7 +3,9 @@ import { airports } from "../lib/airports.ts";
 import { OFFICIAL_AIRLINE_LOGOS } from "../lib/fids/officialAirlineLogos.ts";
 
 const baseUrl = (process.env.FIDS_AUDIT_BASE_URL || "https://korea-airport-fids.vercel.app").replace(/\/$/, "");
-const timeoutMs = 20_000;
+const auditCookie = process.env.FIDS_AUDIT_COOKIE || "";
+const timeoutMs = 45_000;
+const maxFetchAttempts = 3;
 
 type Flight = {
   airport?: string;
@@ -23,12 +25,33 @@ function airlineCode(flightId = "") {
 }
 
 async function fetchJson(path: string) {
-  const response = await fetch(`${baseUrl}${path}`, {
-    signal: AbortSignal.timeout(timeoutMs),
-    headers: { "user-agent": "KoreaAirportFIDS/1.0 live data quality audit" },
-  });
-  assert.equal(response.ok, true, `${path}: HTTP ${response.status}`);
-  return { response, body: await response.json() as Record<string, unknown> };
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxFetchAttempts; attempt += 1) {
+    try {
+      const response = await fetch(`${baseUrl}${path}`, {
+        signal: AbortSignal.timeout(timeoutMs),
+        headers: {
+          "user-agent": "KoreaAirportFIDS/1.0 live data quality audit",
+          ...(auditCookie ? { cookie: auditCookie } : {}),
+        },
+      });
+      if (!response.ok && (response.status === 429 || response.status >= 500) && attempt < maxFetchAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1_000 * attempt));
+        continue;
+      }
+      assert.equal(response.ok, true, `${path}: HTTP ${response.status}`);
+      return { response, body: await response.json() as Record<string, unknown> };
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxFetchAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1_000 * attempt));
+      }
+    }
+  }
+
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`${path}: failed after ${maxFetchAttempts} attempts (${message})`, { cause: lastError });
 }
 
 const rows: AuditRow[] = [];
