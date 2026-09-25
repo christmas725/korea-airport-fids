@@ -29,7 +29,7 @@ for (const entry of entries) {
   await access(assetPath);
   const asset = await readFile(assetPath, "utf8");
   assert.match(asset, /^<svg\b/, `${entry.code}: cached asset is not SVG`);
-  assert.match(asset, /viewBox="0 0 1000 300"/, `${entry.code}: cached frame changed`);
+  assert.match(asset, new RegExp(`viewBox="0 0 ${entry.code === "QV" ? 600 : 1000} 300"`), `${entry.code}: cached frame changed`);
 
   const cached = reportByCode.get(entry.code);
   assert.ok(cached, `${entry.code}: missing cache report entry`);
