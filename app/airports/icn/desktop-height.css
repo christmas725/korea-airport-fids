@@ -25,17 +25,13 @@
     min-height: 0;
   }
 
-  .rows {
-    overflow: hidden;
-  }
-
-  /* Share the remaining board height between however many rows the runtime
-   * selected. This keeps hybrid Windows touch displays inside the footer even
-   * while pointer capabilities or browser UI are changing.
+  /* A non-empty page always contains 14 real/filler flight rows.
+   * Give each row exactly 1/14 of the remaining board height so intrinsic
+   * text/padding can never push the last rows below the browser viewport.
    */
   .rows > .flight-row {
-    height: 0;
-    flex: 1 1 0;
+    height: calc(100% / 14);
+    flex: 0 0 calc(100% / 14);
     min-height: 0;
     overflow: hidden;
   }
