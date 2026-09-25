@@ -8,7 +8,7 @@ const CONCURRENCY = 6;
 const TIMEOUT_MS = 30_000;
 const WIKI_DELAY_MS = 900;
 const WIKIMEDIA_THUMB_WIDTH = 500;
-const MAX_SOURCE_ATTEMPTS = 2;
+const MAX_SOURCE_ATTEMPTS = 3;
 const FALLBACK_BASE = "https://images.kiwi.com/airlines/64";
 
 const registry = await readFile(REGISTRY_PATH, "utf8");
