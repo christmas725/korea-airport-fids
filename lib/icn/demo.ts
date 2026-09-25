@@ -35,6 +35,7 @@ const AIRLINES = [
 ] as const;
 
 const LOGO_TEST_AIRLINES = [
+  ["FM", "상하이항공"],
   ["SK", "스칸디나비아항공"], ["AA", "아메리칸항공"],
   ["TP", "TAP 포르투갈항공"], ["MH", "말레이시아항공"],
   ["WB", "르완드에어"], ["HX", "홍콩항공"],
