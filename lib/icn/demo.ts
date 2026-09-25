@@ -44,6 +44,7 @@ const LOGO_TEST_AIRLINES = [
   ["JD", "베이징캐피탈항공"], ["JT", "라이온에어"],
   ["B7", "유니항공"], ["QV", "라오항공"], ["SV", "사우디아항공"],
   ["KU", "쿠웨이트항공"], ["LY", "엘알항공"],
+  ["MS", "이집트항공"], ["XY", "플라이나스"],
 ] as const;
 
 const DESTINATION_TESTS = ["HPH", "CIT", "ADD"] as const;
