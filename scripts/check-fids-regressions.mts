@@ -6,6 +6,7 @@ import {
   SHARED_DESTINATION_LOCALE,
 } from "../lib/fids/destinationOverrides.ts";
 import { resolvePreviousGate } from "../lib/fids/gateHistory.ts";
+import { getKacModeWindowState } from "../lib/fids/operationWindow.ts";
 import {
   isOvernightYActiveFlight,
   isOvernightYFlightId,
@@ -66,6 +67,16 @@ assert.equal(
   isWithinCompletedFlightGrace(overnightFlight, Date.UTC(2026, 8, 24, 23, 0)),
   false,
   "Y flight expires after the eight-hour safety window"
+);
+assert.equal(
+  getKacModeWindowState(
+    "departures",
+    "GMP",
+    new Date(Date.UTC(2026, 8, 24, 15, 10)),
+    [{ ...overnightFlight, estimatedDateTime: "202609250015" }]
+  ),
+  "active",
+  "active overnight Y flight keeps the KAC departure board open after midnight"
 );
 
 console.log("FIDS regression checks passed");

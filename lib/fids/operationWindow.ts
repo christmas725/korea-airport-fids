@@ -9,6 +9,8 @@ type AirportOperationStart = {
 
 type ScheduledFlight = {
   scheduleDateTime: string;
+  flightId?: string;
+  remark?: string;
 };
 
 const hour = (value: number) => value * 60;
@@ -34,6 +36,24 @@ const KAC_OPERATION_STARTS: Record<string, AirportOperationStart> = {
   YNY: { departures: hour(8), arrivals: hour(8) },
   KUV: { departures: hour(9), arrivals: hour(9) },
 };
+
+function hasActiveOvernightYFlight(mode: FlightMode, flights?: ScheduledFlight[]) {
+  if (mode !== "departures") return false;
+
+  return flights?.some((flight) => {
+    const flightId = (flight.flightId ?? "").replace(/\s+/g, "").toUpperCase();
+    if (!flightId.slice(2).includes("Y")) return false;
+
+    const status = (flight.remark ?? "").trim().toLowerCase();
+    return (
+      status.includes("게이트") ||
+      status.includes("탑승") ||
+      status.includes("마감") ||
+      status.startsWith("출발") ||
+      /gate\s*change|gate\s*open|ready|boarding|final\s*call|gate\s*(closing|closed)|departed/.test(status)
+    );
+  }) ?? false;
+}
 
 function kstDateKey(value: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -115,6 +135,10 @@ export function getKacModeWindowState(
   now: Date,
   flights?: ScheduledFlight[]
 ): OperationWindowState {
+  if (hasActiveOvernightYFlight(mode, flights)) {
+    return "active";
+  }
+
   const currentMinutes = kstMinutesOfDay(now);
   const flightDisplayStartMinutes = getKacFlightDisplayStartMinutes(
     mode,
