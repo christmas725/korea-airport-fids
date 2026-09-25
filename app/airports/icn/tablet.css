@@ -175,11 +175,6 @@
     font-size: clamp(17px, 2.35dvh, 23px);
   }
 
-  .gate-change { gap: 2px; }
-  .gate-change .gate-previous,
-  .gate-change .gate-arrow { font-size: clamp(10px, 1.2dvh, 12px); }
-  .gate-change .gate-current { font-size: clamp(12px, 1.5dvh, 14px); }
-
   .gate-value span {
     margin-top: 1px;
     padding: 1px 4px;

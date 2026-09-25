@@ -101,11 +101,11 @@
     min-width: 0;
     grid-template-columns:
       minmax(42px,.72fr)
-      minmax(104px,1.22fr)
-      minmax(62px,.92fr)
+      minmax(51px,.88fr)
+      minmax(72px,1.3fr)
       minmax(34px,.55fr)
-      minmax(45px,.68fr)
-      minmax(68px,1.08fr);
+      minmax(33px,.54fr)
+      minmax(48px,.82fr);
   }
   .table-head { height: 42px; min-height: 42px; }
   .table-head > div, .flight-row > div { padding-left: 4px; padding-right: 4px; }
@@ -117,26 +117,9 @@
   .flight-row > div { padding-top: 1px; padding-bottom: 1px; }
   .time-cell strong { font-size: clamp(12px,3.8vw,16px); }
   .time-cell .time-original { font-size: 8px; }
-  .flight-cell { gap: 5px; }
-  .carrier-logo-shell,
-  .logo-fallback,
-  .carrier-mark {
-    width: 50px !important;
-    height: 34px !important;
-    flex: 0 0 auto;
-  }
-  .carrier-logo-shell { padding: 2px 3px !important; }
-  .carrier-logo-shell .carrier-logo-img,
-  .flight-cell img { display: block !important; }
-  .flight-copy { min-width: 0; }
-  .flight-copy strong,
-  .flight-cell > span:last-child {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: clamp(10px,3.1vw,13px);
-  }
+  .flight-cell { gap: 0; }
+  .flight-cell img, .logo-fallback { display: none; }
+  .flight-cell > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: clamp(10px,3.1vw,13px); }
   .destination-cell strong { font-size: clamp(10px,3.1vw,13px); }
   .destination-cell span { margin-top: 1px; font-size: 7px; }
   .type-cell { padding-left: 2px !important; padding-right: 2px !important; }
@@ -149,10 +132,6 @@
     font-size: clamp(7px,2.15vw,9px);
   }
   .facility-cell strong { font-size: clamp(13px,3.8vw,17px); }
-  .gate-change { gap: 1px; }
-  .gate-change .gate-previous,
-  .gate-change .gate-arrow { font-size: clamp(8px,2.25vw,10px); }
-  .gate-change .gate-current { font-size: clamp(10px,2.75vw,12px); }
   .status-cell { padding-left: 2px !important; padding-right: 2px !important; }
   .status-cell strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(8px,2.45vw,10px); }
   .data-strip { height: 25px; min-height: 25px; padding: 0 7px; font-size: 7px; }
@@ -161,21 +140,6 @@
 }
 
 @media (max-width: 420px), (max-width: 720px) and (max-height: 720px) {
-  .row-grid {
-    grid-template-columns:
-      minmax(40px,.68fr)
-      minmax(110px,1.3fr)
-      minmax(56px,.92fr)
-      minmax(32px,.52fr)
-      minmax(43px,.64fr)
-      minmax(44px,.72fr);
-  }
-  .carrier-logo-shell,
-  .logo-fallback,
-  .carrier-mark {
-    width: 48px !important;
-    height: 32px !important;
-  }
   .fids-frame { grid-template-rows: 88px minmax(0,1fr); }
   .identity-rail { height: 88px; padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 6px; }
   .mode-icon { width: 25px; height: 25px; font-size: 16px; }

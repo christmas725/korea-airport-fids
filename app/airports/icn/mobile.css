@@ -176,10 +176,10 @@
   .row-grid {
     grid-template-columns:
       minmax(46px, 0.78fr)
-      minmax(92px, 1.3fr)
-      minmax(72px, 1.1fr)
+      minmax(61px, 1fr)
+      minmax(88px, 1.55fr)
       minmax(40px, 0.62fr)
-      minmax(72px, 1.17fr);
+      minmax(58px, 0.92fr);
   }
 
   .row-grid > div:nth-child(4) {
@@ -283,11 +283,6 @@
     line-height: 1;
   }
 
-  .gate-change { gap: 1px; }
-  .gate-change .gate-previous,
-  .gate-change .gate-arrow { font-size: clamp(8px, 2.3vw, 10px); }
-  .gate-change .gate-current { font-size: clamp(10px, 2.8vw, 12px); }
-
   .gate-value span {
     min-width: 0;
     margin-top: 1px;
@@ -366,17 +361,6 @@
 
 /* Extra-tight phones and split-screen windows */
 @media (max-width: 420px) {
-  /* Foldable cover displays need more room for the logo + full flight number.
-   * Borrow a little more width from destination, which already ellipsizes safely. */
-  .row-grid {
-    grid-template-columns:
-      minmax(44px, 0.76fr)
-      minmax(96px, 1.38fr)
-      minmax(66px, 1.12fr)
-      minmax(38px, 0.6fr)
-      minmax(56px, 0.9fr);
-  }
-
   .identity-rail {
     height: 88px;
     padding: 7px 8px;
@@ -619,7 +603,7 @@
   }
 
   .row-grid {
-    grid-template-columns: 0.8fr 1fr 1.4fr 0.62fr 1.18fr;
+    grid-template-columns: 0.8fr 1fr 1.55fr 0.62fr 0.9fr;
   }
 
   .row-grid > div:nth-child(4) {
