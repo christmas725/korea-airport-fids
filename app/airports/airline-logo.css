@@ -115,3 +115,40 @@
     padding: 1px 2px !important;
   }
 }
+
+
+/* Airlines reviewed as horizontal wordmarks for the FIDS light logo frame.
+   Use more of the available frame while preserving each artwork's aspect ratio. */
+.flight-cell > img:is(
+  [data-airline-code="SK"],
+  [data-airline-code="AA"],
+  [data-airline-code="TP"],
+  [data-airline-code="MH"],
+  [data-airline-code="WB"],
+  [data-airline-code="HX"],
+  [data-airline-code="OD"],
+  [data-airline-code="DV"],
+  [data-airline-code="UL"],
+  [data-airline-code="VA"]
+),
+.carrier-logo-shell:is(
+  [data-airline-code="SK"],
+  [data-airline-code="AA"],
+  [data-airline-code="TP"],
+  [data-airline-code="MH"],
+  [data-airline-code="WB"],
+  [data-airline-code="HX"],
+  [data-airline-code="OD"],
+  [data-airline-code="DV"],
+  [data-airline-code="UL"],
+  [data-airline-code="VA"]
+) {
+  padding: 1px 2px !important;
+}
+
+/* Malaysia Airlines' source artwork uses only about 30% of its wide SVG canvas. */
+.flight-cell > img[data-airline-code="MH"],
+.carrier-logo-shell[data-airline-code="MH"] .carrier-logo-img {
+  transform: scale(2.8);
+  transform-origin: 50% 50%;
+}

@@ -5,6 +5,7 @@ import SlidingText from "@/components/fids/SlidingText";
 import AirlineLogo from "@/components/fids/AirlineLogo";
 import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
+import { isOvernightYActiveFlight, OVERNIGHT_Y_FLIGHT_MAX_AGE_MS } from "@/lib/fids/visibility";
 import type { DeparturesPayload, DepartureFlight } from "@/lib/icn/types";
 import { destinationName } from "@/lib/icn/airportNames";
 import {
@@ -164,6 +165,12 @@ function normalizeFlightId(value: string) {
 }
 
 function isWithinDepartureGrace(flight: DepartureFlight, now: number) {
+  if (isOvernightYActiveFlight({ mode: "departures", ...flight })) {
+    const scheduled = parseApiDateTime(flight.scheduleDateTime)?.getTime();
+    return typeof scheduled === "number" &&
+      now - scheduled <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+  }
+
   if (!isDepartedStatus(flight.remark)) return true;
   const departure = parseApiDateTime(
     flight.estimatedDateTime || flight.scheduleDateTime
@@ -544,9 +551,8 @@ export default function FidsBoard() {
                 flight.previousGate && flight.previousGate !== flight.gate
                   ? flight.previousGate
                   : "";
-              const status = previousGate
-                ? "탑승구 변경"
-                : displayStatus(flight.remark);
+              const status =
+                displayStatus(flight.remark) || (previousGate ? "탑승구 변경" : "");
               const feedEnglishDestination = flight.airportEnglish?.trim() ?? "";
               const normalizedAirportCode = flight.airportCode.trim().toUpperCase();
               const englishDestination =
@@ -561,11 +567,9 @@ export default function FidsBoard() {
                     ? englishDestination
                     : localDestinationName(flight.airportCode, englishDestination);
               const displayedStatus =
-                previousGate
-                  ? localizedStatus("탑승구 변경", language, flight.airportCode)
-                  : language === "EN" && flight.remarkEnglish
-                    ? displayStatus(flight.remarkEnglish)
-                    : localizedStatus(status, language, flight.airportCode);
+                language === "EN" && flight.remarkEnglish
+                  ? displayStatus(flight.remarkEnglish)
+                  : localizedStatus(status, language, flight.airportCode);
               const contentLang = languageTagForAirport(flight.airportCode, language);
               const contentDirection = directionForAirport(flight.airportCode, language);
 

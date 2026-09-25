@@ -2,6 +2,12 @@
  * Cross-airport fallback names. An airport adapter's official English feed
  * always takes priority; these values only fill gaps in that source.
  */
+export const SHARED_DESTINATION_KO: Record<string, string> = {
+  HPH: "\uD558\uC774\uD401",
+  CIT: "\uC27C\uCF04\uD2B8",
+  ADD: "\uC544\uB514\uC2A4\uC544\uBC14\uBC14",
+};
+
 export const SHARED_DESTINATION_EN: Record<string, string> = {
   UBN: "NEW ULAANBAATAR",
   ISG: "ISHIGAKIJIMA",
@@ -25,6 +31,9 @@ export const SHARED_DESTINATION_EN: Record<string, string> = {
   DTW: "DETROIT",
   KTI: "PHNOM PENH/TECHO",
   MDC: "MANADO",
+  HPH: "HAI PHONG",
+  CIT: "SHYMKENT",
+  ADD: "ADDIS ABABA",
 };
 
 export const SHARED_DESTINATION_LOCAL: Record<string, string> = {
@@ -38,6 +47,9 @@ export const SHARED_DESTINATION_LOCAL: Record<string, string> = {
   KTI: "ភ្នំពេញ/តេជោ",
   MDC: "MANADO",
   TAG: "BOHOL/PANGLAO",
+  HPH: "H\u1EA2I PH\u00D2NG",
+  CIT: "\u0428\u042B\u041C\u041A\u0415\u041D\u0422",
+  ADD: "\u12A0\u12F2\u1235 \u12A0\u1260\u1263",
 };
 
 export const SHARED_DESTINATION_LOCALE: Record<string, string> = {
@@ -51,7 +63,14 @@ export const SHARED_DESTINATION_LOCALE: Record<string, string> = {
   MDC: "id",
   YYC: "en",
   TAG: "fil",
+  HPH: "vi",
+  CIT: "kk",
+  ADD: "am",
 };
+
+export function sharedDestinationKorean(code: string) {
+  return SHARED_DESTINATION_KO[code.trim().toUpperCase()];
+}
 
 export function sharedDestinationEnglish(code: string) {
   return SHARED_DESTINATION_EN[code.trim().toUpperCase()];

@@ -5,7 +5,9 @@ export type FidsTestScenario =
   | "status"
   | "layout"
   | "paging"
-  | "overnight";
+  | "overnight"
+  | "logos"
+  | "destinations";
 
 const SCENARIOS = new Set<FidsTestScenario>([
   "normal",
@@ -15,6 +17,8 @@ const SCENARIOS = new Set<FidsTestScenario>([
   "layout",
   "paging",
   "overnight",
+  "logos",
+  "destinations",
 ]);
 
 export type PreviewTestPageSearchParams = Record<

@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { demoFlights } from "@/lib/tae/demo";
 import type { FidsFlight, FlightMode, FlightsPayload, RawKacFlight } from "@/lib/tae/types";
 import { airportByCode } from "@/lib/airports";
-import { isWithinCompletedFlightGrace } from "@/lib/fids/visibility";
+import {
+  isOvernightYActiveFlight,
+  isOvernightYFlightId,
+  isWithinCompletedFlightGrace,
+} from "@/lib/fids/visibility";
 import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
+import { normalizedGate, resolvePreviousGate } from "@/lib/fids/gateHistory";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -82,6 +87,23 @@ function kstParts(now = new Date()) {
   const month = read("month");
   const day = read("day");
   return { date: `${year}${month}${day}`, formDate: `${year}-${month}-${day}` };
+}
+
+function kstMinuteOfDay(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const read = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? "0");
+  return read("hour") * 60 + read("minute");
+}
+
+function formDateFromCompact(date: string) {
+  return /^\d{8}$/.test(date)
+    ? `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`
+    : "";
 }
 
 function addDays(date: string, amount: number) {
@@ -704,8 +726,7 @@ function isoOperationDate(date: string) {
 }
 
 function validGate(value: string | null | undefined) {
-  const gate = (value ?? "").trim();
-  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+  return normalizedGate(value);
 }
 
 async function enrichGateHistory(
@@ -751,8 +772,6 @@ async function enrichGateHistory(
   return {
     usedHistory: true,
     flights: flights.map((flight) => {
-      if (validGate(flight.previousFacility)) return flight;
-
       const key = normalizedFlightId(flight.masterFlightId || flight.flightId);
       const row = history.get(key);
       if (!row) return flight;
@@ -760,12 +779,15 @@ async function enrichGateHistory(
       const current = validGate(row.current_gate);
       const previous = validGate(row.previous_gate);
       const displayedCurrent = validGate(flight.facility);
+      const resolvedPrevious = resolvePreviousGate(
+        displayedCurrent,
+        flight.previousFacility,
+        { previousGate: previous, currentGate: current }
+      );
 
-      if (!previous || !current || previous === current || current !== displayedCurrent) {
-        return flight;
-      }
-
-      return { ...flight, previousFacility: previous };
+      return resolvedPrevious === validGate(flight.previousFacility)
+        ? flight
+        : { ...flight, previousFacility: resolvedPrevious };
     }),
   };
 }
@@ -1134,6 +1156,132 @@ function payload(
   };
 }
 
+function mergeOvernightYFlights(
+  baseFlights: FidsFlight[],
+  previousDayFlights: FidsFlight[]
+) {
+  const result = [...baseFlights];
+  const indexByFlightId = new Map(
+    result.map((flight, index) => [normalizedFlightId(flight.flightId), index] as const)
+  );
+
+  for (const previousDay of previousDayFlights) {
+    if (!isOvernightYFlightId(previousDay.flightId)) continue;
+
+    const key = normalizedFlightId(previousDay.flightId);
+    const existingIndex = indexByFlightId.get(key);
+    if (existingIndex === undefined) {
+      if (
+        isOvernightYActiveFlight(previousDay) &&
+        isWithinCompletedFlightGrace(previousDay)
+      ) {
+        indexByFlightId.set(key, result.length);
+        result.push(previousDay);
+      }
+      continue;
+    }
+
+    const current = result[existingIndex]!;
+    result[existingIndex] = {
+      ...previousDay,
+      ...current,
+      scheduleDateTime: previousDay.scheduleDateTime || current.scheduleDateTime,
+      estimatedDateTime: current.estimatedDateTime || previousDay.estimatedDateTime,
+      actualDateTime: current.actualDateTime || previousDay.actualDateTime,
+      facility: validGate(current.facility) || validGate(previousDay.facility) || "-",
+      previousFacility:
+        validGate(current.previousFacility) || validGate(previousDay.previousFacility),
+      remark: current.remark || previousDay.remark,
+      remarkEnglish: current.remarkEnglish || previousDay.remarkEnglish,
+    };
+  }
+
+  return result.sort(
+    (a, b) =>
+      sortEpoch(a.scheduleDateTime) - sortEpoch(b.scheduleDateTime) ||
+      a.flightId.localeCompare(b.flightId)
+  );
+}
+
+async function loadOvernightYFlights(
+  airportCode: string,
+  mode: FlightMode,
+  currentDate: string
+) {
+  if (mode !== "departures" || kstMinuteOfDay() >= 8 * 60) {
+    return { flights: [] as FidsFlight[], dataSources: [] as string[] };
+  }
+
+  const previousDate = addDays(currentDate, -1);
+  const previousFormDate = formDateFromCompact(previousDate);
+  let flights: FidsFlight[] = [];
+  const dataSources: string[] = [];
+
+  try {
+    flights = await fetchGwOperationFlights(airportCode, mode, previousDate);
+    if (flights.length > 0) dataSources.push("kac-previous-day-depart-gw");
+  } catch (error) {
+    console.warn(
+      `[${airportCode} FIDS] Y 익일 이월편 전날 운항 API 조회 실패`,
+      error instanceof Error ? error.message : error
+    );
+  }
+
+  if (previousFormDate && KAC_SITE_SLUGS[airportCode]) {
+    try {
+      const homepageFlights = await fetchHomepageFlights(
+        airportCode,
+        mode,
+        previousDate,
+        previousFormDate
+      );
+      if (homepageFlights.length > 0) {
+        flights = flights.length > 0
+          ? mergeHomepageSupplement(flights, homepageFlights)
+          : homepageFlights;
+        dataSources.push("kac-previous-day-homepage");
+      }
+    } catch (error) {
+      console.warn(
+        `[${airportCode} FIDS] Y 익일 이월편 전날 홈페이지 조회 실패`,
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
+  flights = flights.filter((flight) => isOvernightYFlightId(flight.flightId));
+  if (!flights.length) return { flights, dataSources };
+
+  try {
+    const facilityResult = await enrichFacilities(flights, previousDate, mode, airportCode);
+    flights = facilityResult.flights;
+    if (facilityResult.usedDetail) dataSources.push("kac-previous-day-detail-gw");
+  } catch (error) {
+    console.warn(
+      `[${airportCode} FIDS] Y 익일 이월편 시설정보 보강 실패`,
+      error instanceof Error ? error.message : error
+    );
+  }
+
+  try {
+    const gateHistoryResult = await enrichGateHistory(
+      flights,
+      previousDate,
+      mode,
+      airportCode
+    );
+    flights = gateHistoryResult.flights;
+    if (gateHistoryResult.usedHistory) dataSources.push("supabase-previous-day-gate-history");
+  } catch (error) {
+    console.warn(
+      `[${airportCode} FIDS] Y 익일 이월편 게이트 이력 보강 실패`,
+      error instanceof Error ? error.message : error
+    );
+  }
+
+  return { flights, dataSources };
+}
+
 async function handleKacFlights(request: NextRequest, airportCode: string, airportName: string) {
   const modeParam = request.nextUrl.searchParams.get("mode");
   const mode: FlightMode = modeParam === "arrivals" ? "arrivals" : "departures";
@@ -1215,6 +1363,19 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
       console.warn(`[${airportCode} FIDS] 게이트 이력 보강 조회 실패`, error);
     }
 
+    try {
+      const overnight = await loadOvernightYFlights(airportCode, mode, date);
+      if (overnight.flights.length > 0) {
+        flights = mergeOvernightYFlights(flights, overnight.flights);
+        dataSources.push(...overnight.dataSources);
+      }
+    } catch (error) {
+      console.warn(
+        `[${airportCode} FIDS] Y 익일 이월편 보강 실패`,
+        error instanceof Error ? error.message : error
+      );
+    }
+
     return NextResponse.json(payload(airportCode, mode, flights, "kac_gw", undefined, dataSources), {
       headers: { "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=30` },
     });
@@ -1234,6 +1395,19 @@ async function handleKacFlights(request: NextRequest, airportCode: string, airpo
         if (gateHistoryResult.usedHistory) dataSources.push("supabase-gate-history");
       } catch (error) {
         console.warn(`[${airportCode} FIDS] 홈페이지 fallback 게이트 이력 보강 조회 실패`, error);
+      }
+
+      try {
+        const overnight = await loadOvernightYFlights(airportCode, mode, date);
+        if (overnight.flights.length > 0) {
+          flights = mergeOvernightYFlights(flights, overnight.flights);
+          dataSources.push(...overnight.dataSources);
+        }
+      } catch (error) {
+        console.warn(
+          `[${airportCode} FIDS] 홈페이지 fallback Y 익일 이월편 보강 실패`,
+          error instanceof Error ? error.message : error
+        );
       }
 
       return NextResponse.json(

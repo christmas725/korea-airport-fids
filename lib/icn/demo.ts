@@ -34,6 +34,16 @@ const AIRLINES = [
   ["MU", "중국동방항공"], ["CZ", "중국남방항공"], ["CX", "캐세이퍼시픽"],
 ] as const;
 
+const LOGO_TEST_AIRLINES = [
+  ["SK", "스칸디나비아항공"], ["AA", "아메리칸항공"],
+  ["TP", "TAP 포르투갈항공"], ["MH", "말레이시아항공"],
+  ["WB", "르완드에어"], ["HX", "홍콩항공"],
+  ["OD", "바틱에어 말레이시아"], ["DV", "SCAT항공"],
+  ["UL", "스리랑카항공"], ["VA", "버진 오스트레일리아"],
+] as const;
+
+const DESTINATION_TESTS = ["HPH", "CIT", "ADD"] as const;
+
 function generatedRows(count: number, baseNow: Date): DepartureFlight[] {
   return Array.from({ length: count }, (_, i) => {
     const [prefix, airline] = AIRLINES[i % AIRLINES.length]!;
@@ -69,12 +79,30 @@ export function getDemoFlights(options: DemoOptions = {}): DepartureFlight[] {
   }
 
   if (scenario === "overnight") {
-    return generatedRows(14, baseNow).map((flight, i) => ({
+    const statuses = ["게이트 변경", "탑승준비", "탑승중", "탑승마감", "출발"];
+    return generatedRows(10, baseNow).map((flight, i) => ({
       ...flight,
-      scheduleDateTime: at(60 + i * 12, baseNow),
-      estimatedDateTime: at(60 + i * 12, baseNow),
-      remark: "",
+      flightId: `ZE${780 + i}Y`,
+      scheduleDateTime: at(-40 + i * 2, baseNow),
+      estimatedDateTime: at(5 + i * 2, baseNow),
+      gate: String(257 + i),
+      previousGate: String(252 + i),
+      remark: statuses[i % statuses.length]!,
     }));
+  }
+
+  if (scenario === "logos") {
+    return generatedRows(LOGO_TEST_AIRLINES.length, baseNow).map((flight, i) => {
+      const [code, airline] = LOGO_TEST_AIRLINES[i]!;
+      return { ...flight, flightId: `${code}${900 + i}`, airline };
+    });
+  }
+
+  if (scenario === "destinations") {
+    return generatedRows(DESTINATION_TESTS.length, baseNow).map((flight, i) => {
+      const airportCode = DESTINATION_TESTS[i]!;
+      return { ...flight, airport: airportCode, airportCode };
+    });
   }
 
   const rows = generatedRows(24, baseNow);

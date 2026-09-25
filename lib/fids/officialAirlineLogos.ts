@@ -260,8 +260,43 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   SK: {
     url: "/airlines/SK.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scandinavian_Airlines_logo.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/3/33/Scandinavian_Airlines_logo.svg",
     source: "SAS current horizontal logo (stable mirror sourced from flysas.com)",
+  },
+  AA: {
+    url: "/airlines/AA.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/American_Airlines_wordmark_%282013%29.svg",
+    source: "American Airlines current horizontal wordmark (Wikimedia Commons; artwork by American Airlines)",
+  },
+  TP: {
+    url: "/airlines/TP.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4b/TAP_Air_Portugal_logo.svg",
+    source: "TAP Air Portugal horizontal logo (Wikimedia Commons; sourced from flytap.com)",
+  },
+  WB: {
+    url: "/airlines/WB.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/6/6e/RwandAir_logo.svg",
+    source: "RwandAir current colored horizontal logo (stable mirror; checked against rwandair.com branding)",
+  },
+  HX: {
+    url: "/airlines/HX.svg",
+    sourceUrl: "https://b2b.hongkongairlines.com/images/logo_inner_new.png",
+    source: "Hong Kong Airlines official B2B website horizontal header logo",
+  },
+  OD: {
+    url: "/airlines/OD.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/9/9e/Batik_Air_logo.svg",
+    source: "Batik Air Malaysia current horizontal logo (English Wikipedia brand asset)",
+  },
+  DV: {
+    url: "/airlines/DV.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/SCAT_Air_Company_Logo.svg",
+    source: "SCAT Airlines horizontal logo (Wikimedia Commons; sourced from SCAT airline materials)",
+  },
+  UL: {
+    url: "/airlines/UL.svg",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/7/78/SriLankan_Airlines_Logo.svg",
+    source: "SriLankan Airlines horizontal logo (English Wikipedia brand asset; checked against current airline branding)",
   },
   VZ: {
     url: "/airlines/VZ.svg",
@@ -350,8 +385,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   VA: {
     url: "/airlines/VA.svg",
-    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Virgin_Australia_Logo_2022.svg",
-    source: "Virgin Australia 2022 current logo (Wikimedia Commons; current Wikipedia infobox)",
+    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/0/06/Virgin_Australia_Logo_2022.svg",
+    source: "Virgin Australia 2022 current logo (English Wikipedia brand asset)",
   },
   FM: {
     url: "/airlines/FM.svg",

@@ -86,16 +86,19 @@ async function fetchBytes(url) {
     }
     const bytes = Buffer.from(await response.arrayBuffer());
     if (!bytes.length) throw new Error("empty response");
-    const contentType = (response.headers.get("content-type") || "application/octet-stream").split(";")[0];
+    const responseContentType = (response.headers.get("content-type") || "application/octet-stream").split(";")[0];
     const prefix = bytes.subarray(0, 256).toString("utf8").trimStart().toLowerCase();
     if (
-      contentType === "text/html" ||
-      contentType === "application/xhtml+xml" ||
+      responseContentType === "text/html" ||
+      responseContentType === "application/xhtml+xml" ||
       prefix.startsWith("<!doctype html") ||
       prefix.startsWith("<html")
     ) {
-      throw new Error(`unexpected HTML response (${contentType})`);
+      throw new Error(`unexpected HTML response (${responseContentType})`);
     }
+    const contentType = prefix.startsWith("<svg") || prefix.includes("<svg ")
+      ? "image/svg+xml"
+      : responseContentType;
     return {
       bytes,
       contentType,

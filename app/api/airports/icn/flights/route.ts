@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDemoFlights } from "@/lib/icn/demo";
 import { previewTestAllowed, readPreviewTest, testBaseDate } from "@/lib/fids/previewTest";
+import { isOvernightYActiveFlight, OVERNIGHT_Y_FLIGHT_MAX_AGE_MS } from "@/lib/fids/visibility";
+import { normalizedGate, resolvePreviousGate } from "@/lib/fids/gateHistory";
 import type {
   DeparturesPayload,
   RawDepartureFlight,
@@ -46,7 +48,8 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_w_SIAqFa0yNUBg5YcFUidg_hmo6-TaI
 // 화면에는 터미널별 최대 80개 실제 운항까지만 유지한다.
 const DISPLAY_HORIZON_MINUTES = 8 * 60;
 const TARGET_OPERATIONS_PER_TERMINAL = 80;
-const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 2 * 60;
+const STANDARD_ROLLOVER_UNTIL_MINUTE = 2 * 60;
+const MIDNIGHT_ROLLOVER_UNTIL_MINUTE = 8 * 60;
 
 // 같은 Vercel 함수 인스턴스에서는 429 이후 상세 API를 즉시 재호출하지 않는다.
 // 인스턴스가 교체되더라도 고정된 30분 query URL + Next fetch cache가 호출량을 억제한다.
@@ -235,6 +238,10 @@ function isDepartedRemark(value: unknown) {
 
 function retainRecentlyDeparted(flights: DepartureFlight[], now = Date.now()) {
   return flights.filter((flight) => {
+    if (isOvernightYActiveFlight({ mode: "departures", ...flight })) {
+      const scheduled = flightEpoch(flight.scheduleDateTime);
+      return Number.isFinite(scheduled) && now - scheduled <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+    }
     if (!isDepartedRemark(flight.remark)) return true;
     const departure = flightEpoch(flight.estimatedDateTime || flight.scheduleDateTime);
     return Number.isFinite(departure) && departure >= now - 5 * 60 * 1000;
@@ -469,8 +476,17 @@ function parseHomepageFlights(
     const nowKst = kstParts();
     const nowMinutes = nowKst.hour * 60 + nowKst.minute;
     const scheduleMinutes = hhmmToMinutes(time.schedule);
+    const remark = cleanOperationalRemark(match[7]);
+    const activeOvernightY = isOvernightYActiveFlight({
+      mode: "departures",
+      flightId: flightAndAirline.flightId,
+      remark,
+    });
+    const rolloverUntil = activeOvernightY
+      ? MIDNIGHT_ROLLOVER_UNTIL_MINUTE
+      : STANDARD_ROLLOVER_UNTIL_MINUTE;
     const scheduleDate =
-      nowMinutes < MIDNIGHT_ROLLOVER_UNTIL_MINUTE &&
+      nowMinutes < rolloverUntil &&
       scheduleMinutes !== null &&
       scheduleMinutes >= 18 * 60
         ? addDays(searchDate, -1)
@@ -494,7 +510,7 @@ function parseHomepageFlights(
       previousGate: "",
       terminalId,
       terminalLabel: terminalLabel(terminalId),
-      remark: cleanOperationalRemark(match[7]),
+      remark,
       codeshare: "",
     });
   }
@@ -696,8 +712,7 @@ type GateHistoryRow = {
 };
 
 function validGate(value: string | null | undefined) {
-  const gate = (value ?? "").trim();
-  return gate && gate !== "-" && !/^N\/?A$/i.test(gate) ? gate : "";
+  return normalizedGate(value);
 }
 
 function isoOperationDate(value: string) {
@@ -765,8 +780,6 @@ async function enrichGateHistory(
   return {
     usedHistory: true,
     flights: flights.map((flight) => {
-      if (validGate(flight.previousGate)) return flight;
-
       const key = normalizeFlightId(flight.masterFlightId || flight.flightId);
       const date = isoOperationDate(flight.scheduleDateTime);
       const row = history.get(`${date}|${key}`);
@@ -775,12 +788,15 @@ async function enrichGateHistory(
       const current = validGate(row.current_gate);
       const previous = validGate(row.previous_gate);
       const displayedCurrent = validGate(flight.gate);
+      const resolvedPrevious = resolvePreviousGate(
+        displayedCurrent,
+        flight.previousGate,
+        { previousGate: previous, currentGate: current }
+      );
 
-      if (!previous || !current || previous === current || current !== displayedCurrent) {
-        return flight;
-      }
-
-      return { ...flight, previousGate: previous };
+      return resolvedPrevious === validGate(flight.previousGate)
+        ? flight
+        : { ...flight, previousGate: resolvedPrevious };
     }),
   };
 }
@@ -829,16 +845,20 @@ function isProtectedRolloverFlight(
   today: string,
   now = Date.now()
 ) {
+  const scheduleTime = flightEpoch(flight.scheduleDateTime);
+  if (isOvernightYActiveFlight({ mode: "departures", ...flight })) {
+    return Number.isFinite(scheduleTime) &&
+      now - scheduleTime <= OVERNIGHT_Y_FLIGHT_MAX_AGE_MS;
+  }
+
+  const p = kstParts(new Date(now));
+  if (p.hour * 60 + p.minute >= STANDARD_ROLLOVER_UNTIL_MINUTE) return false;
   if (isDepartedRemark(flight.remark)) return false;
 
   const estimatedDigits = (flight.estimatedDateTime || "").replace(/\D/g, "");
   const estimatedDay = estimatedDigits.slice(0, 8);
   if (estimatedDay === today) return true;
-
-  const scheduleTime = flightEpoch(flight.scheduleDateTime);
   if (!Number.isFinite(scheduleTime)) return isActiveRemark(flight.remark);
-
-  // 전날 늦은 편이 아직 지연/탑승 상태라면 자정 이후 최대 8시간 범위에서 유지.
   return isActiveRemark(flight.remark) && now - scheduleTime <= 8 * 60 * 60 * 1000;
 }
 
