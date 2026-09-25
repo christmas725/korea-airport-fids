@@ -206,10 +206,11 @@ function wrapAsset(bytes, contentType, label) {
     contentType.includes("jpeg") || contentType.includes("jpg") ? "image/jpeg" :
     "application/octet-stream";
   const base64 = bytes.toString("base64");
-  // Lao Airlines artwork has generous whitespace; retain its larger in-frame crop on refresh.
-  const zoom = label === "QV" ? 1.4 : 1;
-  const x = (1000 * (1 - zoom)) / 2;
-  const y = (300 * (1 - zoom)) / 2;
+  // Lao Airlines places its flower at the far right of a long decorative line.
+  // Center the flower in the shared ICN/KAC logo frame and preserve this crop on refresh.
+  const zoom = label === "QV" ? 2 : 1;
+  const x = label === "QV" ? -900 : 0;
+  const y = label === "QV" ? -150 : 0;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="${escapeXml(label)}"><image href="data:${mime};base64,${base64}" x="${x}" y="${y}" width="${1000 * zoom}" height="${300 * zoom}" preserveAspectRatio="xMidYMid meet"/></svg>\n`;
 }
 
