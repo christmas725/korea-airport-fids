@@ -14,7 +14,7 @@
         { "from": "lib/airportNames.ts", "to": "lib/icn/airportNames.ts", "transform": "namespace", "reviewOnly": true },
         { "from": "lib/demo.ts", "to": "lib/icn/demo.ts", "transform": "namespace" },
         { "from": "lib/destinationLocales.ts", "to": "lib/icn/destinationLocales.ts", "transform": "namespace", "reviewOnly": true },
-        { "from": "lib/types.ts", "to": "lib/icn/types.ts", "transform": "namespace" },
+        { "from": "lib/types.ts", "to": "lib/icn/types.ts", "transform": "namespace", "reviewOnly": true },
         { "from": "app/globals.css", "to": "app/airports/icn/icn.css", "transform": "copy" },
         { "from": "app/mobile.css", "to": "app/airports/icn/mobile.css", "transform": "copy" },
         { "from": "app/foldable.css", "to": "app/airports/icn/foldable.css", "transform": "copy" },
