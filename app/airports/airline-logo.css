@@ -138,7 +138,9 @@
   [data-airline-code="QV"],
   [data-airline-code="SV"],
   [data-airline-code="KU"],
-  [data-airline-code="LY"]
+  [data-airline-code="LY"],
+  [data-airline-code="MS"],
+  [data-airline-code="XY"]
 ),
 .carrier-logo-shell:is(
   [data-airline-code="SK"],
@@ -159,7 +161,9 @@
   [data-airline-code="QV"],
   [data-airline-code="SV"],
   [data-airline-code="KU"],
-  [data-airline-code="LY"]
+  [data-airline-code="LY"],
+  [data-airline-code="MS"],
+  [data-airline-code="XY"]
 ) {
   padding: 1px 2px !important;
 }

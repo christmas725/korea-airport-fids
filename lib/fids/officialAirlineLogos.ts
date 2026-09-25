@@ -513,6 +513,16 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
     sourceUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0f/ELAL2023Logo.svg",
     source: "EL AL 2023 horizontal wordmark (Wikimedia Commons; sourced from current branding)",
   },
+  MS: {
+    url: "/airlines/MS.svg",
+    sourceUrl: "https://i.logos-download.com/2136/31295-e4ce59a8765fed1db3c6279058ea1025.svg/Egyptair_Logo_2008_horizontal.svg?dl",
+    source: "EgyptAir horizontal wordmark (Logos Download vector asset)",
+  },
+  XY: {
+    url: "/airlines/XY.svg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flynas_Logo.svg",
+    source: "flynas horizontal bilingual logo (Wikimedia Commons; sourced from flynas)",
+  },
 };
 
 export function officialAirlineLogo(code: string) {
