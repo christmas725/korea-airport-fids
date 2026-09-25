@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/cache-airline-logos.mjs && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "logos:update": "node scripts/cache-airline-logos.mjs",
+    "logos:refresh": "node scripts/cache-airline-logos.mjs --all",
+    "test:logos": "node scripts/check-airline-logo-assets.mjs",
     "test:fids": "node --experimental-strip-types scripts/check-fids-regressions.mts",
     "audit:fids": "node --experimental-strip-types scripts/audit-live-fids.mts",
     "test:responsive": "node scripts/check-responsive-layout.mjs",

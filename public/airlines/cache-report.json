@@ -1,0 +1,526 @@
+{
+  "total": 103,
+  "source": 103,
+  "kiwiFallback": 0,
+  "textFallback": 0,
+  "updated": 1,
+  "skipped": 102,
+  "results": [
+    {
+      "code": "3U",
+      "mode": "source",
+      "sourceUrl": "https://i.logos-download.com/5817/1292-38b9797b520ae04f69f00fa42330e319.svg/Sichuan_Airlines_Logo.svg?dl"
+    },
+    {
+      "code": "5J",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cebu_Pacific_wordmark.svg"
+    },
+    {
+      "code": "7C",
+      "mode": "source",
+      "sourceUrl": "https://static.jejuair.net/cms/images/banner_image/20250123100048468.png"
+    },
+    {
+      "code": "8M",
+      "mode": "source",
+      "sourceUrl": "https://www.maiair.com/templates/hititcs/images/logo_mai.png"
+    },
+    {
+      "code": "9C",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Spring_Airlines.jpg"
+    },
+    {
+      "code": "9G",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sun_PhuQuoc_Airways_logo.svg"
+    },
+    {
+      "code": "AA",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/8/81/American_Airlines_wordmark_%282013%29.svg"
+    },
+    {
+      "code": "AC",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Canada_2017.svg"
+    },
+    {
+      "code": "AF",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_France_Logo.svg"
+    },
+    {
+      "code": "AI",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_India_2023.svg"
+    },
+    {
+      "code": "AM",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aerom%C3%A9xico_wordmark.svg"
+    },
+    {
+      "code": "AS",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Alaska_Airlines_logo.svg"
+    },
+    {
+      "code": "AT",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/fr/c/c7/Logo_Royal_Air_Maroc_2013_%28Horizontal%29.svg"
+    },
+    {
+      "code": "AY",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Finnair_Logo.svg"
+    },
+    {
+      "code": "B7",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/fr/9/94/UNI_Air_Logo.svg"
+    },
+    {
+      "code": "BA",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/BRITISH_AIRWAYS_logo.svg"
+    },
+    {
+      "code": "BI",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Royal_Brunei_Airlines_logo.svg"
+    },
+    {
+      "code": "BR",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_EVA_Air.svg"
+    },
+    {
+      "code": "BX",
+      "mode": "source",
+      "sourceUrl": "https://image.airbusan.com/content/assets/images/common/img_logo.png"
+    },
+    {
+      "code": "C6",
+      "mode": "source",
+      "sourceUrl": "https://centrum-air.com/logo.svg"
+    },
+    {
+      "code": "CA",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_China_wordmark.svg"
+    },
+    {
+      "code": "CI",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/China_Airlines_wordmark.svg"
+    },
+    {
+      "code": "CM",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Copa_airlines_logo.png"
+    },
+    {
+      "code": "CX",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cathay_Pacific_Ltd._logo.svg"
+    },
+    {
+      "code": "CZ",
+      "mode": "source",
+      "sourceUrl": "https://companieslogo.com/img/orig/600029.SS_BIG-2fef4522.svg"
+    },
+    {
+      "code": "DL",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Delta_logo.svg"
+    },
+    {
+      "code": "DR",
+      "mode": "source",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Special:Redirect/file/Ruili_Airlines_logo.png"
+    },
+    {
+      "code": "DV",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/SCAT_Air_Company_Logo.svg"
+    },
+    {
+      "code": "EK",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Emirates_Logo.svg"
+    },
+    {
+      "code": "ET",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ethiopian_Airlines_Logo.svg"
+    },
+    {
+      "code": "EY",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Etihad-airways-logo.svg"
+    },
+    {
+      "code": "FM",
+      "mode": "source",
+      "sourceUrl": "https://logotyp.us/file/shanghai-airlines.svg"
+    },
+    {
+      "code": "GA",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Siluet_Garuda_Indonesia.svg"
+    },
+    {
+      "code": "GJ",
+      "mode": "source",
+      "sourceUrl": "https://wsrv.nl/?url=res.loongair.cn/dfc5f11f038d4c0f92bbc5e5f574494e.png&output=png"
+    },
+    {
+      "code": "GS",
+      "mode": "source",
+      "sourceUrl": "https://logotyp.us/file/tianjin-airlines.svg"
+    },
+    {
+      "code": "HO",
+      "mode": "source",
+      "sourceUrl": "https://staticglobal.juneyaoair.com/global1784793249251/logo.C_4nhiLp.png"
+    },
+    {
+      "code": "HX",
+      "mode": "source",
+      "sourceUrl": "bundled:assets/airline-logo-sources/HX.png"
+    },
+    {
+      "code": "HY",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/e/ef/Uzbekistan_Airways_logo.svg"
+    },
+    {
+      "code": "IB",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Logotipo_de_Iberia.svg"
+    },
+    {
+      "code": "IT",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tigerair_Taiwan_logo.svg"
+    },
+    {
+      "code": "JD",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/8/88/Beijing_Capital_Airlines.png"
+    },
+    {
+      "code": "JL",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Japan_Airlines_Wordmark_(2011).svg"
+    },
+    {
+      "code": "JQ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Jetstar_logo.svg"
+    },
+    {
+      "code": "JT",
+      "mode": "source",
+      "sourceUrl": "https://i.logos-download.com/5734/1274-b34d53f88940ad15f1e351d41e4c22e2.svg/Lion_Air_Logo_2008.svg?dl"
+    },
+    {
+      "code": "JU",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Serbia_logo.svg"
+    },
+    {
+      "code": "JX",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Starlux_wordmark.svg"
+    },
+    {
+      "code": "KC",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Astana_Logo.jpg"
+    },
+    {
+      "code": "KE",
+      "mode": "source",
+      "sourceUrl": "https://kr.img.news.koreanair.com/wp-content/uploads/2025/03/%EC%82%AC%EC%A7%841-%EB%8C%80%ED%95%9C%ED%95%AD%EA%B3%B5-%EC%8B%A0%EA%B7%9CCI-1024x204.png"
+    },
+    {
+      "code": "KL",
+      "mode": "source",
+      "sourceUrl": "https://content.presspage.com/uploads/162/1920_logoklm-427773.png"
+    },
+    {
+      "code": "KQ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kenya_Airways_logo.svg"
+    },
+    {
+      "code": "KU",
+      "mode": "source",
+      "sourceUrl": "https://files.brandlogos.net/svg/4yu3BbTeAj/Kuwait_Airways-Oi4HM9Uy7_brandlogos.net.svg"
+    },
+    {
+      "code": "LA",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Latam-logo_-v_(Indigo).svg"
+    },
+    {
+      "code": "LH",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Lufthansa_Logo_2018.svg"
+    },
+    {
+      "code": "LJ",
+      "mode": "source",
+      "sourceUrl": "https://companieslogo.com/img/orig/272450.KS_BIG-53b0d919.png"
+    },
+    {
+      "code": "LO",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/LOT_Polish_Airlines_wordmark.svg"
+    },
+    {
+      "code": "LY",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0f/ELAL2023Logo.svg"
+    },
+    {
+      "code": "MF",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Xiamen_Air_Logo.svg"
+    },
+    {
+      "code": "MH",
+      "mode": "source",
+      "sourceUrl": "https://logotyp.us/file/malaysia-airlines.svg"
+    },
+    {
+      "code": "MM",
+      "mode": "source",
+      "sourceUrl": "https://www.flypeach.com/information/brand/en/assets/img/common/logo.svg"
+    },
+    {
+      "code": "MS",
+      "mode": "source",
+      "sourceUrl": "https://i.logos-download.com/2136/31295-e4ce59a8765fed1db3c6279058ea1025.svg/Egyptair_Logo_2008_horizontal.svg?dl"
+    },
+    {
+      "code": "MU",
+      "mode": "source",
+      "sourceUrl": "https://companieslogo.com/img/orig/600115.SS_BIG-581e66c6.svg"
+    },
+    {
+      "code": "NH",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/All_Nippon_Airways_Logo.svg"
+    },
+    {
+      "code": "NZ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_New_Zealand_logo.svg"
+    },
+    {
+      "code": "OD",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/9/9e/Batik_Air_logo.svg"
+    },
+    {
+      "code": "OM",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/MIAT_Eng_Logo_JPG_(1).jpg"
+    },
+    {
+      "code": "OZ",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/4/47/Asiana_Airlines_%282024%29.svg"
+    },
+    {
+      "code": "PN",
+      "mode": "source",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Special:Redirect/file/West_Air_(China)_Logo.png"
+    },
+    {
+      "code": "PR",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Philippine_Airlines_logo.svg"
+    },
+    {
+      "code": "QF",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Qantas_wordmark_2016.svg"
+    },
+    {
+      "code": "QR",
+      "mode": "source",
+      "sourceUrl": "https://d21buns5ku92am.cloudfront.net/69667/logo/retina-1677790355.png"
+    },
+    {
+      "code": "QV",
+      "mode": "source",
+      "sourceUrl": "https://laoairlines.com/wp-content/uploads/2020/10/logo-laoairlines.png"
+    },
+    {
+      "code": "QW",
+      "mode": "source",
+      "sourceUrl": "https://b2t.qdairlines.com/qw-header-logo-title.png"
+    },
+    {
+      "code": "RF",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aero_K_logo.svg"
+    },
+    {
+      "code": "RS",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/6/65/Logo_of_Air_Seoul.svg"
+    },
+    {
+      "code": "SC",
+      "mode": "source",
+      "sourceUrl": "https://www.sda.cn/en/imgs/logo.36d0f3b.png"
+    },
+    {
+      "code": "SK",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/3/33/Scandinavian_Airlines_logo.svg"
+    },
+    {
+      "code": "SQ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Singapore_Airlines_Logo.svg"
+    },
+    {
+      "code": "SV",
+      "mode": "source",
+      "sourceUrl": "https://files.brandlogos.net/svg/JsRIbNiiis/saudia-airlines-logo-brandlogos.net_7l2fwwwm1.svg"
+    },
+    {
+      "code": "TG",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Thai_Airways_logo.svg"
+    },
+    {
+      "code": "TK",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Turkish_Airlines_logo_2019.svg"
+    },
+    {
+      "code": "TN",
+      "mode": "source",
+      "sourceUrl": "https://www.airtahitinui.com/themes/custom/atn/logo.svg"
+    },
+    {
+      "code": "TP",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4b/TAP_Air_Portugal_logo.svg"
+    },
+    {
+      "code": "TR",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scoot_logo.svg"
+    },
+    {
+      "code": "TW",
+      "mode": "source",
+      "sourceUrl": "https://otp.twayair.com/images/trinity.svg"
+    },
+    {
+      "code": "UA",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/United_Airlines_wordmark.svg"
+    },
+    {
+      "code": "UL",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/7/78/SriLankan_Airlines_Logo.svg"
+    },
+    {
+      "code": "UO",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/HK_express_logo_2013.svg"
+    },
+    {
+      "code": "UX",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Air_Europa_Logo_(2015).svg"
+    },
+    {
+      "code": "VA",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/0/06/Virgin_Australia_Logo_2022.svg"
+    },
+    {
+      "code": "VJ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/VietJet_Air_logo.svg"
+    },
+    {
+      "code": "VN",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vietnam_Airlines_2015_wordmark.svg"
+    },
+    {
+      "code": "VS",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Virgin_Atlantic_logo_2018.svg"
+    },
+    {
+      "code": "VZ",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vietjet_Air_Thailand_logo.svg"
+    },
+    {
+      "code": "WB",
+      "mode": "source",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/en/6/6e/RwandAir_logo.svg"
+    },
+    {
+      "code": "WE",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parata_Airlines_(gray).svg"
+    },
+    {
+      "code": "WS",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/WestJetLogo2018.svg"
+    },
+    {
+      "code": "WY",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Oman_Air_logo.png"
+    },
+    {
+      "code": "XU",
+      "mode": "source",
+      "sourceUrl": "https://static.wixstatic.com/media/77ab67_c016290eff304b4cbce81a66062be125~mv2.png/v1/fill/w_744,h_248,al_c,q_90,enc_auto/20230511_sumair_RGB.png"
+    },
+    {
+      "code": "XY",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flynas_Logo.svg"
+    },
+    {
+      "code": "YP",
+      "mode": "source",
+      "sourceUrl": "https://com.airpremiacdn.net/resources/onepoint/images/logo/airpremia_brand_logo_transparent.png"
+    },
+    {
+      "code": "ZE",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Eastar_Jet_Logo.svg"
+    },
+    {
+      "code": "ZG",
+      "mode": "source",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ZIPAIR_Tokyo_full_logo.svg"
+    },
+    {
+      "code": "ZH",
+      "mode": "source",
+      "sourceUrl": "https://static.airchina.com.cn/cms/1833388735043993600.jpg"
+    }
+  ],
+  "generatedAt": "2026-09-25T08:05:25.414Z"
+}

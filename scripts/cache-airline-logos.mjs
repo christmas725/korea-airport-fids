@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = process.cwd();
@@ -10,6 +10,15 @@ const WIKI_DELAY_MS = 900;
 const WIKIMEDIA_THUMB_WIDTH = 500;
 const MAX_SOURCE_ATTEMPTS = 3;
 const FALLBACK_BASE = "https://images.kiwi.com/airlines/64";
+const REPORT_PATH = path.join(OUTPUT_DIR, "cache-report.json");
+const args = process.argv.slice(2);
+const forceAll = args.includes("--all");
+const requestedCodes = new Set(
+  args
+    .filter((arg) => !arg.startsWith("--"))
+    .map((code) => code.trim().toUpperCase())
+    .filter(Boolean)
+);
 
 const registry = await readFile(REGISTRY_PATH, "utf8");
 const entries = [...registry.matchAll(
@@ -22,6 +31,56 @@ const entries = [...registry.matchAll(
 
 if (!entries.length) throw new Error("No airline logo entries found.");
 await mkdir(OUTPUT_DIR, { recursive: true });
+
+const entryByCode = new Map(entries.map((entry) => [entry.code, entry]));
+const unknownCodes = [...requestedCodes].filter((code) => !entryByCode.has(code));
+if (unknownCodes.length) {
+  throw new Error(`Unknown airline logo codes: ${unknownCodes.join(", ")}`);
+}
+
+async function readPreviousReport() {
+  try {
+    return JSON.parse(await readFile(REPORT_PATH, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function exists(filePath) {
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const previousReport = await readPreviousReport();
+const previousResults = new Map(
+  Array.isArray(previousReport?.results)
+    ? previousReport.results.map((result) => [result.code, result])
+    : []
+);
+
+const selectedEntries = [];
+for (const entry of entries) {
+  const target = path.join(ROOT, "public", entry.localUrl.replace(/^\//, ""));
+  const previous = previousResults.get(entry.code);
+  const explicitlyRequested = requestedCodes.has(entry.code);
+  const needsRefresh =
+    forceAll ||
+    explicitlyRequested ||
+    !(await exists(target)) ||
+    previous?.sourceUrl !== entry.sourceUrl ||
+    previous?.mode !== "source";
+
+  if (needsRefresh) selectedEntries.push(entry);
+}
+
+if (!selectedEntries.length) {
+  console.log(`[airline-logo] ${entries.length} committed assets are up to date; nothing to download`);
+  process.exit(0);
+}
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let wikiQueue = Promise.resolve();
@@ -109,6 +168,13 @@ async function fetchBytes(url) {
 }
 
 async function fetchSource(entry) {
+  if (entry.sourceUrl.startsWith("bundled:")) {
+    const sourcePath = entry.sourceUrl.slice("bundled:".length);
+    if (!/^assets\/airline-logo-sources\/[A-Z0-9]{2}\.png$/.test(sourcePath)) {
+      throw new Error(`Invalid bundled logo source: ${sourcePath}`);
+    }
+    return { bytes: await readFile(path.join(ROOT, sourcePath)), contentType: "image/png" };
+  }
   const attempt = async () => {
     let lastError;
     for (let i = 0; i < MAX_SOURCE_ATTEMPTS; i++) {
@@ -147,7 +213,13 @@ function wrapAsset(bytes, contentType, label) {
     contentType.includes("jpeg") || contentType.includes("jpg") ? "image/jpeg" :
     "application/octet-stream";
   const base64 = bytes.toString("base64");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="${escapeXml(label)}"><image href="data:${mime};base64,${base64}" x="0" y="0" width="1000" height="300" preserveAspectRatio="xMidYMid meet"/></svg>\n`;
+  // Lao Airlines places its flower at the far right of a long decorative line.
+  // Center the flower in the shared ICN/KAC logo frame and preserve this crop on refresh.
+  const zoom = label === "QV" ? 2 : 1;
+  const x = label === "QV" ? -1100 : 0;
+  const y = label === "QV" ? -150 : 0;
+  const viewBoxWidth = label === "QV" ? 600 : 1000;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxWidth} 300" role="img" aria-label="${escapeXml(label)}"><image href="data:${mime};base64,${base64}" x="${x}" y="${y}" width="${1000 * zoom}" height="${300 * zoom}" preserveAspectRatio="xMidYMid meet"/></svg>\n`;
 }
 
 function textFallback(code) {
@@ -190,8 +262,8 @@ let cursor = 0;
 const results = [];
 
 async function worker() {
-  while (cursor < entries.length) {
-    const entry = entries[cursor++];
+  while (cursor < selectedEntries.length) {
+    const entry = selectedEntries[cursor++];
     const result = await cache(entry);
     results.push(result);
     console.log(`[airline-logo] ${entry.code}: ${result.mode}`);
@@ -199,25 +271,34 @@ async function worker() {
 }
 
 await Promise.all(
-  Array.from({ length: Math.min(CONCURRENCY, entries.length) }, () => worker())
+  Array.from({ length: Math.min(CONCURRENCY, selectedEntries.length) }, () => worker())
 );
 
-results.sort((a, b) => a.code.localeCompare(b.code));
+const updatedResults = new Map(results.map((result) => [result.code, result]));
+const completeResults = entries.map((entry) =>
+  updatedResults.get(entry.code) || previousResults.get(entry.code) || {
+    code: entry.code,
+    mode: "missing",
+    sourceUrl: entry.sourceUrl,
+  }
+).sort((a, b) => a.code.localeCompare(b.code));
 const report = {
   total: entries.length,
-  source: results.filter((item) => item.mode === "source").length,
-  kiwiFallback: results.filter((item) => item.mode === "kiwi-fallback").length,
-  textFallback: results.filter((item) => item.mode === "text-fallback").length,
-  results,
+  source: completeResults.filter((item) => item.mode === "source").length,
+  kiwiFallback: completeResults.filter((item) => item.mode === "kiwi-fallback").length,
+  textFallback: completeResults.filter((item) => item.mode === "text-fallback").length,
+  updated: selectedEntries.length,
+  skipped: entries.length - selectedEntries.length,
+  results: completeResults,
   generatedAt: new Date().toISOString(),
 };
 
 await writeFile(
-  path.join(OUTPUT_DIR, "cache-report.json"),
+  REPORT_PATH,
   JSON.stringify(report, null, 2) + "\n",
   "utf8"
 );
 
 console.log(
-  `[airline-logo] generated ${report.total} local assets (source=${report.source}, kiwi=${report.kiwiFallback}, text=${report.textFallback})`
+  `[airline-logo] updated ${report.updated}/${report.total} committed assets (source=${report.source}, kiwi=${report.kiwiFallback}, text=${report.textFallback}, skipped=${report.skipped})`
 );
