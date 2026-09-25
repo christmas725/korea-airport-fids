@@ -5,7 +5,7 @@ const ROOT = process.cwd();
 const REGISTRY_PATH = path.join(ROOT, "lib/fids/officialAirlineLogos.ts");
 const OUTPUT_DIR = path.join(ROOT, "public/airlines");
 const CONCURRENCY = 6;
-const TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = 30_000;
 const WIKI_DELAY_MS = 900;
 const WIKIMEDIA_THUMB_WIDTH = 500;
 const MAX_SOURCE_ATTEMPTS = 2;
@@ -117,7 +117,7 @@ async function fetchSource(entry) {
       } catch (error) {
         lastError = error;
         const status = error && typeof error === "object" ? error.status : undefined;
-        if (status !== 429 && !(typeof status === "number" && status >= 500)) break;
+        if (typeof status === "number" && status !== 429 && status < 500) break;
         await sleep(1200 * (i + 1));
       }
     }
