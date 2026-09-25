@@ -500,8 +500,8 @@ export const OFFICIAL_AIRLINE_LOGOS: Record<string, OfficialAirlineLogo> = {
   },
   JT: {
     url: "/airlines/JT.svg",
-    sourceUrl: "https://upload.wikimedia.org/wikipedia/en/5/59/Lion_Air.svg",
-    source: "Lion Air current horizontal logo (English Wikipedia brand asset)",
+    sourceUrl: "https://i.logos-download.com/5734/1274-b34d53f88940ad15f1e351d41e4c22e2.svg/Lion_Air_Logo_2008.svg?dl",
+    source: "Lion Air current horizontal logo (Logos Download vector asset)",
   },
   KU: {
     url: "/airlines/KU.svg",
