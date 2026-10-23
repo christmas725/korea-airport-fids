@@ -97,11 +97,7 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
     <main className="directory-shell">
       <header className="directory-header">
         <div>
-          <p className="eyebrow">KOREA AIRPORT FLIGHT INFORMATION</p>
           <h1>대한민국 국내공항 통합 FIDS</h1>
-          <p className="directory-intro">
-            공항을 선택하면 실시간 운항정보 전광판으로 이동합니다.
-          </p>
         </div>
         <div
           className="network-status"
@@ -114,7 +110,6 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
       </header>
 
       <section className="live-strip" aria-label="공항 운영 현황">
-        <span>NOW BOARDING</span>
         <p>
           운영 중 {counts.live} · 운영 준비중 {counts.preparing} · 운영 종료 {counts.ended}
         </p>
@@ -164,8 +159,8 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
 
       <footer className="directory-footer">
         <span>실시간 공개 운항정보를 바탕으로 제공됩니다.</span>
-        <strong>대한민국 국내공항 통합 FIDS</strong>
       </footer>
     </main>
   );
 }
+

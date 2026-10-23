@@ -415,14 +415,14 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
           <div className="airport-copy"><strong>{airportName}</strong><span>{airportEnglishName}</span><b>{airport.code}</b></div>
 
           <div className="mode-switch" aria-label="출발 도착 전환">
-            <button className={departure ? "active" : ""} onClick={() => setMode("departures")}><span>출발</span><small>1 · D</small></button>
-            <button className={!departure ? "active" : ""} onClick={() => setMode("arrivals")}><span>도착</span><small>2 · A</small></button>
+            <button className={departure ? "active" : ""} onClick={() => setMode("departures")}><span>출발</span></button>
+            <button className={!departure ? "active" : ""} onClick={() => setMode("arrivals")}><span>도착</span></button>
           </div>
 
           <div className="rail-spacer" />
           <div className="page-number">{String(page + 1).padStart(2, "0")} / {String(totalPages).padStart(2, "0")}</div>
           <div className="rail-time"><strong data-fixed-time={fixedClock || undefined}>{formatClock(now)}</strong><span>{formatDate(now)}</span></div>
-          <div className="rail-brand">KAC · {airport.code} FIDS v0.1</div>
+
         </aside>
 
         <section className="information-panel">
@@ -457,3 +457,4 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
     </main>
   );
 }
+

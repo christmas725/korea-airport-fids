@@ -688,10 +688,10 @@ export default function FidsBoard() {
 
             <div className="updated">
               {data?.source === "airport.kr"
-                ? "HOMEPAGE FEED + OPENAPI"
+                ? ""
                 : data
                   ? `${data.query.searchFrom}–${data.query.searchTo}`
-                  : "ICN FIDS v0.2"}
+                  : ""}
             </div>
           </footer>
         </section>
@@ -699,3 +699,4 @@ export default function FidsBoard() {
     </main>
   );
 }
+
