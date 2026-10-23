@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { airports, regions, type Airport } from "@/lib/airports";
 import { getKacModeWindowState } from "@/lib/fids/operationWindow";
 
@@ -42,6 +42,8 @@ function statusLabel(status: RuntimeAirportStatus) {
 }
 
 export default function AirportDirectory({ initialStatuses }: AirportDirectoryProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null);
   const [statuses, setStatuses] = useState<StatusMap>(
     () => initialStatuses ?? ruleBasedStatuses()
   );
@@ -84,6 +86,10 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [refreshStatuses]);
+
+  useEffect(() => {
+    if (selectedAirport) dialogRef.current?.showModal();
+  }, [selectedAirport]);
 
   const counts = useMemo(() => {
     const values = airports.map((airport) => statuses[airport.code] ?? "ended");
@@ -131,6 +137,12 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
                     <a
                       className={`airport-card is-${runtimeStatus}`}
                       href={`/airports/${airport.code.toLowerCase()}`}
+                      onClick={(event) => {
+                        if (airport.source !== "kac" || !airport.international || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                        event.preventDefault();
+                        setSelectedAirport(airport);
+                      }}
+                      aria-haspopup={airport.source === "kac" && airport.international ? "dialog" : undefined}
                       key={airport.code}
                       aria-label={`${airport.name}공항 ${statusLabel(runtimeStatus)}`}
                     >
@@ -156,6 +168,27 @@ export default function AirportDirectory({ initialStatuses }: AirportDirectoryPr
           );
         })}
       </div>
+
+      <dialog
+        ref={dialogRef}
+        className="flight-type-dialog"
+        aria-labelledby="flight-type-title"
+        onClose={() => setSelectedAirport(null)}
+        onClick={(event) => {
+          if (event.target === dialogRef.current) dialogRef.current.close();
+        }}
+      >
+        <div className="flight-type-dialog-content">
+          <div className="flight-type-dialog-heading">
+            <h2 id="flight-type-title">{selectedAirport?.name}공항</h2>
+            <button type="button" aria-label="닫기" onClick={() => dialogRef.current?.close()}>×</button>
+          </div>
+          <div className="flight-type-options">
+            <a href={`/airports/${selectedAirport?.code.toLowerCase()}?type=domestic`}>국내선</a>
+            <a href={`/airports/${selectedAirport?.code.toLowerCase()}?type=international`}>국제선</a>
+          </div>
+        </div>
+      </dialog>
 
       <footer className="directory-footer">
         <span>실시간 공개 운항정보를 바탕으로 제공됩니다.</span>

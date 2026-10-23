@@ -396,3 +396,21 @@ a {
     flex-direction: column;
   }
 }
+
+.flight-type-dialog {
+  width: min(440px, calc(100% - 32px));
+  padding: 0;
+  color: var(--ink);
+  background: #0b1927;
+  border: 1px solid #31506c;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px #0008;
+}
+.flight-type-dialog::backdrop { background: #020812bb; backdrop-filter: blur(4px); }
+.flight-type-dialog-content { padding: 24px; }
+.flight-type-dialog-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.flight-type-dialog-heading h2 { margin: 0; font-size: 24px; }
+.flight-type-dialog-heading button { width: 44px; height: 44px; border: 0; background: transparent; color: inherit; font-size: 30px; cursor: pointer; }
+.flight-type-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+.flight-type-options a { padding: 28px 12px; color: #fff; background: #133450; border: 1px solid #397eae; border-radius: 10px; text-align: center; text-decoration: none; font-size: 22px; font-weight: 800; }
+.flight-type-options a:hover, .flight-type-options a:focus-visible { background: #1d5077; outline: 2px solid var(--cyan); outline-offset: 3px; }

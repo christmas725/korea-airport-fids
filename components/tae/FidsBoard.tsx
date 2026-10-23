@@ -216,7 +216,22 @@ function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup
   );
 }
 
-export default function FidsBoard({ airport }: { airport: Airport }) {
+export default function FidsBoard({ airport, initialFlightType = "국내선" }: {
+  airport: Airport;
+  initialFlightType?: FidsFlight["flightType"];
+}) {
+  const [flightType, setFlightType] = useState(initialFlightType);
+  const changeFlightType = (value: FidsFlight["flightType"]) => {
+    if (value === flightType) return;
+    setFlightType(value);
+    setDepartureSignal(null);
+    previousDepartureStatus.current = null;
+    setPage(0);
+    setRotationStep(0);
+    const url = new URL(window.location.href);
+    url.searchParams.set("type", value === "국제선" ? "international" : "domestic");
+    window.history.replaceState(null, "", url);
+  };
   const [mode, setMode] = useState<FlightMode>("departures");
   const [payload, setPayload] = useState<FlightsPayload | null>(null);
   const [error, setError] = useState("");
@@ -269,7 +284,9 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const currentPayload = payload?.mode === mode ? payload : null;
+  const currentPayload = useMemo(() => payload?.mode === mode
+    ? { ...payload, flights: payload.flights.filter((flight) => flight.flightType === flightType) }
+    : null, [payload, mode, flightType]);
   const fixedClock = previewTestActive ? formatClock(previewDateFromLocation()) : "";
   const latestDeparture = useMemo(
     () => mode === "departures" && currentPayload ? latestDepartureFlight(currentPayload.flights) : null,
@@ -413,6 +430,15 @@ export default function FidsBoard({ airport }: { airport: Airport }) {
           </div>
 
           <div className="airport-copy"><strong>{airportName}</strong><span>{airportEnglishName}</span><b>{airport.code}</b></div>
+
+          {airport.international && (
+            <div className="flight-type-switch" role="group" aria-label="국내선 국제선 전환">
+              {(["국내선", "국제선"] as const).map((value) => (
+                <button key={value} type="button" aria-pressed={flightType === value}
+                  onClick={() => changeFlightType(value)}>{value}</button>
+              ))}
+            </div>
+          )}
 
           <div className="mode-switch" aria-label="출발 도착 전환">
             <button className={departure ? "active" : ""} onClick={() => setMode("departures")}><span>출발</span></button>

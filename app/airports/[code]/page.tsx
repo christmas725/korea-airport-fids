@@ -25,7 +25,9 @@ export default async function PreparingAirportPage({
   }
 
   if (airport.status === "live") {
-    const testQuery = previewTestQuery(await searchParams);
+    const pageQuery = await searchParams;
+    const initialFlightType = airport.international && pageQuery.type === "international" ? "국제선" : "국내선";
+    const testQuery = previewTestQuery(pageQuery);
     const requestPath = `/api/airports/${airport.code.toLowerCase()}/flights?mode=departures${testQuery}`;
     const initialPayload = await fetchInitialJson<FlightsPayload>(requestPath);
 
@@ -33,7 +35,7 @@ export default async function PreparingAirportPage({
       <>
         <a className="directory-link" href="/" aria-label="공항 선택으로 돌아가기">⌂</a>
         <InitialApiHydrator requestPath={requestPath} payload={initialPayload}>
-          <FidsBoard airport={airport} />
+          <FidsBoard airport={airport} initialFlightType={initialFlightType} />
         </InitialApiHydrator>
       </>
     );

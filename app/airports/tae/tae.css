@@ -134,3 +134,9 @@ button { font: inherit; }
   .mode-title strong { font-size: 26px; }
   .mode-title span { font-size: 8px; }
 }
+
+.flight-type-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 16px; }
+.flight-type-switch button { min-height: 40px; padding: 8px 4px; border: 1px solid #ffffff55; border-radius: 7px; color: #ffffffbb; background: #0002; cursor: pointer; font: inherit; font-weight: 800; }
+.flight-type-switch button[aria-pressed="true"] { color: #fff; background: #ffffff30; border-color: #fff; }
+.flight-type-switch button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.flight-type-switch + .mode-switch { margin-top: 14px; }
