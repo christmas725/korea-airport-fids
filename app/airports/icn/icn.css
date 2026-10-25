@@ -731,7 +731,7 @@ button {
   transition: none !important;
 }
 
-/* v0.2 - KO → EN → destination-local language rotation */
+/* v0.2 - KO → EN language rotation */
 body {
   font-family: system-ui, "Segoe UI", Arial, "Noto Sans", "Noto Sans KR", "Noto Sans JP", "Noto Sans SC", "Noto Sans TC", "Noto Sans Thai", "Noto Sans Arabic", sans-serif;
 }

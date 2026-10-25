@@ -189,12 +189,22 @@ const DESTINATION_EN: Record<string, string> = {
   ROR: "KOROR/PALAU",
 };
 
+export function icnDestinationOverride(airportCode: string, language: DestinationLanguage) {
+  const code = airportCode.trim().toUpperCase();
+  if (code === "MEX") return language === "KO" ? "멕시코시티" : "MEXICO CITY";
+  if (code === "KIX") return language === "KO" ? "오사카/간사이" : "OSAKA/KANSAI";
+  return undefined;
+}
+
 export function destinationName(
   airportCode: string,
   koreanName: string,
   language: DestinationLanguage
 ) {
   const code = airportCode.trim().toUpperCase();
+
+  const override = icnDestinationOverride(code, language);
+  if (override) return override;
 
   if (language === "KO") {
     const rawKorean = koreanName.trim();
