@@ -203,12 +203,32 @@ const DESTINATION_EN: Record<string, string> = {
   ROR: "KOROR/PALAU",
 };
 
+// KAC 목적지는 원본 API 표기보다 통일된 도시/공항 표기를 우선한다.
+const KAC_DESTINATIONS: Record<string, [string, string]> = {
+  GMP: ["서울/김포", "SEOUL/GIMPO"],
+  PUS: ["부산/김해", "BUSAN/GIMHAE"],
+  HND: ["도쿄/하네다", "TOKYO/HANEDA"],
+  KIX: ["오사카/간사이", "OSAKA/KANSAI"],
+  SHA: ["상하이/홍차오", "SHANGHAI/HONGQIAO"],
+  NGO: ["나고야/주부", "NAGOYA/CHUBU"],
+  PKX: ["베이징/다싱", "BEIJING/DAXING"],
+  PEK: ["베이징/서우두", "BEIJING/CAPITAL"],
+  TSA: ["타이베이/쑹산", "TAIPEI/SONGSHAN"],
+  TPE: ["타이베이/타오위안", "TAIPEI/TAOYUAN"],
+};
+
+export function kacDestinationOverride(airportCode: string, language: DestinationLanguage) {
+  return KAC_DESTINATIONS[airportCode.trim().toUpperCase()]?.[language === "KO" ? 0 : 1];
+}
+
 export function destinationName(
   airportCode: string,
   koreanName: string,
   language: DestinationLanguage
 ) {
   const code = airportCode.trim().toUpperCase();
+  const override = kacDestinationOverride(code, language);
+  if (override) return override;
 
   if (language === "KO") {
     const rawKorean = koreanName.trim();

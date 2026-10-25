@@ -11,10 +11,11 @@ import { destinationName } from "@/lib/icn/airportNames";
 import {
   directionForAirport,
   languageTagForAirport,
-  localDestinationName,
   localizedStatus,
-  type DisplayLanguage,
+  type DisplayLanguage as DestinationDisplayLanguage,
 } from "@/lib/icn/destinationLocales";
+
+type DisplayLanguage = Exclude<DestinationDisplayLanguage, "LOCAL">;
 
 type TerminalFilter = "ALL" | "T1" | "T2";
 
@@ -450,12 +451,6 @@ export default function FidsBoard() {
         return;
       }
 
-      if (language === "EN") {
-        setLanguage("LOCAL");
-        setRotationStep(0);
-        return;
-      }
-
       setLanguage("KO");
       setRotationStep(0);
       if (totalPages > 1) {
@@ -563,9 +558,7 @@ export default function FidsBoard() {
               const destination =
                 language === "KO"
                   ? destinationName(flight.airportCode, flight.airport, "KO")
-                  : language === "EN"
-                    ? englishDestination
-                    : localDestinationName(flight.airportCode, englishDestination);
+                  : englishDestination;
               const displayedStatus =
                 language === "EN" && flight.remarkEnglish
                   ? displayStatus(flight.remarkEnglish)

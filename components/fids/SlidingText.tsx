@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 type SlidingTextProps = {
   text: string;
@@ -19,7 +19,7 @@ export default function SlidingText({
   const trackRef = useRef<HTMLSpanElement>(null);
   const [shift, setShift] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const viewport = viewportRef.current;
     const track = trackRef.current;
     if (!viewport || !track) return;
@@ -53,7 +53,7 @@ export default function SlidingText({
       style={style}
       title={shift ? text : undefined}
     >
-      <span ref={trackRef} className="sliding-text-track">{text}</span>
+      <span key={`${direction}:${text}`} ref={trackRef} className="sliding-text-track">{text}</span>
     </span>
   );
 }

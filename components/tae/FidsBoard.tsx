@@ -14,15 +14,16 @@ import {
   parseKstDateTime,
 } from "@/lib/fids/visibility";
 import type { Airport } from "@/lib/airports";
-import { destinationName } from "@/lib/tae/airportNames";
+import { destinationName, kacDestinationOverride } from "@/lib/tae/airportNames";
 import {
   directionForAirport,
   languageTagForAirport,
-  localDestinationName,
   localizedStatus,
-  type DisplayLanguage,
+  type DisplayLanguage as DestinationDisplayLanguage,
 } from "@/lib/tae/destinationLocales";
 import type { FidsFlight, FlightMode, FlightsPayload } from "@/lib/tae/types";
+
+type DisplayLanguage = Exclude<DestinationDisplayLanguage, "LOCAL">;
 
 type FlightGroup = { id: string; primary: FidsFlight; variants: FidsFlight[] };
 type DepartureSignalState = {
@@ -34,7 +35,7 @@ type DepartureSignalState = {
 const DATA_POLL_MS = 60_000;
 const ROTATION_MS = 4_000;
 const DEPARTURE_SIGNAL_GRACE_MS = 5 * 60_000;
-const LANGUAGES: DisplayLanguage[] = ["KO", "EN", "LOCAL"];
+const LANGUAGES: DisplayLanguage[] = ["KO", "EN"];
 
 function previewTestSuffix() {
   if (typeof window === "undefined") return "";
@@ -146,6 +147,8 @@ function groupFlights(flights: FidsFlight[]): FlightGroup[] {
 }
 
 function destinationFor(flight: FidsFlight, language: DisplayLanguage) {
+  const override = kacDestinationOverride(flight.airportCode, language);
+  if (override) return override;
   if (language === "KO") {
     return destinationName(flight.airportCode, flight.airport, "KO");
   }
@@ -157,7 +160,7 @@ function destinationFor(flight: FidsFlight, language: DisplayLanguage) {
       ? feedEnglish
       : destinationName(flight.airportCode, flight.airport, "EN");
 
-  return language === "LOCAL" ? localDestinationName(flight.airportCode, english) : english;
+  return english;
 }
 
 function FlightRow({ group, language, rotationStep, mode }: { group: FlightGroup; language: DisplayLanguage; rotationStep: number; mode: FlightMode }) {
@@ -271,8 +274,7 @@ export default function FidsBoard({ airport, initialFlightType = "국내선" }: 
     const updateClock = () => setNow(previewTestActive ? previewDateFromLocation() : new Date());
     updateClock();
     const clock = window.setInterval(updateClock, 1000);
-    const rotation = window.setInterval(() => setRotationStep((value) => value + 1), ROTATION_MS);
-    return () => { window.clearInterval(clock); window.clearInterval(rotation); };
+    return () => window.clearInterval(clock);
   }, [previewTestActive]);
 
   useEffect(() => {
@@ -395,11 +397,19 @@ export default function FidsBoard({ airport, initialFlightType = "국내선" }: 
     setPage((current) => Math.min(current, totalPages - 1));
   }, [totalPages]);
 
+  // 한 페이지의 한국어 → 영어 표시가 끝난 뒤 다음 페이지로 이동한다.
   useEffect(() => {
-    if (totalPages <= 1) { setPage(0); return; }
-    const interval = window.setInterval(() => setPage((value) => (value + 1) % totalPages), ROTATION_MS * 6);
-    return () => window.clearInterval(interval);
-  }, [totalPages]);
+    if (!currentPayload || error || pageWindow.rows.length === 0) return;
+    const timer = window.setTimeout(() => {
+      if (rotationStep + 1 < LANGUAGES.length * 2) {
+        setRotationStep((value) => value + 1);
+      } else {
+        setRotationStep(0);
+        setPage((value) => (value + 1) % totalPages);
+      }
+    }, ROTATION_MS);
+    return () => window.clearTimeout(timer);
+  }, [currentPayload, error, pageWindow.rows.length, rotationStep, totalPages]);
 
   const rows = pageWindow.rows;
   const blanks = Array.from({ length: pageWindow.emptyRowCount });
