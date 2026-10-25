@@ -7,7 +7,7 @@ import { useRowsPerPage } from "@/components/fids/useRowsPerPage";
 import { paginateFidsRows } from "@/lib/fids/layout";
 import { isOvernightYActiveFlight, OVERNIGHT_Y_FLIGHT_MAX_AGE_MS } from "@/lib/fids/visibility";
 import type { DeparturesPayload, DepartureFlight } from "@/lib/icn/types";
-import { destinationName } from "@/lib/icn/airportNames";
+import { destinationName, icnDestinationOverride } from "@/lib/icn/airportNames";
 import {
   directionForAirport,
   languageTagForAirport,
@@ -550,11 +550,11 @@ export default function FidsBoard() {
                 displayStatus(flight.remark) || (previousGate ? "탑승구 변경" : "");
               const feedEnglishDestination = flight.airportEnglish?.trim() ?? "";
               const normalizedAirportCode = flight.airportCode.trim().toUpperCase();
-              const englishDestination =
+              const englishDestination = icnDestinationOverride(flight.airportCode, "EN") ?? (
                 feedEnglishDestination &&
                 feedEnglishDestination.toUpperCase() !== normalizedAirportCode
                   ? feedEnglishDestination
-                  : destinationName(flight.airportCode, flight.airport, "EN");
+                  : destinationName(flight.airportCode, flight.airport, "EN"));
               const destination =
                 language === "KO"
                   ? destinationName(flight.airportCode, flight.airport, "KO")
