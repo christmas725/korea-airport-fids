@@ -6,7 +6,7 @@
       "name": "인천공항 FIDS",
       "repository": "christmas725/icn_fids",
       "branch": "main",
-      "lastSyncedCommit": "48c636ff5b7d7ff105ea29057e74aa6aeeab019c",
+      "lastSyncedCommit": "31d72fa541fcab8afff1f8df5569b1f92f236746",
       "mappings": [
         {
           "from": "app/api/departures/route.ts",
@@ -91,7 +91,7 @@
       "name": "대구공항 FIDS",
       "repository": "christmas725/tae_fids",
       "branch": "main",
-      "lastSyncedCommit": "4f65bb57c891833e6aa7a791d65889aa27958742",
+      "lastSyncedCommit": "a39c6dc970743fddc4a9399c0fcb2eedfd0a49cb",
       "mappings": [
         {
           "from": "app/api/flights/route.ts",
