@@ -192,6 +192,7 @@ const DESTINATION_EN: Record<string, string> = {
 export function icnDestinationOverride(airportCode: string, language: DestinationLanguage) {
   const code = airportCode.trim().toUpperCase();
   if (code === "MEX") return language === "KO" ? "멕시코시티" : "MEXICO CITY";
+  if (code === "TPE") return language === "KO" ? "타이페이/타오위안" : "TAIPEI/TAOYUAN";
   if (code === "KIX") return language === "KO" ? "오사카/간사이" : "OSAKA/KANSAI";
   return undefined;
 }
