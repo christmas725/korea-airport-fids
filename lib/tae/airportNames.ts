@@ -210,6 +210,7 @@ const KAC_DESTINATIONS: Record<string, [string, string]> = {
   HND: ["도쿄/하네다", "TOKYO/HANEDA"],
   KIX: ["오사카/간사이", "OSAKA/KANSAI"],
   SHA: ["상하이/홍차오", "SHANGHAI/HONGQIAO"],
+  PVG: ["상하이/푸동", "SHANGHAI/PUDONG"],
   NGO: ["나고야/주부", "NAGOYA/CHUBU"],
   PKX: ["베이징/다싱", "BEIJING/DAXING"],
   PEK: ["베이징/서우두", "BEIJING/CAPITAL"],
